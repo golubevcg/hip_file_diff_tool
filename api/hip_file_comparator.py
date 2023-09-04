@@ -1,4 +1,6 @@
 import os
+import copy
+
 import hou
 
 
@@ -63,6 +65,7 @@ class HipFileComparator():
                 "name" : name,
                 "type" : str(node_type),
                 "icon" : icon,
+                "tag" : None,
                 "parent_path": parent_path,
                 "parms" : parms_and_values
             }
@@ -83,17 +86,40 @@ class HipFileComparator():
             if path not in self.target_data:
                 data = {}
                 data["tag"] = "deleted"
-                data["changes_source"] = "target"
+                self.diff_data[path] = data
+
+            source_node_parms = self.source_data[path]["parms"]
+            target_node_parms = self.target_data[path]["parms"]
+            for parm in copy.copy(source_node_parms):
+                source_value = source_node_parms[parm]
+                target_value = target_node_parms[parm]
+                if source_value != target_value:
+                    data = {}
+                    data["tag"] = "edited"
+                    self.diff_data[path] = {
+                        "parms":parm,
+                        "tag" : "edited",
+                    }
+
+                    self.target_data[path]["parms"]["tag"] = "edited"
+                    self.source_data[path]["parms"]["tag"] = "edited"
+            
+            
+        for path in self.target_data:
+            if path not in self.source_data:
+                data = {}
+                data["tag"] = "created"
                 self.diff_data[path] = data
             
-            params = self.source_data[path]
 
         for path in self.diff_data:
             tag = self.diff_data[path]["tag"]
-            changes_source = self.diff_data[path]["changes_source"]
 
             if tag == "deleted":
                 self.target_data[path] = None
+
+            if tag == "created":
+                self.source_data[path] = None
 
 
         self.is_compared = True
