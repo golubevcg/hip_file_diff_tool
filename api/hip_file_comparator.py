@@ -13,9 +13,11 @@ class HipFileComparator():
         self.source_hip_file = source_hip_file
         self.target_hip_file = target_hip_file
         
-        self.data_from_source = {}
-        self.data_from_target = {}
+        self.source_data = {}
+        self.target_data = {}
         self.diff_data = {}
+
+        self.is_compared = False
 
     def check_file_path(self, path):
         if not os.path.exists(path):
@@ -36,19 +38,34 @@ class HipFileComparator():
 
         data_dict = {}
 
-        for object in hou.node("/").allNodes():
-            path = object.path()
+        for node in hou.node("/").allNodes():
+            path = node.path()
+            name = node.name()
+            node_type = node.type()
+            icon = node_type.icon()
+            parent_path = None 
+            parent = node.parent()
+            try:
+                parent_path = parent.path()
+            except:
+                pass
 
-            parms = object.parms()
-            if not parms:
-                parms_and_values[name] = None
-            
             parms_and_values = {}
-            for parm in parms:
-                name = parm.name()
-                val = parm.eval()
-                parms_and_values[name] = val  
-            data_dict[path] = {"parms" : parms_and_values}
+            parms = node.parms()
+
+            if parms:            
+                for parm in parms:
+                    parm_name = parm.name()
+                    val = parm.eval()
+                    parms_and_values[parm_name] = val  
+
+            data_dict[path] = {
+                "name" : name,
+                "type" : str(node_type),
+                "icon" : icon,
+                "parent_path": parent_path,
+                "parms" : parms_and_values
+            }
 
         return data_dict
 
@@ -59,11 +76,27 @@ class HipFileComparator():
         if not self.target_hip_file:
             raise ValueError("Error, no target file specified!")
 
-        source_file_data = self.get_hip_data(self.source_hip_file)
-        target_file_data = self.get_hip_data(self.target_hip_file)
+        self.source_data = self.get_hip_data(self.source_hip_file)
+        self.target_data = self.get_hip_data(self.target_hip_file)
 
-        for path in source_file_data:
-            params = source_file_data[path]
+        for path in self.source_data:
+            if path not in self.target_data:
+                data = {}
+                data["tag"] = "deleted"
+                data["changes_source"] = "target"
+                self.diff_data[path] = data
+            
+            params = self.source_data[path]
+
+        for path in self.diff_data:
+            tag = self.diff_data[path]["tag"]
+            changes_source = self.diff_data[path]["changes_source"]
+
+            if tag == "deleted":
+                self.target_data[path] = None
+
+
+        self.is_compared = True
 
         '''
         what you need in diff:
