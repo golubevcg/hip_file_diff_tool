@@ -15,7 +15,7 @@ class HipFileDiffWindow(QMainWindow):
         super(HipFileDiffWindow, self).__init__()
         
         # Set window properties
-        self.setWindowTitle('Hipfile diff tool')
+        self.setWindowTitle('.hip files diff tool')
         self.setGeometry(300, 300, 1000, 800)
 
         # Main widget to set as central widget
@@ -85,17 +85,15 @@ class HipFileDiffWindow(QMainWindow):
 
         # Splitter for three QTreeViews
 
-        self.treeview1 = QTreeView(self)
-        self.treeview2 = QTreeView(self)
-        self.treeview3 = QTreeView(self)
-        self.treeviews_layout.addWidget(self.treeview1)
-        self.treeviews_layout.addWidget(self.treeview2)
-        self.treeviews_layout.addWidget(self.treeview3)
+        self.source_treeview = QTreeView(self)
+        self.target_treeview = QTreeView(self)
+
+        self.treeviews_layout.addWidget(self.source_treeview)
+        self.treeviews_layout.addWidget(self.target_treeview)
 
         # Populate the treeviews with random data
-        self.populate_random_data(self.treeview1)
-        self.populate_random_data(self.treeview2)
-        self.populate_random_data(self.treeview3)
+        self.populate_random_data(self.source_treeview)
+        self.populate_random_data(self.target_treeview)
         
 
     def populate_random_data(self, treeview):
@@ -140,7 +138,8 @@ class HipFileDiffWindow(QMainWindow):
             raise RuntimeError(incorrect_path_text)
         
         _, extension = os.path.splitext(path)
-        if extension not in SUPPORTED_FILE_FORMATS:
+        print("_, extension", _, extension)
+        if extension[1:] not in SUPPORTED_FILE_FORMATS:
             only_hip_supported_text = "Incorrect source file specified, only .hip files supported."
             QMessageBox.critical(self, "Error", only_hip_supported_text)
             raise RuntimeError(only_hip_supported_text)

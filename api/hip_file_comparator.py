@@ -23,7 +23,7 @@ class HipFileComparator():
             raise RuntimeError(incorrect_path_text)
         
         _, extension = os.path.splitext(path)
-        if extension not in SUPPORTED_FILE_FORMATS:
+        if extension[1:] not in SUPPORTED_FILE_FORMATS:
             only_hip_supported_text = "Incorrect source file specified, only .hip files supported."
             raise RuntimeError(only_hip_supported_text)
 
@@ -48,7 +48,7 @@ class HipFileComparator():
                 name = parm.name()
                 val = parm.eval()
                 parms_and_values[name] = val  
-            data_dict[path] = parms_and_values
+            data_dict[path] = {"parms" : parms_and_values}
 
         return data_dict
 
@@ -62,4 +62,19 @@ class HipFileComparator():
         source_file_data = self.get_hip_data(self.source_hip_file)
         target_file_data = self.get_hip_data(self.target_hip_file)
 
-        
+        for path in source_file_data:
+            params = source_file_data[path]
+
+        '''
+        what you need in diff:
+            what was deleted in source 
+                mark with red in source
+                mark with dashed lines empty spots in target
+
+            what was edited in source 
+                mark with yellow in both trees
+            
+            what new nodes have been created in target
+                mark with green in target
+                mark with dashed line in source
+        '''
