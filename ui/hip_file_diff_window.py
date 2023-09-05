@@ -115,8 +115,8 @@ class CustomStandardItemModel(QStandardItemModel):
             item_text, 
             path, 
             data, 
+            icons_zip,
             parent=None,
-            icons_zip=None
         ):
         """Adds an item to the model with a unique identifier."""
         item = QStandardItem(item_text)
@@ -127,19 +127,22 @@ class CustomStandardItemModel(QStandardItemModel):
         # Store the item reference in the dictionary
         self.item_dictionary[path] = item
 
-        if icons_zip:
-            try:
-                icon_path_inside_zip = ICON_MAPPINGS[data["icon"]]
+        icon_path = data["icon"] 
+        if icon_path in ICON_MAPPINGS:
+            icon_path = ICON_MAPPINGS[icon_path]
+        else:
+            icon_path = icon_path.replace("_", "/", 1)
 
-                with icons_zip.open(icon_path_inside_zip) as file:
-                    data = file.read()
-                    pixmap = QPixmap()
-                    pixmap.loadFromData(data)
-                    qicon = QIcon(pixmap)
-                    item.setIcon(qicon)
-            except Exception as e:
-                print(e)
-                pass
+        icon_path_inside_zip = icon_path + ".svg"
+        try:
+            with icons_zip.open(icon_path_inside_zip) as file:
+                data = file.read()
+                pixmap = QPixmap()
+                pixmap.loadFromData(data)
+                qicon = QIcon(pixmap)
+                item.setIcon(qicon)
+        except Exception as e:
+            pass
 
         if parent:
             parent.appendRow(item)
@@ -188,13 +191,37 @@ class HipFileDiffWindow(QMainWindow):
 
             }
             CustomQTreeView {
-                font: 12pt "Arial";
+                font: 10pt "Arial";
                 color: #FFFFFF;
                 background-color: #333333;
                 alternate-background-color: #3a3a3a;
                 border: 1px solid black;
                 border-radius: 5px;
                 padding: 6px;
+            }
+            QTreeView::branch:has-siblings:!adjoins-item {
+                border-image: url("ui/icons/vline.svg") 0;
+                }
+            QTreeView::branch:has-siblings:adjoins-item {
+                border-image: url("ui/icons/more.svg") 0;
+            }
+            QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+                border-image: url("ui/icons/end.svg") 0;
+            }
+            QTreeView::branch:has-children:!has-siblings:closed,
+            QTreeView::branch:closed:has-children:has-siblings {
+                border-image: none;
+                image: url(ui/icons/closed.svg);
+            }
+            QTreeView::branch:open:has-children:!has-siblings,
+            QTreeView::branch:open:has-children:has-siblings {
+                border-image: none;
+                image: url("ui/icons/opened.svg");
+            }
+            QTreeView::branch:!adjoins-item{
+                border-image: none;
+                image: url("ui/icons/empty.svg");
+            }
             }
             QHeaderView::section {
                 font: 12pt "Arial";
@@ -206,7 +233,6 @@ class HipFileDiffWindow(QMainWindow):
             }
         """
         
-
         self.setStyleSheet(main_stylesheet)
 
         # Horizontal layout at the top
@@ -241,6 +267,7 @@ class HipFileDiffWindow(QMainWindow):
         self.source_treeview = CustomQTreeView(self)
         self.source_treeview.header().setDefaultAlignment(Qt.AlignCenter|Qt.AlignVCenter)
         self.source_treeview.setAlternatingRowColors(True)
+        # self.source_treeview.setRootIsDecorated(True)
         self.source_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -272,14 +299,15 @@ class HipFileDiffWindow(QMainWindow):
                 node_name = node_data["name"]
                 parent_path = node_data["parent_path"]
                 parent_item = model.get_item_by_path(parent_path)
+                if node_name == "/":
+                    continue
 
-                # print(node_name, path, parent_path, node_data["icon"])
                 model.add_item_with_path(
                     node_name, 
                     path, 
                     node_data, 
+                    zip_ref,
                     parent=parent_item,
-                    icons_zip=zip_ref
                 )
         
         treeview.setModel(model)
@@ -326,7 +354,6 @@ class HipFileDiffWindow(QMainWindow):
             raise RuntimeError(incorrect_path_text)
         
         _, extension = os.path.splitext(path)
-        print("_, extension", _, extension)
         if extension[1:] not in SUPPORTED_FILE_FORMATS:
             only_hip_supported_text = "Incorrect source file specified, only .hip files supported."
             QMessageBox.critical(self, "Error", only_hip_supported_text)
