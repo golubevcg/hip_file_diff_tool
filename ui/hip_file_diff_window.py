@@ -28,7 +28,6 @@ with open(ICONS_MAPPING_PATH, 'r') as file:
         ICON_MAPPINGS[key] = value.replace("_", "/", 1)
 
 
-
 class CustomQTreeView(QTreeView):
 
     """
@@ -72,7 +71,6 @@ class CustomQTreeView(QTreeView):
 
         for childNo in range(0, childCount):
             childIndex = index.child(childNo, 0)
-            childItem = self.model().itemFromIndex(childIndex)
 
             if not expand:
                 self.setExpanded(index, expand)  
@@ -191,8 +189,8 @@ class HipFileDiffWindow(QMainWindow):
 
             }
             CustomQTreeView {
-                font: 10pt "Arial";
-                color: #FFFFFF;
+                font: 10pt "DS Houdini";
+                color: #dfdfdf;
                 background-color: #333333;
                 alternate-background-color: #3a3a3a;
                 border: 1px solid black;
@@ -210,18 +208,14 @@ class HipFileDiffWindow(QMainWindow):
             }
             QTreeView::branch:has-children:!has-siblings:closed,
             QTreeView::branch:closed:has-children:has-siblings {
-                border-image: none;
-                image: url(ui/icons/closed.svg);
+                border-image: url(ui/icons/closed.svg) 0;
             }
             QTreeView::branch:open:has-children:!has-siblings,
             QTreeView::branch:open:has-children:has-siblings {
-                border-image: none;
-                image: url("ui/icons/opened.svg");
+                border-image: url("ui/icons/opened.svg") 0;
             }
             QTreeView::branch:!adjoins-item{
-                border-image: none;
-                image: url("ui/icons/empty.svg");
-            }
+                border-image: url("ui/icons/empty.svg") 0;
             }
             QHeaderView::section {
                 font: 12pt "Arial";
@@ -312,6 +306,15 @@ class HipFileDiffWindow(QMainWindow):
         
         treeview.setModel(model)
 
+        '''
+        for column in range(model.columnCount()):
+            item = model.item(0, column)
+            if item:
+                color = QColor("#ff0000")
+                color.setAlpha(64)
+                item.setBackground(QBrush(color))
+        '''
+                
     def handle_load_button_click(self):
 
         source_scene_path = self.source_file_line_edit.text().strip('"')
