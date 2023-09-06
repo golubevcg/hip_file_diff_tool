@@ -1,10 +1,58 @@
 import os
 import copy
+import uuid
+
+from collections import OrderedDict
 
 import hou
 
 
 SUPPORTED_FILE_FORMATS = ["hip", "hipnc"]
+
+
+def ordered_dict_insert(d, index, key, value):
+    # Split the dictionary into two parts
+    before = list(d.items())[:index]
+    after = list(d.items())[index:]
+    
+    # Insert the new item between the two parts
+    before.append((key, value))
+    
+    # Create a new OrderedDict from the parts
+    return OrderedDict(before + after)
+
+def get_ordered_dict_key_index(ordered_dict, target_key):
+    return list(ordered_dict.keys()).index(target_key)
+
+
+class NodeData:
+    def __init__(
+            self, 
+            name
+        ):
+        self.name = name
+        self.path = None
+        self.type = ""
+        self.icon = ""
+        self.tag = None
+        self.parent_path = ""
+        self.parms = OrderedDict()
+
+    def add_parm(self, name, parm):
+        self.parms[name] = parm
+
+    def get_parm_by_name(self, name):
+        if name not in self.parms:
+            raise ValueError("this parm not in dict")
+        
+        return self.parms[name]
+
+
+class ParamData():
+    def __init__(self, parm_name, value, tag):
+        self.parm_name = parm_name
+        self.value = value
+        self.is_edited = False
 
 
 class HipFileComparator():
@@ -15,9 +63,9 @@ class HipFileComparator():
         self.source_hip_file = source_hip_file
         self.target_hip_file = target_hip_file
         
-        self.source_data = {}
-        self.target_data = {}
-        self.diff_data = {}
+        self.source_data = OrderedDict()
+        self.target_data = OrderedDict()
+        self.diff_data = OrderedDict()
 
         self.is_compared = False
 
@@ -36,39 +84,40 @@ class HipFileComparator():
             raise ValueError("No source file specified!")
         
         hou.hipFile.clear()
-        hou.hipFile.load(self.source_hip_file)
+        hou.hipFile.load(
+            hip_path, 
+            suppress_save_prompt=True, 
+            ignore_load_warnings=True
+        )
 
         data_dict = {}
 
         for node in hou.node("/").allNodes():
+            if node.isInsideLockedHDA():
+                continue
+
             path = node.path()
-            name = node.name()
-            node_type = node.type()
-            icon = node_type.icon()
             parent_path = None 
             parent = node.parent()
             try:
                 parent_path = parent.path()
             except:
                 pass
+            node_data = NodeData(node.name())
+            node_data.path = node.path() 
+            node_data.type = node.type()
+            node_data.icon = node.type().icon()
+            node_data.parent_path = parent_path
 
-            parms_and_values = {}
             parms = node.parms()
-
             if parms:            
                 for parm in parms:
-                    parm_name = parm.name()
-                    val = parm.eval()
-                    parms_and_values[parm_name] = val  
+                    node_data.add_parm(
+                        parm.name(),
+                        ParamData(parm.name(), parm.eval(), False)
+                    )
 
-            data_dict[path] = {
-                "name" : name,
-                "type" : str(node_type),
-                "icon" : icon,
-                "tag" : None,
-                "parent_path": parent_path,
-                "parms" : parms_and_values
-            }
+            data_dict[path] = node_data
 
         return data_dict
 
@@ -82,46 +131,45 @@ class HipFileComparator():
         self.source_data = self.get_hip_data(self.source_hip_file)
         self.target_data = self.get_hip_data(self.target_hip_file)
 
+        # deleted nodes
+        # and edited params
         for path in self.source_data:
+            source_node_data = self.source_data[path]
             if path not in self.target_data:
-                data = {}
-                data["tag"] = "deleted"
-                self.diff_data[path] = data
+                new_data = NodeData(path)
+                new_data.parent_path = self.source_data[path].parent_path
+                new_data.tag = "deleted"
+                new_data.name = ""
+                new_data.icon = ""
 
-            source_node_parms = self.source_data[path]["parms"]
-            target_node_parms = self.target_data[path]["parms"]
-            for parm in copy.copy(source_node_parms):
-                source_value = source_node_parms[parm]
-                target_value = target_node_parms[parm]
-                if source_value != target_value:
-                    data = {}
-                    data["tag"] = "edited"
-                    self.diff_data[path] = {
-                        "parms":parm,
-                        "tag" : "edited",
-                    }
+                index = get_ordered_dict_key_index(self.source_data, path)
+                self.target_data = ordered_dict_insert(self.target_data, index, path, new_data)
+                source_node_data.tag = "deleted"
+                continue
 
-                    self.target_data[path]["parms"]["tag"] = "edited"
-                    self.source_data[path]["parms"]["tag"] = "edited"
-            
-            
+            for parm_name in copy.copy(source_node_data.parms):
+                source_parm = source_node_data.get_parm_by_name(parm_name)
+                target_parm = self.target_data[path].get_parm_by_name(parm_name)
+                if source_parm.value != target_parm.value:
+                    source_parm.is_edited = True
+                    target_parm.is_edited = True
+
+        # created nodes
         for path in self.target_data:
-            if path not in self.source_data:
-                data = {}
-                data["tag"] = "created"
-                self.diff_data[path] = data
+            if path in self.source_data:
+                continue
+
+            new_data = NodeData(path)
+            new_data.parent_path = self.target_data[path].parent_path
+            new_data.tag = "created"
+            new_data.name = ""
+            new_data.icon = ""
             
+            index = get_ordered_dict_key_index(self.target_data, path)
+            self.source_data = ordered_dict_insert(self.source_data, index, path, new_data)
 
-        for path in self.diff_data:
-            tag = self.diff_data[path]["tag"]
-
-            if tag == "deleted":
-                self.target_data[path] = None
-
-            if tag == "created":
-                self.source_data[path] = None
-
-
+            self.target_data[path].tag = "created"
+                    
         self.is_compared = True
 
         '''

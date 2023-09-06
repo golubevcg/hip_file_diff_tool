@@ -10,6 +10,11 @@ from hutil.Qt.QtWidgets import *
 
 from api.hip_file_comparator import HipFileComparator, SUPPORTED_FILE_FORMATS
 
+TAG_COLOR_MAP = {
+    "deleted" : "red",
+    "edited" : "yellow",
+    "created" : "green",
+}
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 ICONS_ZIP_PATH = os.path.join(current_dir, 'icons')
@@ -106,7 +111,7 @@ class CustomStandardItemModel(QStandardItemModel):
         super(CustomStandardItemModel, self).__init__(*args, **kwargs)
         self.item_dictionary = {}
         self.path_role = Qt.UserRole + 1
-        self.data_role = Qt.UserRole + 1
+        self.data_role = Qt.UserRole + 2
 
     def add_item_with_path(
             self, 
@@ -125,10 +130,10 @@ class CustomStandardItemModel(QStandardItemModel):
         # Store the item reference in the dictionary
         self.item_dictionary[path] = item
 
-        icon_path = data["icon"] 
+        icon_path = data.icon
         if icon_path in ICON_MAPPINGS:
             icon_path = ICON_MAPPINGS[icon_path]
-        else:
+        elif icon_path:
             icon_path = icon_path.replace("_", "/", 1)
 
         icon_path_inside_zip = icon_path + ".svg"
@@ -141,7 +146,7 @@ class CustomStandardItemModel(QStandardItemModel):
                 item.setIcon(qicon)
         except Exception as e:
             pass
-
+        
         if parent:
             parent.appendRow(item)
         else:
@@ -259,17 +264,30 @@ class HipFileDiffWindow(QMainWindow):
         # Splitter for three QTreeViews
 
         self.source_treeview = CustomQTreeView(self)
+        self.source_treeview.setObjectName("source")
         self.source_treeview.header().setDefaultAlignment(Qt.AlignCenter|Qt.AlignVCenter)
         self.source_treeview.setAlternatingRowColors(True)
-        # self.source_treeview.setRootIsDecorated(True)
         self.source_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.source_treeview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+        self.source_model = CustomStandardItemModel()
+        self.source_model.setHorizontalHeaderLabels(["target"])
+        self.source_treeview.setModel(self.source_model)
+
         self.target_treeview = CustomQTreeView(self)
+        self.target_treeview.setObjectName("target")
         self.target_treeview.header().setDefaultAlignment(Qt.AlignCenter|Qt.AlignVCenter)
         self.target_treeview.setAlternatingRowColors(True)
+        self.target_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.target_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.target_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.target_treeview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.target_model = CustomStandardItemModel()
+        self.target_model.setHorizontalHeaderLabels(["target"])
+        self.target_treeview.setModel(self.target_model)
 
         self.treeviews_layout.addWidget(self.source_treeview)
         self.treeviews_layout.addWidget(self.target_treeview)
@@ -283,20 +301,18 @@ class HipFileDiffWindow(QMainWindow):
             treeview, 
             data
     ):
-        model = CustomStandardItemModel()
-        model.setHorizontalHeaderLabels([name])
 
         with zipfile.ZipFile(ICONS_ZIP_PATH, 'r') as zip_ref:
             for path in data:
                 node_data = data[path]
 
-                node_name = node_data["name"]
-                parent_path = node_data["parent_path"]
-                parent_item = model.get_item_by_path(parent_path)
+                node_name = node_data.name
+                parent_path = node_data.parent_path
+                parent_item = treeview.model().get_item_by_path(parent_path)
                 if node_name == "/":
                     continue
 
-                model.add_item_with_path(
+                treeview.model().add_item_with_path(
                     node_name, 
                     path, 
                     node_data, 
@@ -304,16 +320,52 @@ class HipFileDiffWindow(QMainWindow):
                     parent=parent_item,
                 )
         
-        treeview.setModel(model)
+        self.iterate_items(treeview.model().invisibleRootItem(), treeview)
+        '''
+        for row in range(model.rowCount()):
+            item = model.item(row, 0)
+            item_data = item.data(Qt.UserRole + 2)
+            print("item_data:", item_data)
+            # if item:
+            #     color = QColor("#ff0000")
+            #     color.setAlpha(64)
+            #     item.setBackground(QBrush(color))
+        '''
 
-        '''
-        for column in range(model.columnCount()):
-            item = model.item(0, column)
-            if item:
-                color = QColor("#ff0000")
-                color.setAlpha(64)
-                item.setBackground(QBrush(color))
-        '''
+    def iterate_items(self, parent_item, treeview):
+        """Recursive function to iterate over all items in a QStandardItemModel."""
+        for row in range(parent_item.rowCount()):
+            for column in range(parent_item.columnCount()):
+                item = parent_item.child(row, 0)
+                item_data = item.data(Qt.UserRole + 2)
+                tag = item_data.tag
+                
+                print("treeview.objectName:", treeview.objectName())
+                if tag == "created" and treeview.objectName() == "source":
+                    self.fill_item_with_hatched_pattern(item)
+                    index = treeview.model().indexFromItem(item)
+                    while index.isValid():
+                        treeview.expand(index)
+                        index = index.parent()
+                elif tag == "deleted" and treeview.objectName() == "target":
+                    self.fill_item_with_hatched_pattern(item)
+                    index = treeview.model().indexFromItem(item)
+                    while index.isValid():
+                        treeview.expand(index)
+                        index = index.parent()
+
+                elif tag:
+                    color = TAG_COLOR_MAP[tag]
+                    qcolor = QColor(color)
+                    qcolor.setAlpha(64)
+                    item.setBackground(QBrush(qcolor))
+                    index = treeview.model().indexFromItem(item)
+                    while index.isValid():
+                        treeview.expand(index)
+                        index = index.parent()
+
+                if item:
+                    self.iterate_items(item, treeview)
                 
     def handle_load_button_click(self):
 
@@ -322,6 +374,9 @@ class HipFileDiffWindow(QMainWindow):
         
         target_scene_path = self.target_file_line_edit.text().strip('"')
         self.check_file_path(target_scene_path)
+
+        print("source_scene_path", source_scene_path)
+        print("target_scene_path", target_scene_path)
 
         self.hip_comparator = HipFileComparator(
             source_scene_path, 
@@ -344,11 +399,39 @@ class HipFileDiffWindow(QMainWindow):
             self.hip_comparator.source_data
         )
 
+        print("")
+        print("=="*10)
+        print("")
+
         self.populate_tree_with_data(
             "target",
             self.target_treeview, 
             self.hip_comparator.target_data
         )
+
+    def fill_item_with_hatched_pattern(self, item):
+        # Create a QPixmap for hatching pattern
+        hatch_size = 500  # Adjust for desired frequency
+        pixmap = QPixmap(hatch_size, 100)
+        pixmap.fill(Qt.transparent)  # or any background color
+
+        # Create a brush for the hatching pattern
+        pen_color = QColor("#505050")  # Change for desired line color
+        pen_width = 3  # Change for desired line thickness
+        pen = QPen(pen_color, pen_width)
+        pen.setCapStyle(Qt.FlatCap)
+
+        painter = QPainter(pixmap)
+        painter.setPen(pen)
+
+        # Adjusted loop and coordinates for the hatching pattern
+        for i in range(-hatch_size, hatch_size, pen_width * 6):  
+            painter.drawLine(i, hatch_size, hatch_size+i, 0)
+
+        painter.end()
+
+        hatch_brush = QBrush(pixmap)
+        item.setBackground(hatch_brush)
 
     def check_file_path(self, path):
         if not os.path.exists(path):
