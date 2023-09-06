@@ -161,7 +161,8 @@ class CustomStandardItemModel(QStandardItemModel):
             parm = data.get_parm_by_name(parm_name)
             if parm.tag == "edited":
                 value = parm.value
-                parm_item = QStandardItem(parm.name + "({0})".format(value))
+                # parm_item = QStandardItem(parm.name + "({0})".format(value))
+                parm_item = QStandardItem(parm.name)
                 parm_item.setData(parm, self.data_role)
                 parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
                 try:
@@ -293,28 +294,25 @@ class HipFileDiffWindow(QMainWindow):
 
         self.source_treeview = CustomQTreeView(self)
         self.source_treeview.setObjectName("source")
-        self.source_treeview.header().setDefaultAlignment(Qt.AlignCenter|Qt.AlignVCenter)
-        # self.source_treeview.setAlternatingRowColors(True)
+        self.source_treeview.header().hide()
         self.source_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.source_treeview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.source_model = CustomStandardItemModel()
-        self.source_model.setHorizontalHeaderLabels(["target"])
         self.source_treeview.setModel(self.source_model)
 
         self.target_treeview = CustomQTreeView(self)
         self.target_treeview.setObjectName("target")
-        self.target_treeview.header().setDefaultAlignment(Qt.AlignCenter|Qt.AlignVCenter)
-        # self.target_treeview.setAlternatingRowColors(True)
+        self.target_treeview.header().hide()
         self.target_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.target_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.target_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.target_treeview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.target_model = CustomStandardItemModel()
-        self.target_model.setHorizontalHeaderLabels(["target"])
+        # self.target_model.setHorizontalHeaderLabels(["target"])
         self.target_treeview.setModel(self.target_model)
 
         self.treeviews_layout.addWidget(self.source_treeview)
@@ -346,7 +344,7 @@ class HipFileDiffWindow(QMainWindow):
                 parent_path = node_data.parent_path
                 parent_item = treeview.model().get_item_by_path(parent_path)
                 if node_name == "/":
-                    continue
+                    node_name = treeview.objectName()
 
                 treeview.model().add_item_with_path(
                     node_name, 
@@ -377,7 +375,7 @@ class HipFileDiffWindow(QMainWindow):
                 elif tag == "edited" and treeview.objectName() == "source":
                     color = TAG_COLOR_MAP["deleted"]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(64)
+                    qcolor.setAlpha(32)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
@@ -386,7 +384,7 @@ class HipFileDiffWindow(QMainWindow):
                 elif tag == "edited" and treeview.objectName() == "target":
                     color = TAG_COLOR_MAP["created"]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(64)
+                    qcolor.setAlpha(32)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
