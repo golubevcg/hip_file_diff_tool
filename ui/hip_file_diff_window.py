@@ -11,10 +11,12 @@ from hutil.Qt.QtWidgets import *
 from api.hip_file_comparator import HipFileComparator, SUPPORTED_FILE_FORMATS
 
 TAG_COLOR_MAP = {
-    "deleted" : "red",
-    "edited" : "yellow",
-    "created" : "green",
+    "deleted" : "#b50400",
+    "edited" : "#ffea00",
+    "created" : "#6ba100",
 }
+
+syncing = False
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 ICONS_ZIP_PATH = os.path.join(current_dir, 'icons')
@@ -31,6 +33,11 @@ with open(ICONS_MAPPING_PATH, 'r') as file:
         key = key.strip()
         value = value.strip().rstrip(";")
         ICON_MAPPINGS[key] = value.replace("_", "/", 1)
+
+
+
+# Flag to prevent circular sync events
+syncing = False
 
 
 class CustomQTreeView(QTreeView):
@@ -105,7 +112,6 @@ class CustomQTreeView(QTreeView):
         return items_list
 
 
-
 class CustomStandardItemModel(QStandardItemModel):
     def __init__(self, *args, **kwargs):
         super(CustomStandardItemModel, self).__init__(*args, **kwargs)
@@ -126,10 +132,7 @@ class CustomStandardItemModel(QStandardItemModel):
         item.setData(path, self.path_role)
         item.setData(data, self.data_role)
         item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-        # item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
 
-
-        # Store the item reference in the dictionary
         self.item_dictionary[path] = item
 
         icon_path = data.icon
@@ -141,9 +144,9 @@ class CustomStandardItemModel(QStandardItemModel):
         icon_path_inside_zip = icon_path + ".svg"
         try:
             with icons_zip.open(icon_path_inside_zip) as file:
-                data = file.read()
+                icon_data = file.read()
                 pixmap = QPixmap()
-                pixmap.loadFromData(data)
+                pixmap.loadFromData(icon_data)
                 qicon = QIcon(pixmap)
                 item.setIcon(qicon)
         except Exception as e:
@@ -153,6 +156,27 @@ class CustomStandardItemModel(QStandardItemModel):
             parent.appendRow(item)
         else:
             self.appendRow(item)
+
+        for parm_name in data.parms:
+            parm = data.get_parm_by_name(parm_name)
+            if parm.tag == "edited":
+                value = parm.value
+                parm_item = QStandardItem(parm.name + "({0})".format(value))
+                parm_item.setData(parm, self.data_role)
+                parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
+                try:
+                    with icons_zip.open("VOP/parameter.svg") as file:
+                        parm_icon_data = file.read()
+                        pixmap = QPixmap()
+                        pixmap.loadFromData(parm_icon_data)
+                        qicon = QIcon(pixmap)
+                        parm_item.setIcon(qicon)
+                except Exception as e:
+                    pass
+
+                item.appendRow(parm_item)
+
+
 
     def get_item_by_path(self, path):
         """Retrieve an item based on its unique identifier."""
@@ -270,7 +294,7 @@ class HipFileDiffWindow(QMainWindow):
         self.source_treeview = CustomQTreeView(self)
         self.source_treeview.setObjectName("source")
         self.source_treeview.header().setDefaultAlignment(Qt.AlignCenter|Qt.AlignVCenter)
-        self.source_treeview.setAlternatingRowColors(True)
+        # self.source_treeview.setAlternatingRowColors(True)
         self.source_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.source_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -283,7 +307,7 @@ class HipFileDiffWindow(QMainWindow):
         self.target_treeview = CustomQTreeView(self)
         self.target_treeview.setObjectName("target")
         self.target_treeview.header().setDefaultAlignment(Qt.AlignCenter|Qt.AlignVCenter)
-        self.target_treeview.setAlternatingRowColors(True)
+        # self.target_treeview.setAlternatingRowColors(True)
         self.target_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.target_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.target_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -295,6 +319,14 @@ class HipFileDiffWindow(QMainWindow):
 
         self.treeviews_layout.addWidget(self.source_treeview)
         self.treeviews_layout.addWidget(self.target_treeview)
+
+        # self.target_treeview.expanded.connect(sync_expansion)
+        # self.target_treeview.collapsed.connect(sync_collapse)
+        # self.source_treeview.expanded.connect(sync_expansion)
+        # self.source_treeview.collapsed.connect(sync_collapse)
+
+        self.target_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
+        self.source_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
 
         self.hip_comparator = None
         self.load_button.click()
@@ -335,24 +367,42 @@ class HipFileDiffWindow(QMainWindow):
                 item_data = item.data(Qt.UserRole + 2)
                 tag = item_data.tag
                 
-                print("treeview.objectName:", treeview.objectName())
                 if tag == "created" and treeview.objectName() == "source":
                     self.fill_item_with_hatched_pattern(item)
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
                         treeview.expand(index)
                         index = index.parent()
+                        
+                elif tag == "edited" and treeview.objectName() == "source":
+                    color = TAG_COLOR_MAP["deleted"]
+                    qcolor = QColor(color)
+                    qcolor.setAlpha(64)
+                    item.setBackground(QBrush(qcolor))
+                    index = treeview.model().indexFromItem(item)
+                    while index.isValid():
+                        treeview.expand(index)
+                        index = index.parent()
+                elif tag == "edited" and treeview.objectName() == "target":
+                    color = TAG_COLOR_MAP["created"]
+                    qcolor = QColor(color)
+                    qcolor.setAlpha(64)
+                    item.setBackground(QBrush(qcolor))
+                    index = treeview.model().indexFromItem(item)
+                    while index.isValid():
+                        treeview.expand(index)
+                        index = index.parent()
+
                 elif tag == "deleted" and treeview.objectName() == "target":
                     self.fill_item_with_hatched_pattern(item)
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
                         treeview.expand(index)
                         index = index.parent()
-
                 elif tag:
                     color = TAG_COLOR_MAP[tag]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(64)
+                    qcolor.setAlpha(128)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
@@ -369,9 +419,6 @@ class HipFileDiffWindow(QMainWindow):
         
         target_scene_path = self.target_file_line_edit.text().strip('"')
         self.check_file_path(target_scene_path)
-
-        print("source_scene_path", source_scene_path)
-        print("target_scene_path", target_scene_path)
 
         self.hip_comparator = HipFileComparator(
             source_scene_path, 
@@ -393,10 +440,6 @@ class HipFileDiffWindow(QMainWindow):
             self.source_treeview, 
             self.hip_comparator.source_data
         )
-
-        print("")
-        print("=="*10)
-        print("")
 
         self.populate_tree_with_data(
             "target",
@@ -441,3 +484,42 @@ class HipFileDiffWindow(QMainWindow):
             raise RuntimeError(only_hip_supported_text)
 
 
+        # def sync_expansion(index):
+    #     global syncing
+    #     if syncing:
+    #         return
+    #     syncing = True
+        
+    #     item = treeView1.model().itemFromIndex(index)
+    #     if treeView1.sender() == treeView1:
+    #         other_view = treeView2
+    #     else:
+    #         other_view = treeView1
+            
+    #     index_in_other_tree = treeView2.model().indexFromItem(item)
+    #     other_view.expand(index_in_other_tree)
+        
+    #     syncing = False
+
+    # def sync_collapse(index):
+    #     global syncing
+    #     if syncing:
+    #         return
+    #     syncing = True
+        
+    #     item = treeView1.model().itemFromIndex(index)
+    #     if treeView1.sender() == treeView1:
+    #         other_view = treeView2
+    #     else:
+    #         other_view = treeView1
+            
+    #     index_in_other_tree = treeView2.model().indexFromItem(item)
+    #     other_view.collapse(index_in_other_tree)
+        
+    #     syncing = False
+
+    def sync_scroll(self, value):
+        if self.target_treeview.verticalScrollBar().value() != value:
+            self.target_treeview.verticalScrollBar().setValue(value)
+        else:
+            self.source_treeview.verticalScrollBar().setValue(value)

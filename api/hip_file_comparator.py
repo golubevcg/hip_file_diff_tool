@@ -49,10 +49,10 @@ class NodeData:
 
 
 class ParamData():
-    def __init__(self, parm_name, value, tag):
-        self.parm_name = parm_name
+    def __init__(self, name, value, tag):
+        self.name = name
         self.value = value
-        self.is_edited = False
+        self.tag = None
 
 
 class HipFileComparator():
@@ -151,8 +151,9 @@ class HipFileComparator():
                 source_parm = source_node_data.get_parm_by_name(parm_name)
                 target_parm = self.target_data[path].get_parm_by_name(parm_name)
                 if source_parm.value != target_parm.value:
-                    source_parm.is_edited = True
-                    target_parm.is_edited = True
+                    print("PARM IS EDITED", source_parm.name)
+                    source_parm.tag = "edited"
+                    target_parm.tag = "edited"
 
         # created nodes
         for path in self.target_data:
