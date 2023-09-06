@@ -2,6 +2,7 @@ import sys
 import os
 import random
 import zipfile
+import copy
 
 import hou
 from hutil.Qt.QtGui import *
@@ -177,6 +178,14 @@ class CustomStandardItemModel(QStandardItemModel):
 
                 item.appendRow(parm_item)
 
+                value = parm.value
+                value_item = QStandardItem(str(value))
+                value_item.setData(parm, self.data_role)
+                value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
+                value_data = copy.copy(parm)
+                value_data.tag = None
+                value_item.setData(value_data, self.data_role)
+                parm_item.appendRow(value_item)
 
 
     def get_item_by_path(self, path):
@@ -198,16 +207,17 @@ class HipFileDiffWindow(QMainWindow):
 
         # Main vertical layout
         self.main_layout = QVBoxLayout(self.main_widget)
+        self.main_layout.setContentsMargins(0,0,0,0)
 
         main_stylesheet = """
             QMainWindow{
-                background-color: #333;
+                background-color: #333333;
             }
             QLineEdit {
                 font: 12pt "Arial";
                 color: #FFFFFF;
-                background-color: #333333;
-                border: 1px solid black;
+                background-color: #272727;
+                border: none;
                 border-radius: 5px;
                 padding: 6px;
             }
@@ -225,7 +235,7 @@ class HipFileDiffWindow(QMainWindow):
                 color: #dfdfdf;
                 background-color: #333333;
                 alternate-background-color: #3a3a3a;
-                border: 1px solid black;
+                border: none;
                 border-radius: 5px;
                 padding: 6px;
             }
@@ -256,41 +266,23 @@ class HipFileDiffWindow(QMainWindow):
                 border: 1px solid rgb(185, 134, 32);
                 background: rgb(96, 81, 50);
             }
-            QHeaderView::section {
-                font: 12pt "Arial";
-                background-color: #333333;
-                color: white;
-                border: none;
-                border-bottom: 1px solid black;
-                padding: 4px;
+            QSplitter::handle {
+                background-color: #white;
+            }
+            QSplitter::handle:vertical {
+                height: 10px;
             }
         """
         
         self.setStyleSheet(main_stylesheet)
+
+
 
         # Horizontal layout at the top
         self.source_file_line_edit = QLineEdit(self)
         self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source.hipnc")
         self.source_file_line_edit.setMinimumWidth(100)
         self.source_file_line_edit.setPlaceholderText("source_file_line_edit")
-
-        self.target_file_line_edit = QLineEdit(self)        
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source_edited.hipnc")
-        self.target_file_line_edit.setMinimumWidth(100)
-        self.target_file_line_edit.setPlaceholderText("target_file_line_edit")
-        
-        self.load_button = QPushButton("Compare", self)
-        self.load_button.clicked.connect(self.handle_load_button_click)
-        self.load_button.setMinimumWidth(100)
-
-        self.top_hlayout = QHBoxLayout()
-        self.top_hlayout.addWidget(self.source_file_line_edit)
-        self.top_hlayout.addWidget(self.target_file_line_edit)
-        self.top_hlayout.addWidget(self.load_button)
-        self.main_layout.addLayout(self.top_hlayout)
-
-        self.treeviews_layout = QHBoxLayout()
-        self.main_layout.addLayout(self.treeviews_layout)
 
         self.source_treeview = CustomQTreeView(self)
         self.source_treeview.setObjectName("source")
@@ -303,6 +295,26 @@ class HipFileDiffWindow(QMainWindow):
         self.source_model = CustomStandardItemModel()
         self.source_treeview.setModel(self.source_model)
 
+        self.source_widget = QWidget()
+        self.source_layout = QVBoxLayout(self.source_widget)
+        self.source_layout.addWidget(self.source_file_line_edit)
+        self.source_layout.addWidget(self.source_treeview)
+        self.source_layout.setContentsMargins(5,5,5,5)
+
+
+        self.target_file_line_edit = QLineEdit(self)        
+        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source_edited.hipnc")
+        self.target_file_line_edit.setMinimumWidth(100)
+        self.target_file_line_edit.setPlaceholderText("target_file_line_edit")
+        
+        self.load_button = QPushButton("Compare", self)
+        self.load_button.clicked.connect(self.handle_load_button_click)
+        self.load_button.setMinimumWidth(100)
+
+        self.target_top_hlayout = QHBoxLayout()
+        self.target_top_hlayout.addWidget(self.target_file_line_edit)
+        self.target_top_hlayout.addWidget(self.load_button)
+
         self.target_treeview = CustomQTreeView(self)
         self.target_treeview.setObjectName("target")
         self.target_treeview.header().hide()
@@ -312,11 +324,21 @@ class HipFileDiffWindow(QMainWindow):
         self.target_treeview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.target_model = CustomStandardItemModel()
-        # self.target_model.setHorizontalHeaderLabels(["target"])
         self.target_treeview.setModel(self.target_model)
 
-        self.treeviews_layout.addWidget(self.source_treeview)
-        self.treeviews_layout.addWidget(self.target_treeview)
+        self.target_widget = QWidget()
+        self.target_layout = QVBoxLayout(self.target_widget)
+        self.target_layout.addLayout(self.target_top_hlayout)
+        self.target_layout.addWidget(self.target_treeview)
+        self.target_layout.setContentsMargins(5,5,5,5)
+
+
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.addWidget(self.source_widget)
+        splitter.addWidget(self.target_widget)
+
+        self.main_layout.addWidget(splitter)
+
 
         # self.target_treeview.expanded.connect(sync_expansion)
         # self.target_treeview.collapsed.connect(sync_collapse)
@@ -375,7 +397,7 @@ class HipFileDiffWindow(QMainWindow):
                 elif tag == "edited" and treeview.objectName() == "source":
                     color = TAG_COLOR_MAP["deleted"]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(32)
+                    qcolor.setAlpha(20)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
@@ -384,7 +406,7 @@ class HipFileDiffWindow(QMainWindow):
                 elif tag == "edited" and treeview.objectName() == "target":
                     color = TAG_COLOR_MAP["created"]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(32)
+                    qcolor.setAlpha(20)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
