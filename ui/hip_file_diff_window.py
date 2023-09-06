@@ -126,6 +126,8 @@ class CustomStandardItemModel(QStandardItemModel):
         item.setData(path, self.path_role)
         item.setData(data, self.data_role)
         item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+        # item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+
 
         # Store the item reference in the dictionary
         self.item_dictionary[path] = item
@@ -222,6 +224,13 @@ class HipFileDiffWindow(QMainWindow):
             QTreeView::branch:!adjoins-item{
                 border-image: url("ui/icons/empty.svg") 0;
             }
+            QTreeView::item:hover {
+                background: rgb(71, 71, 71);
+            }
+            QTreeView::item:selected {
+                border: 1px solid rgb(185, 134, 32);
+                background: rgb(96, 81, 50);
+            }
             QHeaderView::section {
                 font: 12pt "Arial";
                 background-color: #333333;
@@ -255,13 +264,8 @@ class HipFileDiffWindow(QMainWindow):
         self.top_hlayout.addWidget(self.load_button)
         self.main_layout.addLayout(self.top_hlayout)
 
-        # splitter = QSplitter(Qt.Horizontal, self)
-        # self.main_layout.addWidget(splitter)
-
         self.treeviews_layout = QHBoxLayout()
         self.main_layout.addLayout(self.treeviews_layout)
-
-        # Splitter for three QTreeViews
 
         self.source_treeview = CustomQTreeView(self)
         self.source_treeview.setObjectName("source")
@@ -321,16 +325,7 @@ class HipFileDiffWindow(QMainWindow):
                 )
         
         self.iterate_items(treeview.model().invisibleRootItem(), treeview)
-        '''
-        for row in range(model.rowCount()):
-            item = model.item(row, 0)
-            item_data = item.data(Qt.UserRole + 2)
-            print("item_data:", item_data)
-            # if item:
-            #     color = QColor("#ff0000")
-            #     color.setAlpha(64)
-            #     item.setBackground(QBrush(color))
-        '''
+
 
     def iterate_items(self, parent_item, treeview):
         """Recursive function to iterate over all items in a QStandardItemModel."""
