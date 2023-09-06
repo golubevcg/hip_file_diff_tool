@@ -11,15 +11,13 @@ SUPPORTED_FILE_FORMATS = ["hip", "hipnc"]
 
 
 def ordered_dict_insert(d, index, key, value):
-    # Split the dictionary into two parts
     before = list(d.items())[:index]
     after = list(d.items())[index:]
     
-    # Insert the new item between the two parts
     before.append((key, value))
     
-    # Create a new OrderedDict from the parts
     return OrderedDict(before + after)
+
 
 def get_ordered_dict_key_index(ordered_dict, target_key):
     return list(ordered_dict.keys()).index(target_key)
@@ -150,7 +148,7 @@ class HipFileComparator():
             for parm_name in copy.copy(source_node_data.parms):
                 source_parm = source_node_data.get_parm_by_name(parm_name)
                 target_parm = self.target_data[path].get_parm_by_name(parm_name)
-                if source_parm.value != target_parm.value:
+                if str(source_parm.value) != str(target_parm.value):
                     print("PARM IS EDITED", source_parm.name)
                     source_parm.tag = "edited"
                     target_parm.tag = "edited"
@@ -172,17 +170,3 @@ class HipFileComparator():
             self.target_data[path].tag = "created"
                     
         self.is_compared = True
-
-        '''
-        what you need in diff:
-            what was deleted in source 
-                mark with red in source
-                mark with dashed lines empty spots in target
-
-            what was edited in source 
-                mark with yellow in both trees
-            
-            what new nodes have been created in target
-                mark with green in target
-                mark with dashed line in source
-        '''

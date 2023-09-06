@@ -160,32 +160,33 @@ class CustomStandardItemModel(QStandardItemModel):
 
         for parm_name in data.parms:
             parm = data.get_parm_by_name(parm_name)
-            if parm.tag == "edited":
-                value = parm.value
-                # parm_item = QStandardItem(parm.name + "({0})".format(value))
-                parm_item = QStandardItem(parm.name)
-                parm_item.setData(parm, self.data_role)
-                parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
-                try:
-                    with icons_zip.open("VOP/parameter.svg") as file:
-                        parm_icon_data = file.read()
-                        pixmap = QPixmap()
-                        pixmap.loadFromData(parm_icon_data)
-                        qicon = QIcon(pixmap)
-                        parm_item.setIcon(qicon)
-                except Exception as e:
-                    pass
+            if parm.tag != "edited":
+                continue
 
-                item.appendRow(parm_item)
+            value = parm.value
+            parm_item = QStandardItem(parm.name)
+            parm_item.setData(parm, self.data_role)
+            parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
+            try:
+                with icons_zip.open("VOP/parameter.svg") as file:
+                    parm_icon_data = file.read()
+                    pixmap = QPixmap()
+                    pixmap.loadFromData(parm_icon_data)
+                    qicon = QIcon(pixmap)
+                    parm_item.setIcon(qicon)
+            except Exception as e:
+                pass
 
-                value = parm.value
-                value_item = QStandardItem(str(value))
-                value_item.setData(parm, self.data_role)
-                value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
-                value_data = copy.copy(parm)
-                value_data.tag = None
-                value_item.setData(value_data, self.data_role)
-                parm_item.appendRow(value_item)
+            item.appendRow(parm_item)
+
+            value = parm.value
+            value_item = QStandardItem(str(value))
+            value_item.setData(parm, self.data_role)
+            value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
+            value_data = copy.copy(parm)
+            value_data.tag = 'value'
+            value_item.setData(value_data, self.data_role)
+            parm_item.appendRow(value_item)
 
 
     def get_item_by_path(self, path):
@@ -199,7 +200,7 @@ class HipFileDiffWindow(QMainWindow):
         
         # Set window properties
         self.setWindowTitle('.hip files diff tool')
-        self.setGeometry(300, 300, 1000, 800)
+        self.setGeometry(300, 300, 2000, 1300)
 
         # Main widget to set as central widget
         self.main_widget = QWidget(self)
@@ -275,8 +276,6 @@ class HipFileDiffWindow(QMainWindow):
         """
         
         self.setStyleSheet(main_stylesheet)
-
-
 
         # Horizontal layout at the top
         self.source_file_line_edit = QLineEdit(self)
@@ -394,24 +393,26 @@ class HipFileDiffWindow(QMainWindow):
                         treeview.expand(index)
                         index = index.parent()
                         
-                elif tag == "edited" and treeview.objectName() == "source":
+                elif tag in ["edited", "value"] and treeview.objectName() == "source":
                     color = TAG_COLOR_MAP["deleted"]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(20)
+                    qcolor.setAlpha(40)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
-                    while index.isValid():
-                        treeview.expand(index)
-                        index = index.parent()
-                elif tag == "edited" and treeview.objectName() == "target":
+                    if tag != "value":
+                        while index.isValid():
+                            treeview.expand(index)
+                            index = index.parent()
+                elif tag in ["edited", "value"] and treeview.objectName() == "target":
                     color = TAG_COLOR_MAP["created"]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(20)
+                    qcolor.setAlpha(40)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
-                    while index.isValid():
-                        treeview.expand(index)
-                        index = index.parent()
+                    if tag != "value":
+                        while index.isValid():
+                            treeview.expand(index)
+                            index = index.parent()
 
                 elif tag == "deleted" and treeview.objectName() == "target":
                     self.fill_item_with_hatched_pattern(item)
@@ -422,7 +423,7 @@ class HipFileDiffWindow(QMainWindow):
                 elif tag:
                     color = TAG_COLOR_MAP[tag]
                     qcolor = QColor(color)
-                    qcolor.setAlpha(128)
+                    qcolor.setAlpha(150)
                     item.setBackground(QBrush(qcolor))
                     index = treeview.model().indexFromItem(item)
                     while index.isValid():
