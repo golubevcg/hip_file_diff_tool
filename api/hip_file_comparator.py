@@ -6,6 +6,9 @@ from collections import OrderedDict
 
 import hou
 
+from api.node_data import NodeData
+from api.param_data import ParamData
+
 
 SUPPORTED_FILE_FORMATS = ["hip", "hipnc"]
 
@@ -21,36 +24,6 @@ def ordered_dict_insert(d, index, key, value):
 
 def get_ordered_dict_key_index(ordered_dict, target_key):
     return list(ordered_dict.keys()).index(target_key)
-
-
-class NodeData:
-    def __init__(
-            self, 
-            name
-        ):
-        self.name = name
-        self.path = None
-        self.type = ""
-        self.icon = ""
-        self.tag = None
-        self.parent_path = ""
-        self.parms = OrderedDict()
-
-    def add_parm(self, name, parm):
-        self.parms[name] = parm
-
-    def get_parm_by_name(self, name):
-        if name not in self.parms:
-            raise ValueError("this parm not in dict")
-        
-        return self.parms[name]
-
-
-class ParamData():
-    def __init__(self, name, value, tag):
-        self.name = name
-        self.value = value
-        self.tag = None
 
 
 class HipFileComparator():

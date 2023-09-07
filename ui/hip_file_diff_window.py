@@ -1,10 +1,7 @@
-import sys
 import os
-import random
 import zipfile
 import copy
 
-import hou
 from hutil.Qt.QtGui import *
 from hutil.Qt.QtCore import *
 from hutil.Qt.QtWidgets import *
@@ -208,37 +205,25 @@ class HipFileDiffWindow(QMainWindow):
 
         # Main vertical layout
         self.main_layout = QVBoxLayout(self.main_widget)
-        self.main_layout.setContentsMargins(0,0,0,0)
+        self.main_layout.setContentsMargins(5,5,5,5)
 
         main_stylesheet = """
             QMainWindow{
-                background-color: #333333;
-            }
-            QLineEdit {
-                font: 12pt "Arial";
-                color: #FFFFFF;
-                background-color: #272727;
-                border: none;
-                border-radius: 5px;
-                padding: 6px;
+                background-color: #3c3c3c;
             }
             QPushButton {
-                font: 12pt "Arial";
-                color: #FFFFFF;
-                background-color: #555555;
-                border: 1px solid black;
+                font: 10pt "Arial";
+                color: white;
+                background-color: #464646;
                 border-radius: 10px;
-                padding: 6px;
-
+                margins: 2px
             }
             CustomQTreeView {
                 font: 10pt "DS Houdini";
                 color: #dfdfdf;
                 background-color: #333333;
                 alternate-background-color: #3a3a3a;
-                border: none;
-                border-radius: 5px;
-                padding: 6px;
+                border-radius: 10px;
             }
             QTreeView::branch:has-siblings:!adjoins-item {
                 border-image: url("ui/icons/vline.svg") 0;
@@ -268,10 +253,10 @@ class HipFileDiffWindow(QMainWindow):
                 background: rgb(96, 81, 50);
             }
             QSplitter::handle {
-                background-color: #white;
+                background-color: #3c3c3c;
             }
             QSplitter::handle:vertical {
-                height: 10px;
+                height: 5px;
             }
         """
         
@@ -281,7 +266,26 @@ class HipFileDiffWindow(QMainWindow):
         self.source_file_line_edit = QLineEdit(self)
         self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source.hipnc")
         self.source_file_line_edit.setMinimumWidth(100)
+        self.source_file_line_edit.setFixedHeight(30)
         self.source_file_line_edit.setPlaceholderText("source_file_line_edit")
+        self.source_file_line_edit.setStyleSheet('''
+            font: 10pt "Arial";
+            color: #818181;
+            background-color: #464646;
+            border-radius: 10px;
+        ''')
+
+        self.target_file_line_edit = QLineEdit(self)        
+        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source_edited.hipnc")
+        self.target_file_line_edit.setMinimumWidth(100)
+        self.target_file_line_edit.setFixedHeight(30)
+        self.target_file_line_edit.setPlaceholderText("target_file_line_edit")
+        self.target_file_line_edit.setStyleSheet('''
+            font: 10pt "Arial";
+            color: #818181;
+            background-color: #464646;
+            border-radius: 10px;
+        ''')
 
         self.source_treeview = CustomQTreeView(self)
         self.source_treeview.setObjectName("source")
@@ -299,15 +303,10 @@ class HipFileDiffWindow(QMainWindow):
         self.source_layout.addWidget(self.source_file_line_edit)
         self.source_layout.addWidget(self.source_treeview)
         self.source_layout.setContentsMargins(5,5,5,5)
-
-
-        self.target_file_line_edit = QLineEdit(self)        
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source_edited.hipnc")
-        self.target_file_line_edit.setMinimumWidth(100)
-        self.target_file_line_edit.setPlaceholderText("target_file_line_edit")
-        
+     
         self.load_button = QPushButton("Compare", self)
         self.load_button.clicked.connect(self.handle_load_button_click)
+        self.load_button.setFixedHeight(30)
         self.load_button.setMinimumWidth(100)
 
         self.target_top_hlayout = QHBoxLayout()
@@ -331,13 +330,12 @@ class HipFileDiffWindow(QMainWindow):
         self.target_layout.addWidget(self.target_treeview)
         self.target_layout.setContentsMargins(5,5,5,5)
 
-
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.source_widget)
         splitter.addWidget(self.target_widget)
+        splitter.setSizes([self.width() // 2, self.width() // 2])
 
         self.main_layout.addWidget(splitter)
-
 
         # self.target_treeview.expanded.connect(sync_expansion)
         # self.target_treeview.collapsed.connect(sync_collapse)
@@ -376,7 +374,6 @@ class HipFileDiffWindow(QMainWindow):
                 )
         
         self.iterate_items(treeview.model().invisibleRootItem(), treeview)
-
 
     def iterate_items(self, parent_item, treeview):
         """Recursive function to iterate over all items in a QStandardItemModel."""
@@ -470,8 +467,8 @@ class HipFileDiffWindow(QMainWindow):
 
     def fill_item_with_hatched_pattern(self, item):
         # Create a QPixmap for hatching pattern
-        hatch_size = 500  # Adjust for desired frequency
-        pixmap = QPixmap(hatch_size, 100)
+        hatch_width = 1000  # Adjust for desired frequency
+        pixmap = QPixmap(hatch_width, 100)
         pixmap.fill(Qt.transparent)  # or any background color
 
         # Create a brush for the hatching pattern
@@ -484,8 +481,8 @@ class HipFileDiffWindow(QMainWindow):
         painter.setPen(pen)
 
         # Adjusted loop and coordinates for the hatching pattern
-        for i in range(-hatch_size, hatch_size, pen_width * 6):  
-            painter.drawLine(i, hatch_size, hatch_size+i, 0)
+        for i in range(-hatch_width, hatch_width, pen_width * 6):  
+            painter.drawLine(i, hatch_width, hatch_width+i, 0)
 
         painter.end()
 
