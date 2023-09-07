@@ -157,12 +157,16 @@ class CustomStandardItemModel(QStandardItemModel):
 
         for parm_name in data.parms:
             parm = data.get_parm_by_name(parm_name)
+            parm_path = path + "/{0}".format(parm_name)
             if parm.tag != "edited":
                 continue
 
             value = parm.value
             parm_item = QStandardItem(parm.name)
             parm_item.setData(parm, self.data_role)
+            parm_item.setData(parm_path, self.path_role)
+            self.item_dictionary[parm_path] = parm_item
+
             parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
             try:
                 with icons_zip.open("VOP/parameter.svg") as file:
@@ -177,14 +181,16 @@ class CustomStandardItemModel(QStandardItemModel):
             item.appendRow(parm_item)
 
             value = parm.value
+            value_path = parm_path + "/value"
             value_item = QStandardItem(str(value))
-            value_item.setData(parm, self.data_role)
             value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
             value_data = copy.copy(parm)
             value_data.tag = 'value'
             value_item.setData(value_data, self.data_role)
-            parm_item.appendRow(value_item)
+            value_item.setData(value_path, self.path_role)
+            self.item_dictionary[value_path] = value_item
 
+            parm_item.appendRow(value_item)
 
     def get_item_by_path(self, path):
         """Retrieve an item based on its unique identifier."""
@@ -267,6 +273,7 @@ class FileSelector(QWidget):
     def text(self):
         return self.lineEdit.text()
 
+
 class HipFileDiffWindow(QMainWindow):
     def __init__(self):
         super(HipFileDiffWindow, self).__init__()
@@ -287,7 +294,6 @@ class HipFileDiffWindow(QMainWindow):
         self.source_file_line_edit = FileSelector(self)
         self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source.hipnc")
         self.source_file_line_edit.setPlaceholderText("source_file_line_edit")
-        # self.source_file_line_edit.setFixedHeight(60)
 
         self.target_file_line_edit = FileSelector(self)    
         self.target_file_line_edit.setObjectName("FileSelector")    
@@ -345,16 +351,17 @@ class HipFileDiffWindow(QMainWindow):
 
         self.main_layout.addWidget(splitter)
 
-        # self.target_treeview.expanded.connect(sync_expansion)
-        # self.target_treeview.collapsed.connect(sync_collapse)
-        # self.source_treeview.expanded.connect(sync_expansion)
-        # self.source_treeview.collapsed.connect(sync_collapse)
+        self.load_button.click()
+
+        self.target_treeview.expanded.connect(lambda index: self.sync_expand(index, expand=True))
+        self.target_treeview.collapsed.connect(lambda index: self.sync_expand(index, expand=False))
+        self.source_treeview.expanded.connect(lambda index: self.sync_expand(index, expand=True))
+        self.source_treeview.collapsed.connect(lambda index: self.sync_expand(index, expand=False))
 
         self.target_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
         self.source_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
 
         self.hip_comparator = None
-        self.load_button.click()
 
         main_stylesheet = """
             QMainWindow{
@@ -564,38 +571,21 @@ class HipFileDiffWindow(QMainWindow):
 
 
         # def sync_expansion(index):
-    #     global syncing
-    #     if syncing:
-    #         return
-    #     syncing = True
-        
-    #     item = treeView1.model().itemFromIndex(index)
-    #     if treeView1.sender() == treeView1:
-    #         other_view = treeView2
-    #     else:
-    #         other_view = treeView1
-            
-    #     index_in_other_tree = treeView2.model().indexFromItem(item)
-    #     other_view.expand(index_in_other_tree)
-        
-    #     syncing = False
 
-    # def sync_collapse(index):
-    #     global syncing
-    #     if syncing:
-    #         return
-    #     syncing = True
-        
-    #     item = treeView1.model().itemFromIndex(index)
-    #     if treeView1.sender() == treeView1:
-    #         other_view = treeView2
-    #     else:
-    #         other_view = treeView1
-            
-    #     index_in_other_tree = treeView2.model().indexFromItem(item)
-    #     other_view.collapse(index_in_other_tree)
-        
-    #     syncing = False
+    def sync_expand(self, index, expand=False):
+        event_model = index.model()
+        if event_model == self.source_model:
+            other_view = self.target_treeview
+        else:
+            other_view = self.source_treeview
+
+        event_item = event_model.itemFromIndex(index)
+        event_item_path = event_item.data(event_model.path_role)
+
+        item = other_view.model().get_item_by_path(event_item_path)
+
+        index_in_other_tree = other_view.model().indexFromItem(item)
+        other_view.setExpanded(index_in_other_tree, expand)
 
     def sync_scroll(self, value):
         if self.target_treeview.verticalScrollBar().value() != value:
