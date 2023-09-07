@@ -191,6 +191,82 @@ class CustomStandardItemModel(QStandardItemModel):
         return self.item_dictionary.get(path)
             
 
+class FileSelector(QWidget):
+    def __init__(self, parent=None):
+        super(FileSelector, self).__init__(parent)
+        
+        self.layout = QHBoxLayout(self)
+        self.lineEdit = QLineEdit(self)
+        self.lineEdit.setFixedHeight(40)
+
+        self.layout.addWidget(self.lineEdit)
+        
+        self.browseButton = QPushButton(self)
+        self.browseButton.setObjectName("browseButton")
+        self.browseButton.setStyleSheet("background-color:transparent;")
+        pixmap = QPixmap("ui/icons/folder.png")
+        qicon = QIcon(pixmap)
+        self.browseButton.setIcon(qicon)
+
+        self.browseButton.setObjectName("BrowseButton")
+        self.browseButton.clicked.connect(self.browse)
+        self.layout.addWidget(self.browseButton)
+
+        self.browseButton.setFixedHeight(40)
+        self.browseButton.setFixedWidth(40)
+        self.browseButton.setStyleSheet(
+            '''
+            QPushButton{
+                font: 10pt "Arial";
+                background-color: transparent;
+                border-radius: 10px;
+            }
+            QPushButton:hover {
+                color: #919191;
+                background-color: #555555;
+                border: 1px solid rgb(185, 134, 32);
+            }
+            '''
+        )
+
+        self.lineEdit.setStyleSheet(
+            '''
+            QLineEdit{
+                font: 10pt "Arial";
+                color: #818181;
+                background-color: #464646;
+                border-radius: 10px;
+            }
+            QLineEdit:hover {
+                color: #919191;
+                background-color: #555555;
+                border: 1px solid rgb(185, 134, 32);
+            }
+            QLineEdit:selected {
+                color: #919191;
+                background-color: #555555;
+                border: 1px solid rgb(185, 134, 32);
+            }            
+            '''
+        )
+        
+    def browse(self):
+        # Use QFileDialog to get file name
+        fname, _ = QFileDialog.getOpenFileName(self, 'Open file')
+        
+        # If a file is selected, update the lineEdit
+        if fname:
+            self.lineEdit.setText(fname)
+
+    def setText(self, text):
+        self.lineEdit.setText(text)
+
+    def setPlaceholderText(self, text):
+        self.lineEdit.setPlaceholderText(text)
+
+    def text(self):
+        return self.lineEdit.text()
+
 class HipFileDiffWindow(QMainWindow):
     def __init__(self):
         super(HipFileDiffWindow, self).__init__()
@@ -207,85 +283,16 @@ class HipFileDiffWindow(QMainWindow):
         self.main_layout = QVBoxLayout(self.main_widget)
         self.main_layout.setContentsMargins(5,5,5,5)
 
-        main_stylesheet = """
-            QMainWindow{
-                background-color: #3c3c3c;
-            }
-            QPushButton {
-                font: 10pt "Arial";
-                color: white;
-                background-color: #464646;
-                border-radius: 10px;
-                margins: 2px
-            }
-            CustomQTreeView {
-                font: 10pt "DS Houdini";
-                color: #dfdfdf;
-                background-color: #333333;
-                alternate-background-color: #3a3a3a;
-                border-radius: 10px;
-            }
-            QTreeView::branch:has-siblings:!adjoins-item {
-                border-image: url("ui/icons/vline.svg") 0;
-                }
-            QTreeView::branch:has-siblings:adjoins-item {
-                border-image: url("ui/icons/more.svg") 0;
-            }
-            QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-                border-image: url("ui/icons/end.svg") 0;
-            }
-            QTreeView::branch:has-children:!has-siblings:closed,
-            QTreeView::branch:closed:has-children:has-siblings {
-                border-image: url(ui/icons/closed.svg) 0;
-            }
-            QTreeView::branch:open:has-children:!has-siblings,
-            QTreeView::branch:open:has-children:has-siblings {
-                border-image: url("ui/icons/opened.svg") 0;
-            }
-            QTreeView::branch:!adjoins-item{
-                border-image: url("ui/icons/empty.svg") 0;
-            }
-            QTreeView::item:hover {
-                background: rgb(71, 71, 71);
-            }
-            QTreeView::item:selected {
-                border: 1px solid rgb(185, 134, 32);
-                background: rgb(96, 81, 50);
-            }
-            QSplitter::handle {
-                background-color: #3c3c3c;
-            }
-            QSplitter::handle:vertical {
-                height: 5px;
-            }
-        """
-        
-        self.setStyleSheet(main_stylesheet)
-
         # Horizontal layout at the top
-        self.source_file_line_edit = QLineEdit(self)
+        self.source_file_line_edit = FileSelector(self)
         self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source.hipnc")
-        self.source_file_line_edit.setMinimumWidth(100)
-        self.source_file_line_edit.setFixedHeight(30)
         self.source_file_line_edit.setPlaceholderText("source_file_line_edit")
-        self.source_file_line_edit.setStyleSheet('''
-            font: 10pt "Arial";
-            color: #818181;
-            background-color: #464646;
-            border-radius: 10px;
-        ''')
+        # self.source_file_line_edit.setFixedHeight(60)
 
-        self.target_file_line_edit = QLineEdit(self)        
+        self.target_file_line_edit = FileSelector(self)    
+        self.target_file_line_edit.setObjectName("FileSelector")    
         self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source_edited.hipnc")
-        self.target_file_line_edit.setMinimumWidth(100)
-        self.target_file_line_edit.setFixedHeight(30)
         self.target_file_line_edit.setPlaceholderText("target_file_line_edit")
-        self.target_file_line_edit.setStyleSheet('''
-            font: 10pt "Arial";
-            color: #818181;
-            background-color: #464646;
-            border-radius: 10px;
-        ''')
 
         self.source_treeview = CustomQTreeView(self)
         self.source_treeview.setObjectName("source")
@@ -305,9 +312,10 @@ class HipFileDiffWindow(QMainWindow):
         self.source_layout.setContentsMargins(5,5,5,5)
      
         self.load_button = QPushButton("Compare", self)
+        self.load_button.setObjectName("compareButton")
         self.load_button.clicked.connect(self.handle_load_button_click)
-        self.load_button.setFixedHeight(30)
-        self.load_button.setMinimumWidth(100)
+        self.load_button.setFixedHeight(40)
+        self.load_button.setFixedWidth(100)
 
         self.target_top_hlayout = QHBoxLayout()
         self.target_top_hlayout.addWidget(self.target_file_line_edit)
@@ -348,6 +356,64 @@ class HipFileDiffWindow(QMainWindow):
         self.hip_comparator = None
         self.load_button.click()
 
+        main_stylesheet = """
+            QMainWindow{
+                background-color: #3c3c3c;
+            }
+            QPushButton#compareButton {
+                font: 10pt "Arial";
+                color: #818181;
+                background-color: #464646;
+                border-radius: 10px;
+            }
+            QPushButton#compareButton:hover {
+                color: #919191;
+                background-color: #555555;
+                border: 1px solid rgb(185, 134, 32);
+            }
+            CustomQTreeView {
+                font: 10pt "DS Houdini";
+                color: #dfdfdf;
+                background-color: #333333;
+                border-radius: 10px;
+            }
+            QTreeView::branch:has-siblings:!adjoins-item {
+                border-image: url("ui/icons/vline.svg") 0;
+                }
+            QTreeView::branch:has-siblings:adjoins-item {
+                border-image: url("ui/icons/more.svg") 0;
+            }
+            QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+                border-image: url("ui/icons/end.svg") 0;
+            }
+            QTreeView::branch:has-children:!has-siblings:closed,
+            QTreeView::branch:closed:has-children:has-siblings {
+                border-image: url(ui/icons/closed.svg) 0;
+            }
+            QTreeView::branch:open:has-children:!has-siblings,
+            QTreeView::branch:open:has-children:has-siblings {
+                border-image: url("ui/icons/opened.svg") 0;
+            }
+            QTreeView::branch:!adjoins-item{
+                border-image: url("ui/icons/empty.svg") 0;
+            }
+            QTreeView::item:hover {
+                background: rgb(71, 71, 71);
+            }
+            QTreeView::item:selected {
+                border: 1px solid rgb(185, 134, 32);
+                background: rgb(96, 81, 50);
+            }
+            QSplitter::handle {
+                background-color: #3c3c3c;
+            }
+            QSplitter::handle:vertical {
+                height: 5px;
+            }
+        """
+        
+        self.setStyleSheet(main_stylesheet)
+
     def populate_tree_with_data(
             self, 
             name,
@@ -373,9 +439,9 @@ class HipFileDiffWindow(QMainWindow):
                     parent=parent_item,
                 )
         
-        self.iterate_items(treeview.model().invisibleRootItem(), treeview)
+        self.paint_items_and_expand(treeview.model().invisibleRootItem(), treeview)
 
-    def iterate_items(self, parent_item, treeview):
+    def paint_items_and_expand(self, parent_item, treeview):
         """Recursive function to iterate over all items in a QStandardItemModel."""
         for row in range(parent_item.rowCount()):
             for column in range(parent_item.columnCount()):
@@ -385,51 +451,46 @@ class HipFileDiffWindow(QMainWindow):
                 
                 if tag == "created" and treeview.objectName() == "source":
                     self.fill_item_with_hatched_pattern(item)
-                    index = treeview.model().indexFromItem(item)
-                    while index.isValid():
-                        treeview.expand(index)
-                        index = index.parent()
+                    self.expand_to_index(treeview.model().indexFromItem(item), treeview)
                         
                 elif tag in ["edited", "value"] and treeview.objectName() == "source":
                     color = TAG_COLOR_MAP["deleted"]
                     qcolor = QColor(color)
                     qcolor.setAlpha(40)
                     item.setBackground(QBrush(qcolor))
-                    index = treeview.model().indexFromItem(item)
                     if tag != "value":
-                        while index.isValid():
-                            treeview.expand(index)
-                            index = index.parent()
+                        self.expand_to_index(treeview.model().indexFromItem(item), treeview)
+                        
                 elif tag in ["edited", "value"] and treeview.objectName() == "target":
                     color = TAG_COLOR_MAP["created"]
                     qcolor = QColor(color)
                     qcolor.setAlpha(40)
                     item.setBackground(QBrush(qcolor))
-                    index = treeview.model().indexFromItem(item)
                     if tag != "value":
-                        while index.isValid():
-                            treeview.expand(index)
-                            index = index.parent()
+                        self.expand_to_index(treeview.model().indexFromItem(item), treeview)
 
                 elif tag == "deleted" and treeview.objectName() == "target":
                     self.fill_item_with_hatched_pattern(item)
-                    index = treeview.model().indexFromItem(item)
-                    while index.isValid():
-                        treeview.expand(index)
-                        index = index.parent()
+                    self.expand_to_index(treeview.model().indexFromItem(item), treeview)
+
                 elif tag:
                     color = TAG_COLOR_MAP[tag]
                     qcolor = QColor(color)
                     qcolor.setAlpha(150)
                     item.setBackground(QBrush(qcolor))
-                    index = treeview.model().indexFromItem(item)
-                    while index.isValid():
-                        treeview.expand(index)
-                        index = index.parent()
+                    self.expand_to_index(treeview.model().indexFromItem(item), treeview)
 
                 if item:
-                    self.iterate_items(item, treeview)
+                    self.paint_items_and_expand(item, treeview)
                 
+    def expand_to_index(self, index, treeview):
+        parent = index.parent()
+        if not parent.isValid():
+            return
+        while parent.isValid():
+            treeview.expand(parent)
+            parent = parent.parent()
+
     def handle_load_button_click(self):
 
         source_scene_path = self.source_file_line_edit.text().strip('"')

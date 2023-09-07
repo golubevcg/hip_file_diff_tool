@@ -122,7 +122,6 @@ class HipFileComparator():
                 source_parm = source_node_data.get_parm_by_name(parm_name)
                 target_parm = self.target_data[path].get_parm_by_name(parm_name)
                 if str(source_parm.value) != str(target_parm.value):
-                    print("PARM IS EDITED", source_parm.name)
                     source_parm.tag = "edited"
                     target_parm.tag = "edited"
 
