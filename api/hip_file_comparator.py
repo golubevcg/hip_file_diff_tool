@@ -208,7 +208,7 @@ class HipFileComparator:
 
         :param path: The path of the node.
         """
-        new_data = NodeData(path)
+        new_data = NodeData("")
         new_data.parent_path = self.target_data[path].parent_path
         new_data.tag = "created"
         index = get_ordered_dict_key_index(self.target_data, path)
