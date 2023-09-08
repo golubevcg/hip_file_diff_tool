@@ -2,9 +2,8 @@ import os
 import zipfile
 
 from hutil.Qt.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
-                                QMessageBox, QAbstractItemView)
+                                QMessageBox, QAbstractItemView, QLineEdit)
 from hutil.Qt.QtCore import Qt
-from hutil.Qt.QtGui import QColor, QBrush, QPixmap, QPen, QPainter
 import os
 
 from hutil.Qt.QtWidgets import (
@@ -16,6 +15,7 @@ from api.hip_file_comparator import HipFileComparator
 from ui.custom_qtree_view import CustomQTreeView
 from ui.custom_standart_item_model import CustomStandardItemModel
 from ui.file_selector import FileSelector
+from ui.search_line_edit import QTreeViewSearch
 
 
 class HipFileDiffWindow(QMainWindow):
@@ -99,11 +99,18 @@ class HipFileDiffWindow(QMainWindow):
         self.source_treeview.setModel(self.source_model)
         self.source_layout.addWidget(self.source_treeview)
 
+        self.search_qline_edit = QTreeViewSearch(self.source_treeview, self.source_model)
+        self.source_layout.addWidget(self.search_qline_edit)
+
         self.target_treeview = self.create_tree_view("target")
         self.target_model = CustomStandardItemModel()
         self.target_model.set_view(self.target_treeview)
         self.target_treeview.setModel(self.target_model)
+
         self.target_layout.addWidget(self.target_treeview)
+
+        self.target_search_qline_edit = QTreeViewSearch(self.target_treeview, self.target_model)
+        self.target_layout.addWidget(self.target_search_qline_edit)
 
     def create_tree_view(self, obj_name: str) -> CustomQTreeView:
         """

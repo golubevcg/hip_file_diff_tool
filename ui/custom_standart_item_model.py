@@ -32,6 +32,9 @@ TAG_COLOR_MAP = {
     "created": "#6ba100",
 }
 
+PATH_ROLE = Qt.UserRole + 1
+DATA_ROLE = Qt.UserRole + 2
+
 
 # --- CustomStandardItemModel ---
 
@@ -45,8 +48,8 @@ class CustomStandardItemModel(QStandardItemModel):
         super(CustomStandardItemModel, self).__init__(*args, **kwargs)
         
         self.item_dictionary = {}
-        self.path_role = Qt.UserRole + 1
-        self.data_role = Qt.UserRole + 2
+        self.path_role = PATH_ROLE
+        self.data_role = DATA_ROLE
         self.view = None
 
     def set_view(self, tree_view) -> None:
@@ -135,12 +138,12 @@ class CustomStandardItemModel(QStandardItemModel):
 
                 # Using the new _apply_item_style function
                 if tag:
-                    self._apply_item_style(item, view_name, tag)
+                    self._apply_item_style_and_expansion(item, view_name, tag)
 
                 if item:
                     self.paint_items_and_expand(item, view_name)
 
-    def _apply_item_style(self, item, view_name, tag, color=None):
+    def _apply_item_style_and_expansion(self, item, view_name, tag, color=None):
         """
         Apply the appropriate style and expansion to the item based on its tag and view_name.
 
