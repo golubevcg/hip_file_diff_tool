@@ -1,5 +1,8 @@
+import os
+
 from hutil.Qt.QtGui import QPixmap, QIcon
 from hutil.Qt.QtWidgets import QWidget, QHBoxLayout, QLineEdit,  QPushButton, QFileDialog
+from ui.custom_standart_item_model import ICONS_PATH
 
 
 class FileSelector(QWidget):
@@ -15,7 +18,7 @@ class FileSelector(QWidget):
         self.browseButton = QPushButton(self)
         self.browseButton.setObjectName("browseButton")
         self.browseButton.setStyleSheet("background-color:transparent;")
-        pixmap = QPixmap("ui/icons/folder.png")
+        pixmap = QPixmap(os.path.join(ICONS_PATH, "folder.png"))
         qicon = QIcon(pixmap)
         self.browseButton.setIcon(qicon)
 
@@ -62,10 +65,7 @@ class FileSelector(QWidget):
         )
         
     def browse(self):
-        # Use QFileDialog to get file name
         fname, _ = QFileDialog.getOpenFileName(self, 'Open file')
-        
-        # If a file is selected, update the lineEdit
         if fname:
             self.lineEdit.setText(fname)
 

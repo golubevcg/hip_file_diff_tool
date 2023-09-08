@@ -5,11 +5,11 @@ from hutil.Qt.QtGui import QPixmap, QIcon, QStandardItemModel, QStandardItem
 from hutil.Qt.QtCore import Qt
 
 
-ICONS_ZIP_PATH = os.path.dirname(os.path.abspath(__file__))
-ICONS_ZIP_PATH = os.path.join(ICONS_ZIP_PATH, "icons")
+ICONS_PATH = os.path.dirname(os.path.abspath(__file__))
+ICONS_PATH = os.path.join(ICONS_PATH, "icons")
 
-ICONS_MAPPING_PATH = os.path.join(ICONS_ZIP_PATH, 'IconMapping')
-ICONS_ZIP_PATH = os.path.join(ICONS_ZIP_PATH, 'icons.zip')
+ICONS_MAPPING_PATH = os.path.join(ICONS_PATH, 'IconMapping')
+ICONS_ZIP_PATH = os.path.join(ICONS_PATH, 'icons.zip')
 
 ICON_MAPPINGS = {}
 with open(ICONS_MAPPING_PATH, 'r') as file:
