@@ -1,7 +1,8 @@
 import os
 import zipfile
 
-from hutil.Qt.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter, QMessageBox, QAbstractItemView
+from hutil.Qt.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
+                                QMessageBox, QAbstractItemView)
 from hutil.Qt.QtCore import Qt
 from hutil.Qt.QtGui import QColor, QBrush, QPixmap, QPen, QPainter
 
@@ -11,103 +12,117 @@ from ui.custom_standart_item_model import CustomStandardItemModel, ICONS_ZIP_PAT
 from ui.file_selector import FileSelector
 
 
-TAG_COLOR_MAP = {
-    "deleted" : "#b50400",
-    "edited" : "#ffea00",
-    "created" : "#6ba100",
-}
-        
-
 class HipFileDiffWindow(QMainWindow):
+    """Main window to show diff between two .hip files."""
+
     def __init__(self):
         super(HipFileDiffWindow, self).__init__()
-        
-        # Set window properties
+        self.init_ui()
+        self.hip_comparator = None
+
+    def init_ui(self):
+        """Initialize UI components."""
+        self.set_window_properties()
+        self.setup_layouts()
+        self.setup_tree_views()
+        self.setup_signals_and_slots()
+        self.apply_stylesheet()
+        self.load_button.click()
+
+    def set_window_properties(self):
+        """Set main window properties."""
         self.setWindowTitle('.hip files diff tool')
         self.setGeometry(300, 300, 2000, 1300)
-
-        # Main widget to set as central widget
         self.main_widget = QWidget(self)
         self.setCentralWidget(self.main_widget)
 
-        # Main vertical layout
+    def setup_layouts(self):
+        """Setup layouts."""
         self.main_layout = QVBoxLayout(self.main_widget)
-        self.main_layout.setContentsMargins(5,5,5,5)
-
-        # Horizontal layout at the top
-        self.source_file_line_edit = FileSelector(self)
-        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source.hipnc")
-        self.source_file_line_edit.setPlaceholderText("source_file_line_edit")
-
-        self.target_file_line_edit = FileSelector(self)    
-        self.target_file_line_edit.setObjectName("FileSelector")    
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source_edited.hipnc")
-        self.target_file_line_edit.setPlaceholderText("target_file_line_edit")
-
-        self.source_treeview = CustomQTreeView(self)
-        self.source_treeview.setObjectName("source")
-        self.source_treeview.header().hide()
-        self.source_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.source_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.source_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.source_treeview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-        self.source_model = CustomStandardItemModel()
-        self.source_treeview.setModel(self.source_model)
-
-        self.source_widget = QWidget()
-        self.source_layout = QVBoxLayout(self.source_widget)
-        self.source_layout.addWidget(self.source_file_line_edit)
-        self.source_layout.addWidget(self.source_treeview)
-        self.source_layout.setContentsMargins(5,5,5,5)
-     
-        self.load_button = QPushButton("Compare", self)
-        self.load_button.setObjectName("compareButton")
-        self.load_button.clicked.connect(self.handle_load_button_click)
-        self.load_button.setFixedHeight(40)
-        self.load_button.setFixedWidth(100)
-
-        self.target_top_hlayout = QHBoxLayout()
-        self.target_top_hlayout.addWidget(self.target_file_line_edit)
-        self.target_top_hlayout.addWidget(self.load_button)
-
-        self.target_treeview = CustomQTreeView(self)
-        self.target_treeview.setObjectName("target")
-        self.target_treeview.header().hide()
-        self.target_treeview.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.target_treeview.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.target_treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.target_treeview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-        self.target_model = CustomStandardItemModel()
-        self.target_treeview.setModel(self.target_model)
-
-        self.target_widget = QWidget()
-        self.target_layout = QVBoxLayout(self.target_widget)
-        self.target_layout.addLayout(self.target_top_hlayout)
-        self.target_layout.addWidget(self.target_treeview)
-        self.target_layout.setContentsMargins(5,5,5,5)
+        self.main_layout.setContentsMargins(5, 5, 5, 5)
+        self.setup_source_layout()
+        self.setup_target_layout()
 
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.source_widget)
         splitter.addWidget(self.target_widget)
         splitter.setSizes([self.width() // 2, self.width() // 2])
-
         self.main_layout.addWidget(splitter)
 
-        self.load_button.click()
+    def setup_source_layout(self):
+        """Setup source file layout."""
+        self.source_file_line_edit = FileSelector(self)
+        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source.hipnc")
+        self.source_file_line_edit.setPlaceholderText("source_file_line_edit")
+        
+        self.source_widget = QWidget()
+        self.source_layout = QVBoxLayout(self.source_widget)
+        self.source_layout.addWidget(self.source_file_line_edit)
+        self.source_layout.setContentsMargins(5, 5, 5, 5)
 
-        self.target_treeview.expanded.connect(lambda index: self.sync_expand(index, expand=True))
-        self.target_treeview.collapsed.connect(lambda index: self.sync_expand(index, expand=False))
-        self.source_treeview.expanded.connect(lambda index: self.sync_expand(index, expand=True))
-        self.source_treeview.collapsed.connect(lambda index: self.sync_expand(index, expand=False))
+    def setup_target_layout(self):
+        """Setup target file layout."""
+        self.target_file_line_edit = FileSelector(self)    
+        self.target_file_line_edit.setObjectName("FileSelector")    
+        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test_scenes/billowy_smoke_source_edited.hipnc")
+        self.target_file_line_edit.setPlaceholderText("target_file_line_edit")
+        
+        self.load_button = QPushButton("Compare", self)
+        self.load_button.setObjectName("compareButton")
+        self.load_button.setFixedHeight(40)
+        self.load_button.setFixedWidth(100)
+        
+        self.target_top_hlayout = QHBoxLayout()
+        self.target_top_hlayout.addWidget(self.target_file_line_edit)
+        self.target_top_hlayout.addWidget(self.load_button)
+        
+        self.target_widget = QWidget()
+        self.target_layout = QVBoxLayout(self.target_widget)
+        self.target_layout.addLayout(self.target_top_hlayout)
+        self.target_layout.setContentsMargins(5, 5, 5, 5)
 
+    def setup_tree_views(self):
+        """Setup QTreeViews for both source and target."""
+        self.source_treeview = self.create_tree_view("source")
+        self.source_model = CustomStandardItemModel()
+        self.source_model.set_view(self.source_treeview)
+        self.source_treeview.setModel(self.source_model)
+        self.source_layout.addWidget(self.source_treeview)
+        
+        self.target_treeview = self.create_tree_view("target")
+        self.target_model = CustomStandardItemModel()
+        self.target_model.set_view(self.target_treeview)
+        self.target_treeview.setModel(self.target_model)
+        self.target_layout.addWidget(self.target_treeview)
+
+    def create_tree_view(self, obj_name):
+        """Create a QTreeView with common properties."""
+        tree_view = CustomQTreeView(self)
+        tree_view.setObjectName(obj_name)
+        tree_view.header().hide()
+        tree_view.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        tree_view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        tree_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        tree_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        return tree_view
+
+    def setup_signals_and_slots(self):
+        """Connect signals to slots."""
+        self.load_button.clicked.connect(self.handle_load_button_click)
+        self.connect_tree_view_expansion(self.source_treeview)
+        self.connect_tree_view_expansion(self.target_treeview)
         self.target_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
         self.source_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
 
-        self.hip_comparator = None
+    def connect_tree_view_expansion(self, tree_view):
+        """Connect expansion signals for a QTreeView."""
+        tree_view.expanded.connect(lambda index: self.sync_expand(index, expand=True))
+        tree_view.collapsed.connect(lambda index: self.sync_expand(index, expand=False))
 
-        main_stylesheet = """
+    def apply_stylesheet(self):
+        """Apply stylesheet to the main window."""
+        self.setStyleSheet(
+        """
             QMainWindow{
                 background-color: #3c3c3c;
             }
@@ -162,161 +177,28 @@ class HipFileDiffWindow(QMainWindow):
                 height: 5px;
             }
         """
-        
-        self.setStyleSheet(main_stylesheet)
-
-    def populate_tree_with_data(
-            self, 
-            name,
-            treeview, 
-            data
-    ):
-
-        with zipfile.ZipFile(ICONS_ZIP_PATH, 'r') as zip_ref:
-            for path in data:
-                node_data = data[path]
-
-                node_name = node_data.name
-                parent_path = node_data.parent_path
-                parent_item = treeview.model().get_item_by_path(parent_path)
-                if node_name == "/":
-                    node_name = treeview.objectName()
-
-                treeview.model().add_item_with_path(
-                    node_name, 
-                    path, 
-                    node_data, 
-                    zip_ref,
-                    parent=parent_item,
-                )
-        
-        self.paint_items_and_expand(treeview.model().invisibleRootItem(), treeview)
-
-    def paint_items_and_expand(self, parent_item, treeview):
-        """Recursive function to iterate over all items in a QStandardItemModel."""
-        for row in range(parent_item.rowCount()):
-            for column in range(parent_item.columnCount()):
-                item = parent_item.child(row, 0)
-                item_data = item.data(Qt.UserRole + 2)
-                tag = item_data.tag
-                
-                if tag == "created" and treeview.objectName() == "source":
-                    self.fill_item_with_hatched_pattern(item)
-                    self.expand_to_index(treeview.model().indexFromItem(item), treeview)
-                        
-                elif tag in ["edited", "value"] and treeview.objectName() == "source":
-                    color = TAG_COLOR_MAP["deleted"]
-                    qcolor = QColor(color)
-                    qcolor.setAlpha(40)
-                    item.setBackground(QBrush(qcolor))
-                    if tag != "value":
-                        self.expand_to_index(treeview.model().indexFromItem(item), treeview)
-                        
-                elif tag in ["edited", "value"] and treeview.objectName() == "target":
-                    color = TAG_COLOR_MAP["created"]
-                    qcolor = QColor(color)
-                    qcolor.setAlpha(40)
-                    item.setBackground(QBrush(qcolor))
-                    if tag != "value":
-                        self.expand_to_index(treeview.model().indexFromItem(item), treeview)
-
-                elif tag == "deleted" and treeview.objectName() == "target":
-                    self.fill_item_with_hatched_pattern(item)
-                    self.expand_to_index(treeview.model().indexFromItem(item), treeview)
-
-                elif tag:
-                    color = TAG_COLOR_MAP[tag]
-                    qcolor = QColor(color)
-                    qcolor.setAlpha(150)
-                    item.setBackground(QBrush(qcolor))
-                    self.expand_to_index(treeview.model().indexFromItem(item), treeview)
-
-                if item:
-                    self.paint_items_and_expand(item, treeview)
-                
-    def expand_to_index(self, index, treeview):
-        parent = index.parent()
-        if not parent.isValid():
-            return
-        while parent.isValid():
-            treeview.expand(parent)
-            parent = parent.parent()
+        )
 
     def handle_load_button_click(self):
-
-        source_scene_path = self.source_file_line_edit.text().strip('"')
-        self.check_file_path(source_scene_path)
+        """Handle the logic when the load button is clicked."""
+        source_path = self.source_file_line_edit.text()
+        target_path = self.target_file_line_edit.text()
         
-        target_scene_path = self.target_file_line_edit.text().strip('"')
-        self.check_file_path(target_scene_path)
-
-        self.hip_comparator = HipFileComparator(
-            source_scene_path, 
-            target_scene_path
-        )        
+        if not (os.path.exists(source_path) and os.path.exists(target_path)):
+            QMessageBox.warning(self, "Invalid Paths", "Please select valid .hip files to compare.")
+            return
+        
+        self.hip_comparator = HipFileComparator(source_path, target_path)
         self.hip_comparator.compare()
 
-        if self.hip_comparator.is_compared != True:
-            error_during_comparasing_text = "There was an error during file comparasing"
-            QMessageBox.critical(
-                self, 
-                "Error", 
-                error_during_comparasing_text
-            )
-            raise RuntimeError(error_during_comparasing_text)
-            
-        self.populate_tree_with_data(
-            "source",
-            self.source_treeview, 
-            self.hip_comparator.source_data
-        )
+        # Assuming 'comparison_result' contains the differences, 
+        # you can now update your tree views based on the results. 
+        # This is a placeholder. You will likely have a more complex way of populating your views.
+        self.source_model.populate_with_data(self.hip_comparator.source_data, self.source_treeview.objectName())
+        self.target_model.populate_with_data(self.hip_comparator.target_data, self.target_treeview.objectName())
 
-        self.populate_tree_with_data(
-            "target",
-            self.target_treeview, 
-            self.hip_comparator.target_data
-        )
-
-    def fill_item_with_hatched_pattern(self, item):
-        # Create a QPixmap for hatching pattern
-        hatch_width = 1000  # Adjust for desired frequency
-        pixmap = QPixmap(hatch_width, 100)
-        pixmap.fill(Qt.transparent)  # or any background color
-
-        # Create a brush for the hatching pattern
-        pen_color = QColor("#505050")  # Change for desired line color
-        pen_width = 3  # Change for desired line thickness
-        pen = QPen(pen_color, pen_width)
-        pen.setCapStyle(Qt.FlatCap)
-
-        painter = QPainter(pixmap)
-        painter.setPen(pen)
-
-        # Adjusted loop and coordinates for the hatching pattern
-        for i in range(-hatch_width, hatch_width, pen_width * 6):  
-            painter.drawLine(i, hatch_width, hatch_width+i, 0)
-
-        painter.end()
-
-        hatch_brush = QBrush(pixmap)
-        item.setBackground(hatch_brush)
-
-    def check_file_path(self, path):
-        if not os.path.exists(path):
-            incorrect_path_text = "Incorrect source path specified, such file don't exists."
-            QMessageBox.critical(self, "Error", incorrect_path_text)
-            raise RuntimeError(incorrect_path_text)
-        
-        _, extension = os.path.splitext(path)
-        if extension[1:] not in SUPPORTED_FILE_FORMATS:
-            only_hip_supported_text = "Incorrect source file specified, only .hip files supported."
-            QMessageBox.critical(self, "Error", only_hip_supported_text)
-            raise RuntimeError(only_hip_supported_text)
-
-
-        # def sync_expansion(index):
-
-    def sync_expand(self, index, expand=False):
+    def sync_expand(self, index, expand=True):
+        """Synchronize the expansion state between tree views."""
         event_model = index.model()
         if event_model == self.source_model:
             other_view = self.target_treeview
@@ -332,7 +214,15 @@ class HipFileDiffWindow(QMainWindow):
         other_view.setExpanded(index_in_other_tree, expand)
 
     def sync_scroll(self, value):
-        if self.target_treeview.verticalScrollBar().value() != value:
-            self.target_treeview.verticalScrollBar().setValue(value)
+        """Synchronize the scroll position between tree views."""
+        # Fetch the source of the signal
+        source_scrollbar = self.sender()
+        
+        # Determine the target scrollbar for synchronization
+        if source_scrollbar == self.source_treeview.verticalScrollBar():
+            target_scrollbar = self.target_treeview.verticalScrollBar()
         else:
-            self.source_treeview.verticalScrollBar().setValue(value)
+            target_scrollbar = self.source_treeview.verticalScrollBar()
+        
+        # Update the target's scrollbar position to match the source's
+        target_scrollbar.setValue(value)

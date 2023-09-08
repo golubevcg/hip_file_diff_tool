@@ -3,72 +3,55 @@ from hutil.Qt.QtCore import Qt
 
 
 class CustomQTreeView(QTreeView):
-
     """
-    CustomQTreeView class for drawing references as main data tree
+    CustomQTreeView class for drawing references as main data tree.
     """
 
     def mousePressEvent(self, event):
-        # deselect in empty item
         super(CustomQTreeView, self).mousePressEvent(event)
 
-        # expand all childs when shift is pressed on click
-        shift = event.modifiers() & Qt.ShiftModifier
-        if shift:
-            self.expand_all( self.indexAt(event.pos()) )
+        # Expand or collapse all children when shift is pressed on click.
+        if event.modifiers() & Qt.ShiftModifier:
+            self.expand_or_collapse_all(self.indexAt(event.pos()))
 
-    def expand_all(self, index):
-
+    def expand_or_collapse_all(self, index):
         """
-        Expands/collapses (depends on current state) all the children and grandchildren etc. of index.
-        :param index: QModelIndex from QTreeView
+        Toggles the expansion state (expand if collapsed, collapse if expanded)
+        for the given index and all its descendants.
+        
+        :param index: QModelIndex from QTreeView.
         """
+        # Determine the opposite of the current expansion state for the index.
+        toggle_expansion = self.isExpanded(index)
+        self.recursive_expand_or_collapse(index, toggle_expansion)
+        # Finally, toggle the expansion state for the provided index.
+        self.setExpanded(index, toggle_expansion)
 
-        expand = self.isExpanded(index)
-        if  expand:
-            self.setExpanded(index, expand)    
-
-        items_list = self.get_childs_list_for_index(index)
-        self.recursive_expand(index, len(items_list), expand)
-
-        if not expand: #if expanding, do that last (wonky animation otherwise)
-            self.setExpanded(index, expand)
-
-    def recursive_expand(self, index, childCount, expand):
-
+    def recursive_expand_or_collapse(self, index, expand):
         """
-        Recursively expands/collpases all the children of index.
-        :param index: QModelIndex from QTreeView
-        :param childCount: int amount of childs for given index
-        :param expand: bool expand parameter
+        Recursively toggles the expansion state for the given index and its descendants.
+        
+        :param index: QModelIndex from QTreeView.
+        :param expand: Boolean indicating whether to expand or collapse.
         """
+        for child_row in range(self.model().rowCount(index)):
+            child_index = index.child(child_row, 0)
+            self.recursive_expand_or_collapse(child_index, expand)
+            self.setExpanded(child_index, expand)
 
-        for childNo in range(0, childCount):
-            childIndex = index.child(childNo, 0)
+    def expand_to_index(self, index, treeview):
+        parent = index.parent()
+        if not parent.isValid():
+            return
+        while parent.isValid():
+            treeview.expand(parent)
+            parent = parent.parent()
 
-            if not expand:
-                self.setExpanded(index, expand)  
-
-            items_list = self.get_childs_list_for_index(childIndex)
-       
-            if len(items_list) > 0:
-                self.recursive_expand(childIndex, len(items_list), expand)
-
-            if expand:
-                self.setExpanded(childIndex, expand)
-
-    def get_childs_list_for_index(self, index):
-       
+    def get_child_indices(self, index):
         """
-        Return all child items for given item index.
-        :param index: QModelIndex from QTreeView
-        :return list: list of QStandardItems
+        Return all child indices for the given index.
+        
+        :param index: QModelIndex from QTreeView.
+        :return: A list of QModelIndex representing each child.
         """
-
-        items_list = []
-        item = self.model().itemFromIndex(index)
-        for row in range(item.rowCount()):
-            children = item.child(row, 0)
-            items_list.append(item)
-
-        return items_list
+        return [index.child(row, 0) for row in range(self.model().rowCount(index))]

@@ -173,7 +173,7 @@ class HipFileComparator:
         :param path: The path of the node.
         :param source_node_data: The data associated with the source node.
         """
-        new_data = NodeData(path)
+        new_data = NodeData("")
         new_data.parent_path = source_node_data.parent_path
         new_data.tag = "deleted"
         index = get_ordered_dict_key_index(self.source_data, path)
