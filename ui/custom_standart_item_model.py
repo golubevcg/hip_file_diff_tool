@@ -164,19 +164,19 @@ class CustomStandardItemModel(QStandardItemModel):
         
         if tag == "created" and view_name == "source":
             self.fill_item_with_hatched_pattern(item)
-            self.view.expand_to_index(self.indexFromItem(item), self.view)
+            self.view.expand_to_index(item, self.view)
         elif tag in ["edited", "value"] and view_name in ["source", "target"]:
             color.setAlpha(40 if tag == "value" else 150)
             item.setBackground(QBrush(color))
             if tag != "value":
-                self.view.expand_to_index(self.indexFromItem(item), self.view)
+                self.view.expand_to_index(item, self.view)
         elif tag == "deleted" and view_name == "target":
             self.fill_item_with_hatched_pattern(item)
-            self.view.expand_to_index(self.indexFromItem(item), self.view)
+            self.view.expand_to_index(item, self.view)
         elif tag:
             color.setAlpha(150)
             item.setBackground(QBrush(color))
-            self.view.expand_to_index(self.indexFromItem(item), self.view)
+            self.view.expand_to_index(item, self.view)
 
 
     def fill_item_with_hatched_pattern(self, item: QStandardItem) -> None:

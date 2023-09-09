@@ -2,8 +2,8 @@ import os
 import zipfile
 
 from hutil.Qt.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
-                                QMessageBox, QAbstractItemView, QLineEdit)
-from hutil.Qt.QtCore import Qt
+                                QMessageBox, QAbstractItemView)
+from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
 import os
 
 from hutil.Qt.QtWidgets import (
@@ -99,19 +99,27 @@ class HipFileDiffWindow(QMainWindow):
         self.source_treeview.setModel(self.source_model)
         self.source_layout.addWidget(self.source_treeview)
 
-        self.search_qline_edit = QTreeViewSearch(self.source_treeview, self.source_model)
-        self.source_layout.addWidget(self.search_qline_edit)
-
         self.target_treeview = self.create_tree_view("target")
         self.target_model = CustomStandardItemModel()
         self.target_model.set_view(self.target_treeview)
         self.target_treeview.setModel(self.target_model)
-
         self.target_layout.addWidget(self.target_treeview)
 
+        self.source_search_qline_edit = QTreeViewSearch(self.source_treeview, self.source_model, self.target_treeview)
+        self.source_search_qline_edit.setPlaceholderText("Search in source")
+        self.source_layout.addWidget(self.source_search_qline_edit)
+
         self.target_search_qline_edit = QTreeViewSearch(self.target_treeview, self.target_model)
+        self.target_search_qline_edit.setPlaceholderText("Search in target")
         self.target_layout.addWidget(self.target_search_qline_edit)
 
+        self.target_search_qline_edit.secondary_treeview = self.source_treeview
+        self.target_search_qline_edit.secondary_proxy_model = self.source_treeview.model()
+
+        self.source_search_qline_edit.secondary_treeview = self.target_treeview
+        self.source_search_qline_edit.secondary_proxy_model = self.target_treeview.model()
+
+        
     def create_tree_view(self, obj_name: str) -> CustomQTreeView:
         """
         Create a QTreeView with specified properties.
@@ -233,19 +241,25 @@ class HipFileDiffWindow(QMainWindow):
         :param index: QModelIndex of the item being expanded or collapsed.
         :param expand: Whether the item is expanded (True) or collapsed (False).
         """
-        event_model = index.model()
-        if event_model == self.source_model:
+        event_proxy_model = index.model()
+        
+        if isinstance(event_proxy_model, QSortFilterProxyModel):
+            event_source_model = event_proxy_model.sourceModel()
+        else:
+            event_source_model = event_proxy_model
+
+        if event_source_model == self.source_model:
             other_view = self.target_treeview
         else:
             other_view = self.source_treeview
 
-        event_item = event_model.itemFromIndex(index)
-        event_item_path = event_item.data(event_model.path_role)
+        event_item = event_source_model.itemFromIndex(event_proxy_model.mapToSource(index))
+        event_item_path = event_item.data(event_source_model.path_role)
 
-        item = other_view.model().get_item_by_path(event_item_path)
+        item_in_other_source_model = other_view.model().sourceModel().get_item_by_path(event_item_path)
 
-        index_in_other_tree = other_view.model().indexFromItem(item)
-        other_view.setExpanded(index_in_other_tree, expand)
+        index_in_other_proxy = other_view.model().mapFromSource(other_view.model().sourceModel().indexFromItem(item_in_other_source_model))
+        other_view.setExpanded(index_in_other_proxy, expand)
 
     def sync_scroll(self, value: int) -> None:
         """

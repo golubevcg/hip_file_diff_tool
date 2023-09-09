@@ -39,13 +39,17 @@ class CustomQTreeView(QTreeView):
             self.recursive_expand_or_collapse(child_index, expand)
             self.setExpanded(child_index, expand)
 
-    def expand_to_index(self, index, treeview):
+    def expand_to_index(self, item, treeview):
+        index = treeview.model().indexFromItem(item)
+        # proxyIndex = proxyModel.mapFromSource(sourceIndex)
+
         parent = index.parent()
         if not parent.isValid():
             return
         while parent.isValid():
             treeview.expand(parent)
             parent = parent.parent()
+
 
     def get_child_indices(self, index):
         """
