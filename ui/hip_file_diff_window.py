@@ -113,6 +113,9 @@ class HipFileDiffWindow(QMainWindow):
         self.target_search_qline_edit.setPlaceholderText("Search in target")
         self.target_layout.addWidget(self.target_search_qline_edit)
 
+        self.source_search_qline_edit.second_search = self.target_search_qline_edit
+        self.target_search_qline_edit.second_search = self.source_search_qline_edit
+
         self.target_search_qline_edit.secondary_treeview = self.source_treeview
         self.target_search_qline_edit.secondary_proxy_model = self.source_treeview.model()
 
