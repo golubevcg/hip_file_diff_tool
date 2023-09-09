@@ -6,8 +6,6 @@ from hutil.Qt.QtGui import QStandardItem
 from ui.custom_standart_item_model import DATA_ROLE, PATH_ROLE
 
 
-
-
 class RecursiveFilterProxyModel(QSortFilterProxyModel):
     """Subclassing QSortFilterProxyModel to enable recursive filtering."""
 
@@ -37,6 +35,7 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         for i in range(self.sourceModel().rowCount(source_index)):
             if self.filterAcceptsRow(i, source_index):
                 return True
+            
         return False
 
     def filter_accepts_row_itself(self, source_row: int, source_parent: QModelIndex) -> bool:
