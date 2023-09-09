@@ -93,7 +93,7 @@ class HipFileDiffWindow(QMainWindow):
         self.source_treeview.setModel(self.source_model)
         self.source_layout.addWidget(self.source_treeview)
 
-        self.target_treeview = self.create_tree_view("target")
+        self.target_treeview = self.create_tree_view("target", hide_scrollbar=False)
         self.target_model = CustomStandardItemModel()
         self.target_model.set_view(self.target_treeview)
         self.target_treeview.setModel(self.target_model)
@@ -117,11 +117,13 @@ class HipFileDiffWindow(QMainWindow):
         self.source_search_qline_edit.secondary_proxy_model = self.target_treeview.model()
 
         
-    def create_tree_view(self, obj_name: str) -> CustomQTreeView:
+    def create_tree_view(self, obj_name: str, hide_scrollbar:bool = True ) -> CustomQTreeView:
         """
         Create a QTreeView with specified properties.
 
         :param obj_name: Object name for the QTreeView.
+        :param hide_scrollbar: bool parameter hide scrollbar or not.
+
         :return: Configured QTreeView instance.
         """
         tree_view = CustomQTreeView(self)
@@ -129,8 +131,9 @@ class HipFileDiffWindow(QMainWindow):
         tree_view.header().hide()
         tree_view.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         tree_view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        tree_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        tree_view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        if hide_scrollbar:
+            tree_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         return tree_view
 
     def setup_signals_and_slots(self) -> None:
@@ -201,6 +204,27 @@ class HipFileDiffWindow(QMainWindow):
                 border: 1px solid rgb(185, 134, 32);
                 background: rgb(96, 81, 50);
             }
+            QScrollBar:vertical {
+                border: none;
+                background: #333333;
+                width: 20px;
+                border: 1px solid #3c3c3c;
+            }
+            QScrollBar::handle:vertical {
+                background: #464646;
+                min-width: 20px;
+            }
+            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+                border: none;
+                background: none;
+                height: 0;
+                subcontrol-position: top;
+                subcontrol-origin: margin;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
+
             QSplitter::handle {
                 background-color: #3c3c3c;
             }
