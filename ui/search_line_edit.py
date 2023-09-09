@@ -1,7 +1,7 @@
 import os
 from typing import Set, Optional
 
-from hutil.Qt.QtWidgets import QLineEdit, QAbstractItemView, QAction
+from hutil.Qt.QtWidgets import QWidget, QLineEdit, QAbstractItemView, QAction
 from hutil.Qt.QtCore import Qt
 from hutil.Qt.QtGui import QPixmap, QIcon
 
@@ -11,41 +11,45 @@ from ui.recursive_filter_proxy_model import RecursiveFilterProxyModel
 
 class QTreeViewSearch(QLineEdit):
     """Search widget for filtering items within a QTreeView."""
-    
-    def __init__(self, treeview, target_model, parent=None):
+
+    def __init__(self, treeview, target_model, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.init_ui(treeview, target_model)
         self.init_events()
         self.init_styles()
 
     def init_ui(self, treeview, target_model):
-        """Initialize UI components."""
+        """Initialize user interface components."""
         self.treeview = treeview
         self.target_model = target_model
         self.proxy_model = RecursiveFilterProxyModel(self.treeview)
         self.proxy_model.setSourceModel(self.target_model)
         self.treeview.setModel(self.proxy_model)
-        self.expanded_state = {}
         
+        # Define expanded state and placeholder text
+        self.expanded_state = {}
         self.setPlaceholderText("Search")
+        
+        # Setup search icon action
         pixmap = QPixmap(os.path.join(ICONS_PATH, "search.png"))
         self.search_action = QAction(self)
         self.search_action.setIcon(QIcon(pixmap))
         self.addAction(self.search_action, QLineEdit.TrailingPosition)
         
+        # Secondary model initialization
         self.secondary_proxy_model = None
         self.secondary_treeview = None
         self.second_search = None
 
     def init_events(self):
-        """Connect UI events."""
+        """Connect UI events to their handlers."""
         self.search_action.triggered.connect(self.filter_tree_view)
         self.textChanged.connect(self.filter_tree_view)
         self.textChanged.connect(self.handle_text_change)
         self.returnPressed.connect(self.select_first_match)
 
     def init_styles(self):
-        """Set widget styles."""
+        """Define styles for the search widget."""
         self.setStyleSheet(
             '''
             QLineEdit{
@@ -71,29 +75,28 @@ class QTreeViewSearch(QLineEdit):
         self.synchronize_trees()
 
     def synchronize_trees(self):
-        """Synchronize primary and secondary tree views."""
+        """Synchronize the primary and secondary tree views."""
         visible_paths = self.get_visible_paths()
         self.filter_secondary_tree(visible_paths)
 
     def get_visible_paths(self) -> Set[str]:
-        """Return set of visible paths in the primary tree."""
+        """Retrieve visible paths from the primary tree view."""
         visible_paths = set()
         root = self.proxy_model.index(0, 0)
         self.collect_paths(root, visible_paths)
         return visible_paths
 
     def collect_paths(self, index, paths: Set[str]):
-        """Recursively collect paths from the given index."""
+        """Recursively collect visible paths starting from the given index."""
         if not index.isValid():
             return
         paths.add(self.proxy_model.data(index, PATH_ROLE))
         for row in range(self.proxy_model.rowCount(index)):
             child_index = self.proxy_model.index(row, 0, index)
             self.collect_paths(child_index, paths)
-    
-    def filter_secondary_tree(self, paths: Set[str]):
-        """Filter the secondary tree view based on the visible paths."""
 
+    def filter_secondary_tree(self, paths: Set[str]):
+        """Filter items in the secondary tree view based on visible paths."""
         self.secondary_proxy_model.setFilterFixedString("")
         if not paths:
             self.secondary_proxy_model.setFilterFixedString("ImpossibleStringThatMatchesNothing")
@@ -104,21 +107,27 @@ class QTreeViewSearch(QLineEdit):
             self.secondary_treeview.expandAll()
 
     def select_first_match(self):
-        """Select the first matching item in the tree view."""
+        """Select the first item in the tree view that matches the search query."""
         first_index = self.proxy_model.index(0, 0)
         if first_index.isValid():
             self.treeview.setCurrentIndex(first_index)
             self.treeview.scrollTo(first_index, QAbstractItemView.PositionAtTop)
 
+    def handle_text_change(self):
+        """Restore tree state when the search text is empty."""
+        if not self.text():
+            self.restore_tree_state()
+            if self.second_search:
+                self.second_search.restore_tree_state()
+
     def capture_tree_state(self):
-        """Capture the expanded state of the tree view items."""
-        model = self.treeview.model()
-        for row in range(model.rowCount()):
-            index = model.index(row, 0)
+        """Store the expanded/collapsed state of tree view items."""
+        for row in range(self.treeview.model().rowCount()):
+            index = self.treeview.model().index(row, 0)
             self._capture_state(index)
 
     def _capture_state(self, index):
-        """Recursively capture the expanded state of tree view items."""
+        """Recursively store the state of tree view items."""
         if index.isValid():
             path = self.treeview.model().data(index, PATH_ROLE)
             self.expanded_state[path] = self.treeview.isExpanded(index)
@@ -127,14 +136,13 @@ class QTreeViewSearch(QLineEdit):
                 self._capture_state(child_index)
 
     def restore_tree_state(self):
-        """Restore the expanded state of the tree view items."""
-        model = self.treeview.model()
-        for row in range(model.rowCount()):
-            index = model.index(row, 0)
+        """Restore the expanded/collapsed state of tree view items."""
+        for row in range(self.treeview.model().rowCount()):
+            index = self.treeview.model().index(row, 0)
             self._restore_state(index)
 
     def _restore_state(self, index):
-        """Recursively restore the expanded state of tree view items."""
+        """Recursively restore the state of tree view items."""
         if index.isValid():
             path = self.treeview.model().data(index, PATH_ROLE)
             self.treeview.setExpanded(index, self.expanded_state.get(path, False))
@@ -142,16 +150,8 @@ class QTreeViewSearch(QLineEdit):
                 child_index = self.treeview.model().index(row, 0, index)
                 self._restore_state(child_index)
 
-    def handle_text_change(self):
-        """Handle text change event in the search widget."""
-        if self.text():
-            return
-        self.restore_tree_state()
-        if self.second_search:
-            self.second_search.restore_tree_state()
-
     def focusInEvent(self, event):
-        """Override focus in event to capture the state of the tree view."""
+        """Handle the focus-in event and capture the tree state."""
         super().focusInEvent(event)
         if not self.text():
             self.capture_tree_state()

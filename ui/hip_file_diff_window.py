@@ -1,16 +1,12 @@
 import os
-import zipfile
-
-from hutil.Qt.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
-                                QMessageBox, QAbstractItemView)
-from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
-import os
+from zipfile import ZipFile
 
 from hutil.Qt.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
     QMessageBox, QAbstractItemView
 )
-from hutil.Qt.QtCore import Qt
+from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
+
 from api.hip_file_comparator import HipFileComparator
 from ui.custom_qtree_view import CustomQTreeView
 from ui.custom_standart_item_model import CustomStandardItemModel
@@ -28,7 +24,7 @@ class HipFileDiffWindow(QMainWindow):
 
     def __init__(self):
         super(HipFileDiffWindow, self).__init__()
-        self.hip_comparator = None
+        self.hip_comparator: HipFileComparator = None
         self.init_ui()
 
     def init_ui(self) -> None:
@@ -40,14 +36,14 @@ class HipFileDiffWindow(QMainWindow):
         self.apply_stylesheet()
 
     def set_window_properties(self) -> None:
-        """Set properties for the main window."""
+        """Set main window properties."""
         self.setWindowTitle('.hip files diff tool')
         self.setGeometry(300, 300, 2000, 1300)
         self.main_widget = QWidget(self)
         self.setCentralWidget(self.main_widget)
 
     def setup_layouts(self) -> None:
-        """Set up layouts for the main window."""
+        """Setup main, source and target layouts for the main window."""
         self.main_layout = QVBoxLayout(self.main_widget)
         self.main_layout.setContentsMargins(3, 3, 3, 3)
         self.setup_source_layout()
@@ -60,39 +56,37 @@ class HipFileDiffWindow(QMainWindow):
         self.main_layout.addWidget(splitter)
 
     def setup_source_layout(self) -> None:
-        """Set up layout for the source file section."""
+        """Setup layout for the source file section."""
         self.source_file_line_edit = FileSelector(self)
         self.source_file_line_edit.setPlaceholderText("Source file path")
-        
+
         self.source_widget = QWidget()
         self.source_layout = QVBoxLayout(self.source_widget)
-
         self.source_layout.addWidget(self.source_file_line_edit)
         self.source_layout.setContentsMargins(3, 3, 3, 3)
 
     def setup_target_layout(self) -> None:
-        """Set up layout for the target file section."""
+        """Setup layout for the target file section."""
         self.target_file_line_edit = FileSelector(self)
         self.target_file_line_edit.setObjectName("FileSelector")
         self.target_file_line_edit.setPlaceholderText("Target file path")
-        
+
         self.load_button = QPushButton("Compare", self)
         self.load_button.setObjectName("compareButton")
         self.load_button.setFixedHeight(40)
         self.load_button.setFixedWidth(100)
-        
-        self.target_top_hlayout = QHBoxLayout()
 
+        self.target_top_hlayout = QHBoxLayout()
         self.target_top_hlayout.addWidget(self.target_file_line_edit)
         self.target_top_hlayout.addWidget(self.load_button)
-        
+
         self.target_widget = QWidget()
         self.target_layout = QVBoxLayout(self.target_widget)
         self.target_layout.addLayout(self.target_top_hlayout)
         self.target_layout.setContentsMargins(3, 3, 3, 3)
 
     def setup_tree_views(self) -> None:
-        """Set up QTreeViews for both source and target sections."""
+        """Setup QTreeViews and associate models for source and target sections."""
         self.source_treeview = self.create_tree_view("source")
         self.source_model = CustomStandardItemModel()
         self.source_model.set_view(self.source_treeview)

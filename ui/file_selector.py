@@ -1,7 +1,10 @@
 import os
+
 from hutil.Qt.QtGui import QPixmap, QIcon
 from hutil.Qt.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QFileDialog
+
 from ui.custom_standart_item_model import ICONS_PATH
+
 
 class FileSelector(QWidget):
     """
@@ -17,7 +20,8 @@ class FileSelector(QWidget):
         """
         Initialize the FileSelector widget.
 
-        :param parent: Parent widget.
+        Args:
+            parent (QWidget, optional): Parent widget. Defaults to None.
         """
         super(FileSelector, self).__init__(parent)
 
@@ -32,13 +36,13 @@ class FileSelector(QWidget):
         self.setContentsMargins(0, 0, 0, 0)  # left, top, right, bottom
 
     def setup_line_edit(self):
-        """Initialize and configure the QLineEdit."""
+        """Initialize and configure the QLineEdit component."""
         self.lineEdit = QLineEdit(self)
         self.lineEdit.setFixedHeight(40)
         self.layout.addWidget(self.lineEdit)
 
     def setup_browse_button(self):
-        """Initialize and configure the browse QPushButton."""
+        """Initialize and configure the browse QPushButton component."""
         self.browseButton = QPushButton(self)
         self.browseButton.setObjectName("BrowseButton")
         self.browseButton.setFixedSize(40, 40)
@@ -53,44 +57,41 @@ class FileSelector(QWidget):
         self.layout.addWidget(self.browseButton)
 
     def browse(self):
-        """
-        Open a file dialog and set the selected file path in lineEdit.
-        """
+        """Open a file dialog and update the QLineEdit with the selected file path."""
         fname, _ = QFileDialog.getOpenFileName(self, 'Open file')
         if fname:
             self.lineEdit.setText(fname)
 
     def setText(self, text: str):
         """
-        Set the text in lineEdit.
+        Set the content of the QLineEdit.
 
-        :param text: Text to set.
+        Args:
+            text (str): Text to display in the QLineEdit.
         """
         self.lineEdit.setText(text)
 
     def setPlaceholderText(self, text: str):
         """
-        Set the placeholder text in lineEdit.
+        Set placeholder text for the QLineEdit.
 
-        :param text: Placeholder text to set.
+        Args:
+            text (str): Placeholder text to display.
         """
         self.lineEdit.setPlaceholderText(text)
 
     def text(self) -> str:
-        """
-        Retrieve the text from lineEdit.
-
-        :return: Text from lineEdit.
+        """Get the current text from the QLineEdit.
+        
+        Returns:
+            str: Text from the QLineEdit.
         """
         return self.lineEdit.text()
 
     def _set_styles(self):
-        """
-        Set the CSS styles for the widget's components.
-        """
+        """Set the CSS styles for the widget's components."""
         # Styles for the browse button
-        self.browseButton.setStyleSheet(
-            '''
+        self.browseButton.setStyleSheet('''
             QPushButton{
                 font: 10pt "Arial";
                 background-color: transparent;
@@ -101,12 +102,10 @@ class FileSelector(QWidget):
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
             }
-            '''
-        )
+        ''')
 
         # Styles for the line edit
-        self.lineEdit.setStyleSheet(
-            '''
+        self.lineEdit.setStyleSheet('''
             QLineEdit{
                 font: 10pt "Arial";
                 color: #818181;
@@ -120,5 +119,4 @@ class FileSelector(QWidget):
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
             }            
-            '''
-        )
+        ''')
