@@ -50,7 +50,6 @@ class CustomQTreeView(QTreeView):
             treeview.expand(parent)
             parent = parent.parent()
 
-
     def get_child_indices(self, index):
         """
         Return all child indices for the given index.

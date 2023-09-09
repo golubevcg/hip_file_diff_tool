@@ -112,14 +112,8 @@ class QTreeViewSearch(QLineEdit):
     
     def filter_secondary_tree_by_paths(self, paths):
         """Filter the secondary tree view to only show items with the given paths."""
-        self.secondary_proxy_model.setFilterFixedString("")  # Clear any existing filter
-        
-        self.secondary_proxy_model.setFilterRole(1)
-        self.secondary_proxy_model.setFilterRegularExpression(QRegularExpression("|".join(re.escape(path) for path in paths)))
-        self.secondary_proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.secondary_proxy_model.invalidateFilter()
 
-        # Ensure all matches are shown
+        self.secondary_proxy_model.set_filtered_paths(paths)
         self.secondary_treeview.expandAll()
 
     def select_and_scroll_to_first_match(self):
@@ -178,18 +172,27 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         self.item_dictionary = None
         self.path_role = PATH_ROLE
         self.data_role = DATA_ROLE
+        self._filtered_paths = set()
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
+        # Get the current item's path.
+        index = self.sourceModel().index(source_row, 0, source_parent)
+        item_path = self.sourceModel().data(index, self.path_role)
+        
+        # Check if path-specific filtering is active and if the current item's path is in the filtered set.
+        if self._filtered_paths and item_path not in self._filtered_paths:
+            return False
+        
+        # Original recursive behavior:
         if self.filter_accepts_row_itself(source_row, source_parent):
             return True
-        
+
         # Check if any of the children matches
         source_index = self.sourceModel().index(source_row, 0, source_parent)
         for i in range(self.sourceModel().rowCount(source_index)):
             if self.filterAcceptsRow(i, source_index):
                 return True
         return False
-
 
     def filter_accepts_row_itself(self, source_row: int, source_parent: QModelIndex) -> bool:
         return super(RecursiveFilterProxyModel, self).filterAcceptsRow(source_row, source_parent)
@@ -241,3 +244,8 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
             self.item_dictionary = self.sourceModel().item_dictionary
 
         return self.item_dictionary.get(path)
+
+    def set_filtered_paths(self, paths: set[str]) -> None:
+        """Set the list of paths to filter by."""
+        self._filtered_paths = paths
+        self.invalidateFilter()
