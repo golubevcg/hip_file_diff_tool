@@ -30,6 +30,10 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         
         index = self.sourceModel().index(source_row, 0, source_parent)
         item_path = self.sourceModel().data(index, self.path_role)
+        item_data = self.sourceModel().data(index, self.data_role)
+
+        if not item_data.tag and self.sourceModel().show_only_edited:
+            return False
         
         # Path-specific filtering
         if self._filtered_paths and item_path not in self._filtered_paths:

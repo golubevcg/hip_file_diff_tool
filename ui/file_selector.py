@@ -38,14 +38,14 @@ class FileSelector(QWidget):
     def setup_line_edit(self):
         """Initialize and configure the QLineEdit component."""
         self.lineEdit = QLineEdit(self)
-        self.lineEdit.setFixedHeight(40)
+        self.lineEdit.setFixedHeight(30)
         self.layout.addWidget(self.lineEdit)
 
     def setup_browse_button(self):
         """Initialize and configure the browse QPushButton component."""
         self.browseButton = QPushButton(self)
         self.browseButton.setObjectName("BrowseButton")
-        self.browseButton.setFixedSize(40, 40)
+        self.browseButton.setFixedSize(30, 30)
         
         # Setting button icon
         pixmap = QPixmap(os.path.join(ICONS_PATH, "folder.png"))
@@ -93,7 +93,7 @@ class FileSelector(QWidget):
         # Styles for the browse button
         self.browseButton.setStyleSheet('''
             QPushButton{
-                font: 10pt "Arial";
+                font: 8pt "Arial";
                 background-color: transparent;
                 border-radius: 10px;
             }

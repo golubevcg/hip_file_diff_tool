@@ -186,13 +186,24 @@ class HipFileComparator:
 
         :param path: The path of the node.
         :param source_node_data: The data associated with the source node.
+        :return: A bool True if one of the params was edited.
         """
+        param_was_edited = False
+        
         for parm_name in list(source_node_data.parms):  # Avoids copying the entire dictionary
             source_parm = source_node_data.get_parm_by_name(parm_name)
             target_parm = self.target_data[path].get_parm_by_name(parm_name)
-            if str(source_parm.value) != str(target_parm.value):
-                source_parm.tag = "edited"
-                target_parm.tag = "edited"
+            if str(source_parm.value) == str(target_parm.value):
+                continue
+
+            source_parm.tag = "edited"
+            target_parm.tag = "edited"
+            param_was_edited = True
+        
+            source_node_data.tag = "edited"
+            self.target_data[path].tag = "edited"
+        
+        return param_was_edited
 
     def _handle_created_nodes(self):
         """Handle nodes that are newly created."""

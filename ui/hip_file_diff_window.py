@@ -3,7 +3,7 @@ from zipfile import ZipFile
 
 from hutil.Qt.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
-    QMessageBox, QAbstractItemView
+    QMessageBox, QAbstractItemView, QCheckBox, QSpacerItem, QSizePolicy
 )
 from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
 
@@ -32,6 +32,7 @@ class HipFileDiffWindow(QMainWindow):
         self.set_window_properties()
         self.setup_layouts()
         self.setup_tree_views()
+        self.setup_checkboxes()
         self.setup_signals_and_slots()
         self.apply_stylesheet()
 
@@ -45,7 +46,7 @@ class HipFileDiffWindow(QMainWindow):
     def setup_layouts(self) -> None:
         """Setup main, source and target layouts for the main window."""
         self.main_layout = QVBoxLayout(self.main_widget)
-        self.main_layout.setContentsMargins(3, 3, 3, 3)
+        self.main_layout.setContentsMargins(3, 5, 3, 3)
         self.setup_source_layout()
         self.setup_target_layout()
 
@@ -62,6 +63,7 @@ class HipFileDiffWindow(QMainWindow):
 
         self.source_widget = QWidget()
         self.source_layout = QVBoxLayout(self.source_widget)
+
         self.source_layout.addWidget(self.source_file_line_edit)
         self.source_layout.setContentsMargins(3, 3, 3, 3)
 
@@ -73,7 +75,7 @@ class HipFileDiffWindow(QMainWindow):
 
         self.load_button = QPushButton("Compare", self)
         self.load_button.setObjectName("compareButton")
-        self.load_button.setFixedHeight(40)
+        self.load_button.setFixedHeight(30)
         self.load_button.setFixedWidth(100)
 
         self.target_top_hlayout = QHBoxLayout()
@@ -115,7 +117,6 @@ class HipFileDiffWindow(QMainWindow):
 
         self.source_search_qline_edit.secondary_treeview = self.target_treeview
         self.source_search_qline_edit.secondary_proxy_model = self.target_treeview.model()
-
         
     def create_tree_view(self, obj_name: str, hide_scrollbar:bool = True ) -> CustomQTreeView:
         """
@@ -207,12 +208,12 @@ class HipFileDiffWindow(QMainWindow):
             QScrollBar:vertical {
                 border: none;
                 background: #333333;
-                width: 20px;
+                width: 30px;
                 border: 1px solid #3c3c3c;
             }
             QScrollBar::handle:vertical {
                 background: #464646;
-                min-width: 20px;
+                min-width: 30px;
             }
             QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
                 border: none;
@@ -231,8 +232,35 @@ class HipFileDiffWindow(QMainWindow):
             QSplitter::handle:vertical {
                 height: 5px;
             }
+            QCheckBox {
+                color: #818181;
+                border-radius: 4px;
+            }
+            QCheckBox::indicator:unchecked {
+                background-color: #3c3c3c;
+                border: 1px solid #818181;
+                border-radius: 4px;
+            }
+            QCheckBox::indicator:checked {
+                background-color: #555555;
+                border: 1px solid rgb(185, 134, 32);
+                border-radius: 4px;
+            }
+            QCheckBox::indicator:hover {
+                border: 1px solid rgb(185, 134, 32);
+            }
         """
         )
+
+    def setup_checkboxes(self):
+
+        self.show_only_edited_checkbox = QCheckBox("Show only edited nodes")
+        self.show_only_edited_checkbox.stateChanged.connect(self.on_checkbox_toggled)
+
+        self.checkbox_h_layout = QHBoxLayout()
+        self.checkbox_h_layout.addWidget(self.show_only_edited_checkbox)
+        self.checkbox_h_layout.setContentsMargins(10, 0, 0, 0)
+        self.main_layout.addLayout(self.checkbox_h_layout)
 
     def handle_compare_button_click(self) -> None:
         """Handle logic when the load button is clicked."""
@@ -254,6 +282,22 @@ class HipFileDiffWindow(QMainWindow):
         # This is a placeholder. You will likely have a more complex way of populating your views.
         self.source_model.populate_with_data(self.hip_comparator.source_data, self.source_treeview.objectName())
         self.target_model.populate_with_data(self.hip_comparator.target_data, self.target_treeview.objectName())
+
+    def on_checkbox_toggled(self, state):
+        if state == Qt.Checked:
+            self.source_model.show_only_edited = True
+            self.target_model.show_only_edited = True
+        else:
+            self.source_model.show_only_edited = False
+            self.target_model.show_only_edited = False
+            
+        self.source_model.clear()
+        self.target_model.clear()
+
+        if self.hip_comparator:
+            self.source_model.populate_with_data(self.hip_comparator.source_data, self.source_treeview.objectName())
+            self.target_model.populate_with_data(self.hip_comparator.target_data, self.target_treeview.objectName())
+
 
     def sync_expand(self, index, expand: bool = True) -> None:
         """

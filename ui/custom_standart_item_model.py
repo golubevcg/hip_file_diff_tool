@@ -8,6 +8,7 @@ from hutil.Qt.QtGui import (
 from hutil.Qt.QtCore import Qt
 from typing import Dict, Optional
 
+
 # --- Constants ---
 
 # Setting the path for the icons directory
@@ -51,6 +52,7 @@ class CustomStandardItemModel(QStandardItemModel):
         self.path_role = PATH_ROLE
         self.data_role = DATA_ROLE
         self.view = None
+        self.show_only_edited = False
 
     def set_view(self, tree_view) -> None:
         """Set the tree view widget to which the model is attached."""
@@ -83,6 +85,7 @@ class CustomStandardItemModel(QStandardItemModel):
         :param icons_zip: Zip archive containing icons.
         :param parent: Parent item (if any).
         """
+        
         item = QStandardItem(item_text)
         item.setData(path, self.path_role)
         item.setData(data, self.data_role)
@@ -152,6 +155,7 @@ class CustomStandardItemModel(QStandardItemModel):
         with zipfile.ZipFile(ICONS_ZIP_PATH, 'r') as zip_ref:
             for path in data:
                 node_data = data[path]
+
                 node_name = node_data.name if node_data.name != "/" else view_name
                 parent_path = node_data.parent_path
                 parent_item = self.get_item_by_path(parent_path)
@@ -202,7 +206,7 @@ class CustomStandardItemModel(QStandardItemModel):
             self.fill_item_with_hatched_pattern(item)
             self.view.expand_to_index(item, self.view)
         elif tag in ["edited", "value"] and view_name in ["source", "target"]:
-            color.setAlpha(40 if tag == "value" else 150)
+            color.setAlpha(55 if tag == "value" else 110)
             item.setBackground(QBrush(color))
             if tag != "value":
                 self.view.expand_to_index(item, self.view)
@@ -210,7 +214,7 @@ class CustomStandardItemModel(QStandardItemModel):
             self.fill_item_with_hatched_pattern(item)
             self.view.expand_to_index(item, self.view)
         elif tag:
-            color.setAlpha(150)
+            color.setAlpha(110)
             item.setBackground(QBrush(color))
             self.view.expand_to_index(item, self.view)
 
