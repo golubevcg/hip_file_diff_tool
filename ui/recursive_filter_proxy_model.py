@@ -30,11 +30,10 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         
         index = self.sourceModel().index(source_row, 0, source_parent)
         item_path = self.sourceModel().data(index, self.path_role)
-        item_data = self.sourceModel().data(index, self.data_role)
 
-        if not item_data.tag and self.sourceModel().show_only_edited:
-            return False
-        
+        if self.sourceModel().show_only_edited:
+            return self.conditionForItem(index)
+            
         # Path-specific filtering
         if self._filtered_paths and item_path not in self._filtered_paths:
             return False
@@ -48,6 +47,24 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         for i in range(self.sourceModel().rowCount(source_index)):
             if self.filterAcceptsRow(i, source_index):
                 return True
+        return False
+    
+    def conditionForItem(self, index: QModelIndex) -> bool:
+        """Check the new condition for a given item."""
+    
+        tag_value = self.sourceModel().data(index, self.data_role).tag
+        print("tag_value", tag_value)
+        if tag_value:
+            print("returning true")
+            return True
+        
+        # Recursively check child items
+        for i in range(self.sourceModel().rowCount(index)):
+            child_index = self.sourceModel().index(i, 0, index)
+            if self.conditionForItem(child_index):
+                print("returning true in child")
+                return True
+            
         return False
 
     def filter_accepts_row_itself(self, source_row: int, source_parent: QModelIndex) -> bool:

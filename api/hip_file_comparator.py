@@ -148,7 +148,7 @@ class HipFileComparator:
         
         self._handle_deleted_and_edited_nodes()
         self._handle_created_nodes()
-        
+
         self.is_compared = True
 
     def _validate_file_paths(self):

@@ -90,7 +90,6 @@ class CustomStandardItemModel(QStandardItemModel):
         item.setData(path, self.path_role)
         item.setData(data, self.data_role)
         item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-        self.item_dictionary[path] = item
 
         icon_path = ICON_MAPPINGS.get(data.icon, data.icon)
         if icon_path:
@@ -98,6 +97,8 @@ class CustomStandardItemModel(QStandardItemModel):
             self._set_icon_from_zip(item, icon_path, icons_zip)
 
         (parent.appendRow if parent else self.appendRow)(item)
+
+        self.item_dictionary[path] = item
 
         for parm_name in data.parms:
             self._add_parm_items(item, data, parm_name, icons_zip)
@@ -123,6 +124,7 @@ class CustomStandardItemModel(QStandardItemModel):
         parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         
         self._set_icon_from_zip(parm_item, "VOP/parameter.svg", icons_zip)
+
         item.appendRow(parm_item)
         self.item_dictionary[parm_path] = parm_item
 
@@ -133,6 +135,7 @@ class CustomStandardItemModel(QStandardItemModel):
         value_data.tag = 'value'
         value_item.setData(value_data, self.data_role)
         value_item.setData(value_path, self.path_role)
+
         parm_item.appendRow(value_item)
         self.item_dictionary[value_path] = value_item
 
@@ -143,6 +146,7 @@ class CustomStandardItemModel(QStandardItemModel):
         :param path: Unique path of the desired item.
         :return: Corresponding QStandardItem, or None if not found.
         """
+
         return self.item_dictionary.get(path)
 
     def populate_with_data(self, data, view_name: str) -> None:
@@ -152,6 +156,7 @@ class CustomStandardItemModel(QStandardItemModel):
         :param data: Dataset to populate from.
         :param view_name: Name of the associated view.
         """
+
         with zipfile.ZipFile(ICONS_ZIP_PATH, 'r') as zip_ref:
             for path in data:
                 node_data = data[path]
@@ -159,6 +164,10 @@ class CustomStandardItemModel(QStandardItemModel):
                 node_name = node_data.name if node_data.name != "/" else view_name
                 parent_path = node_data.parent_path
                 parent_item = self.get_item_by_path(parent_path)
+
+                if parent_path != "/" and not parent_item:
+                    continue
+
                 self.add_item_with_path(node_name, path, node_data, zip_ref, parent=parent_item)
         
         self.paint_items_and_expand(self.invisibleRootItem(), view_name)

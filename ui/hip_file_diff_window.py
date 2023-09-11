@@ -283,21 +283,28 @@ class HipFileDiffWindow(QMainWindow):
         self.source_model.populate_with_data(self.hip_comparator.source_data, self.source_treeview.objectName())
         self.target_model.populate_with_data(self.hip_comparator.target_data, self.target_treeview.objectName())
 
+        self.source_treeview.model().invalidateFilter()
+        self.target_treeview.model().invalidateFilter()
+
     def on_checkbox_toggled(self, state):
         if state == Qt.Checked:
             self.source_model.show_only_edited = True
             self.target_model.show_only_edited = True
+
+            self.source_search_qline_edit.capture_tree_state()
+            self.target_search_qline_edit.capture_tree_state()
+
+            self.target_treeview.model().invalidateFilter()
+            self.source_treeview.model().invalidateFilter()
+
         else:
             self.source_model.show_only_edited = False
             self.target_model.show_only_edited = False
-            
-        self.source_model.clear()
-        self.target_model.clear()
+            self.target_treeview.model().invalidateFilter()
+            self.source_treeview.model().invalidateFilter()
 
-        if self.hip_comparator:
-            self.source_model.populate_with_data(self.hip_comparator.source_data, self.source_treeview.objectName())
-            self.target_model.populate_with_data(self.hip_comparator.target_data, self.target_treeview.objectName())
-
+            self.source_search_qline_edit.restore_tree_state()
+            self.target_search_qline_edit.restore_tree_state()
 
     def sync_expand(self, index, expand: bool = True) -> None:
         """
