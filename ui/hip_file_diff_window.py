@@ -114,9 +114,13 @@ class HipFileDiffWindow(QMainWindow):
 
         self.target_search_qline_edit.secondary_treeview = self.source_treeview
         self.target_search_qline_edit.secondary_proxy_model = self.source_treeview.model()
+        self.target_model.rowsInserted.connect(self.target_search_qline_edit.proxy_model.invalidate)
+        self.target_model.rowsRemoved.connect(self.target_search_qline_edit.proxy_model.invalidate)
 
         self.source_search_qline_edit.secondary_treeview = self.target_treeview
         self.source_search_qline_edit.secondary_proxy_model = self.target_treeview.model()
+        self.source_model.rowsInserted.connect(self.source_search_qline_edit.proxy_model.invalidate)
+        self.source_model.rowsRemoved.connect(self.source_search_qline_edit.proxy_model.invalidate)
         
     def create_tree_view(self, obj_name: str, hide_scrollbar:bool = True ) -> CustomQTreeView:
         """
@@ -272,7 +276,12 @@ class HipFileDiffWindow(QMainWindow):
             return
         
         self.source_model.clear()
+        self.source_treeview.item_dictionary = {}
+        self.source_treeview.model().invalidateFilter()
+
         self.target_model.clear()
+        self.target_treeview.item_dictionary = {}
+        self.target_treeview.model().invalidateFilter()
 
         self.hip_comparator = HipFileComparator(source_path, target_path)
         self.hip_comparator.compare()
@@ -294,14 +303,14 @@ class HipFileDiffWindow(QMainWindow):
             self.source_search_qline_edit.capture_tree_state()
             self.target_search_qline_edit.capture_tree_state()
 
-            self.target_treeview.model().invalidateFilter()
             self.source_treeview.model().invalidateFilter()
-
+            self.target_treeview.model().invalidateFilter()
         else:
             self.source_model.show_only_edited = False
             self.target_model.show_only_edited = False
-            self.target_treeview.model().invalidateFilter()
+
             self.source_treeview.model().invalidateFilter()
+            self.target_treeview.model().invalidateFilter()
 
             self.source_search_qline_edit.restore_tree_state()
             self.target_search_qline_edit.restore_tree_state()

@@ -53,16 +53,13 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         """Check the new condition for a given item."""
     
         tag_value = self.sourceModel().data(index, self.data_role).tag
-        print("tag_value", tag_value)
         if tag_value:
-            print("returning true")
             return True
         
         # Recursively check child items
         for i in range(self.sourceModel().rowCount(index)):
             child_index = self.sourceModel().index(i, 0, index)
             if self.conditionForItem(child_index):
-                print("returning true in child")
                 return True
             
         return False
