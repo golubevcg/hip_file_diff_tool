@@ -97,7 +97,7 @@ class CustomStandardItemModel(QStandardItemModel):
             updated_parm_name = ""
 
         path = item.data(self.path_role)
-        parm_path = f"{path}/{updated_parm_name}"
+        parm_path = f"{path}/{parm_name}"
         parm_item = QStandardItem(updated_parm_name)
         parm_item.setData(parm, self.data_role)
         parm_item.setData(parm_path, self.path_role)
@@ -109,11 +109,12 @@ class CustomStandardItemModel(QStandardItemModel):
         item.appendRow(parm_item)
         self.item_dictionary[parm_path] = parm_item
 
-        if parm.is_active == False:
-            return
+        value = ""
+        if parm.is_active != False:
+            value = parm.value
 
         value_path = f"{parm_path}/value"
-        value_item = QStandardItem(str(parm.value))
+        value_item = QStandardItem(str(value))
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         value_data = copy.copy(parm)
         value_data.tag = 'value'

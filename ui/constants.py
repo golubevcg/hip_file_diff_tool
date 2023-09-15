@@ -9,8 +9,8 @@ from hutil.Qt.QtWidgets import QStyledItemDelegate
 from hutil.Qt.QtCore import Qt
 from typing import Dict, Optional
 
-# --- Constants ---
 
+# --- Constants ---
 # Setting the path for the icons directory
 ICONS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
 
