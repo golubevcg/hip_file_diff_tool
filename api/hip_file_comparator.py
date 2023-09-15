@@ -4,34 +4,14 @@ from collections import OrderedDict
 import hou
 from api.node_data import NodeData
 from api.param_data import ParamData
+from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
 
 SUPPORTED_FILE_FORMATS = {"hip", "hipnc"}
 
-def ordered_dict_insert(d: OrderedDict, index: int, key: str, value: any) -> OrderedDict:
-    """
-    Insert a key-value pair into an OrderedDict at a specified index.
-
-    :param d: The dictionary into which to insert.
-    :param index: The position at which to insert the key-value pair.
-    :param key: The key to insert.
-    :param value: The corresponding value to insert.
-    :return: A new OrderedDict with the key-value pair inserted.
-    """
-    before = list(d.items())[:index]
-    after = list(d.items())[index:]
-    before.append((key, value))
-    return OrderedDict(before + after)
-
-
-def get_ordered_dict_key_index(ordered_dict: OrderedDict, target_key: str) -> int:
-    """
-    Return the index of a key in an OrderedDict.
-
-    :param ordered_dict: The dictionary to search in.
-    :param target_key: The key to find the index for.
-    :return: The index of the target_key if found, raises an error otherwise.
-    """
-    return list(ordered_dict.keys()).index(target_key)
+COLORS = {
+    "red": "#b50400",
+    "green": "#6ba100",
+}
 
 
 class HipFileComparator:
@@ -120,7 +100,7 @@ class HipFileComparator:
         node_data.parent_path = self._get_parent_path(node)
 
         for parm in node.parms():
-            node_data.add_parm(parm.name(), ParamData(parm.name(), parm.eval(), False))
+            node_data.add_parm(parm.name(), ParamData(parm.name(), parm.eval(), None))
 
         return node_data
 
@@ -148,7 +128,7 @@ class HipFileComparator:
         
         self._handle_deleted_and_edited_nodes()
         self._handle_created_nodes()
-
+        self._handle_created_params()
         self.is_compared = True
 
     def _validate_file_paths(self):
@@ -179,6 +159,10 @@ class HipFileComparator:
         index = get_ordered_dict_key_index(self.source_data, path)
         self.target_data = ordered_dict_insert(self.target_data, index, path, new_data)
         source_node_data.tag = "deleted"
+        
+        self.source_node_data.color = COLORS["red"]
+        self.source_node_data.alpha = 110
+        self.source_node_data.is_hatched = True
 
     def _compare_node_params(self, path: str, source_node_data):
         """
@@ -186,24 +170,89 @@ class HipFileComparator:
 
         :param path: The path of the node.
         :param source_node_data: The data associated with the source node.
-        :return: A bool True if one of the params was edited.
         """
-        param_was_edited = False
         
         for parm_name in list(source_node_data.parms):  # Avoids copying the entire dictionary
             source_parm = source_node_data.get_parm_by_name(parm_name)
+
+            # deleted param
+            if parm_name not in self.target_data[path].parms:
+                # add empty parm to target data
+                self.source_data[path].tag = "edited"
+                self.source_data[path].color = COLORS["red"]
+                self.source_data[path].alpha = 110
+
+                source_parm = self.source_data[path].get_parm_by_name(parm_name)
+                source_parm.tag = "edited"
+                source_parm.color = COLORS["red"]
+                source_parm.alpha = 55
+
+                self.target_data[path].tag = "edited"
+                self.target_data[path].color = COLORS["red"]
+                self.target_data[path].alpha = 110
+
+                parm = ParamData(parm_name, "", "deleted")
+                parm.color = COLORS["red"]
+                parm.alpha = 55 
+                parm.is_active = False
+
+                self.target_data[path].add_parm(
+                        parm_name, 
+                        parm
+                    )
+                continue
+
             target_parm = self.target_data[path].get_parm_by_name(parm_name)
+
             if str(source_parm.value) == str(target_parm.value):
                 continue
 
             source_parm.tag = "edited"
-            target_parm.tag = "edited"
-            param_was_edited = True
-        
+            source_parm.color = COLORS["red"]
+            source_parm.alpha = 55 
+
             source_node_data.tag = "edited"
+            source_node_data.color = COLORS["red"]
+            source_node_data.alpha = 110 
+            
+            target_parm.tag = "edited"
+            target_parm.color = COLORS["green"]
+            target_parm.alpha = 55 
+
             self.target_data[path].tag = "edited"
-        
-        return param_was_edited
+            self.target_data[path].color = COLORS["green"]
+            self.target_data[path].alpha = 110 
+
+    def _handle_created_params(self):
+        for path, target_data in self.target_data.items(): 
+            for parm_name in list(target_data.parms):
+                if parm_name in self.source_data[path].parms:
+                    continue
+                
+                # created param
+                target_parm = target_data.get_parm_by_name(parm_name)
+                target_parm.tag = "created"
+                target_parm.color = COLORS["green"]
+                target_parm.alpha = 55
+
+                target_data.tag = "edited"
+                target_data.color = COLORS["green"]
+                target_data.alpha = 110
+
+                parm = ParamData(parm_name, "", "created")
+                parm.color = COLORS["red"]
+                parm.alpha = 55
+                parm.is_hatched = True
+                parm.is_active = False
+
+                self.source_data[path].add_parm(
+                    parm_name, 
+                    parm
+                )
+                
+                self.source_data[path].tag = "edited"
+                self.source_data[path].color = COLORS["red"]
+                self.source_data[path].alpha = 110
 
     def _handle_created_nodes(self):
         """Handle nodes that are newly created."""
@@ -223,5 +272,15 @@ class HipFileComparator:
         new_data.parent_path = self.target_data[path].parent_path
         new_data.tag = "created"
         index = get_ordered_dict_key_index(self.target_data, path)
+
         self.source_data = ordered_dict_insert(self.source_data, index, path, new_data)
+        self.source_data[path].color = COLORS["red"]
+        self.source_data[path].alpha = 110 
+        self.source_data[path].is_hatched = True
+
         self.target_data[path].tag = "created"
+        self.target_data[path].color = COLORS["green"]
+        self.target_data[path].alpha = 110 
+
+
+        

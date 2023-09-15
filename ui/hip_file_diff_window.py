@@ -14,6 +14,7 @@ from ui.file_selector import FileSelector
 from ui.search_line_edit import QTreeViewSearch
 
 
+
 class HipFileDiffWindow(QMainWindow):
     """
     Main window for displaying the differences between two .hip files.

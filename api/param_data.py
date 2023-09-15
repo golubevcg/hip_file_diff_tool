@@ -19,5 +19,12 @@ class ParamData():
         """
         self.name = name
         self.value = value
-        self.tag = None
+        self.tag = tag
+        self.is_active = True
+        self.color = None
+        self.alpha = 255
+        self.is_hatched = False
+    
+    def __repr__(self):
+        return f"{self.name}, {self.tag}"
 

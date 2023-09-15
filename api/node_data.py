@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
+
 class NodeData:
     """
     A class to represent some of the Houdini node data.
@@ -28,6 +30,10 @@ class NodeData:
         self.parent_path = ""
         self.parms = OrderedDict()
 
+        self.color = None
+        self.alpha = 255
+        self.is_hatched = False
+
     def add_parm(self, name: str, parm) -> None:
         """
         Add a parameter to the node's parameter dictionary.
@@ -49,3 +55,7 @@ class NodeData:
             raise ValueError("this parm not in dict")
         
         return self.parms[name]
+    
+    def __repr__(self):
+        # return f"{self.name}, {','.join(self.parms.keys())}\n"
+        return f"{self.name}\n"
