@@ -3,37 +3,17 @@ import copy
 import zipfile
 from hutil.Qt.QtGui import (
     QPixmap, QIcon, QStandardItemModel, QStandardItem,
-    QColor, QBrush, QPen, QPainter
+    QColor, QBrush, QPen, QPainter, QTransform
 )
+from hutil.Qt.QtWidgets import QStyledItemDelegate
 from hutil.Qt.QtCore import Qt
 from typing import Dict, Optional
 
-
-# --- Constants ---
-
-# Setting the path for the icons directory
-ICONS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icons")
-
-# Paths to the icon mappings and the compressed icons file
-ICONS_MAPPING_PATH = os.path.join(ICONS_PATH, 'IconMapping')
-ICONS_ZIP_PATH = os.path.join(ICONS_PATH, 'icons.zip')
-
-# Dictionary to hold the mapping of icon keys to their respective icon filenames
-ICON_MAPPINGS: Dict[str, str] = {}
-
-with open(ICONS_MAPPING_PATH, 'r') as file:
-    for line in file:
-        if line.startswith("#") or ":=" not in line:
-            continue
-        key, value = line.split(":=")
-        ICON_MAPPINGS[key.strip()] = value.strip().rstrip(";").replace("_", "/", 1)
-
-PATH_ROLE = Qt.UserRole + 1
-DATA_ROLE = Qt.UserRole + 2
+from ui.hatched_pattern_item_delegate import HatchedItemDelegate
+from ui.constants import *
 
 
 # --- CustomStandardItemModel ---
-
 class CustomStandardItemModel(QStandardItemModel):
     """
     Custom implementation of QStandardItemModel with functionality 
@@ -48,7 +28,6 @@ class CustomStandardItemModel(QStandardItemModel):
         self.data_role = DATA_ROLE
         self.view = None
         self.show_only_edited = False
-        self.hatched_pattern_index_offset = 0
 
     def set_view(self, tree_view) -> None:
         """Set the tree view widget to which the model is attached."""
@@ -124,7 +103,8 @@ class CustomStandardItemModel(QStandardItemModel):
         parm_item.setData(parm_path, self.path_role)
         parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         
-        self._set_icon_from_zip(parm_item, "VOP/parameter.svg", icons_zip)
+        if parm.is_active:
+            self._set_icon_from_zip(parm_item, "VOP/parameter.svg", icons_zip)
 
         item.appendRow(parm_item)
         self.item_dictionary[parm_path] = parm_item
@@ -187,8 +167,8 @@ class CustomStandardItemModel(QStandardItemModel):
             for column in range(parent_item.columnCount()):
                 child_item = parent_item.child(row, 0)
                 item_data = child_item.data(Qt.UserRole + 2)
-                tag = item_data.tag
 
+                tag = item_data.tag
                 # Using the new _apply_item_style function
                 if tag:
                     self._apply_item_style_and_expansion(child_item)
@@ -206,26 +186,28 @@ class CustomStandardItemModel(QStandardItemModel):
         item_data = item.data(Qt.UserRole + 2)
 
         color = item_data.color
-        qcolor = color = QColor(color)
+        qcolor = QColor(color)
         if color:
             qcolor.setAlpha(item_data.alpha)
             item.setBackground(QBrush(qcolor))
 
         if item_data.is_hatched:
-            self.fill_item_with_hatched_pattern(item)
+            self.fill_item_with_hatched_pattern(item, self.view)
 
         if item_data.tag and item_data.tag != "value":
             self.view.expand_to_index(item, self.view)
 
-    def fill_item_with_hatched_pattern(self, item: QStandardItem) -> None:
+    def fill_item_with_hatched_pattern(self, item: QStandardItem, view) -> None:
         """
         Fill the background of a QStandardItem with a diagonal hatched pattern.
 
         :param item: The QStandardItem to fill.
+        :param view: The QAbstractItemView in which the item is displayed.
         """
-        # Create a QPixmap for hatching pattern
+        # Create a QPixmap for the global hatching pattern
         hatch_width = 1000  # Adjust for desired frequency
-        pixmap = QPixmap(hatch_width, 100)
+        '''
+        pixmap = QPixmap(hatch_width, hatch_width)
         pixmap.fill(Qt.transparent)  # or any background color
 
         # Create a brush for the hatching pattern
@@ -237,19 +219,18 @@ class CustomStandardItemModel(QStandardItemModel):
         painter = QPainter(pixmap)
         painter.setPen(pen)
 
-        # Adjusted loop and coordinates for the hatching pattern
-        for i in range(-hatch_width, hatch_width, pen_width * 6):  
-            # add self.hatched_pattern_index_offset 
-            # wand update this index after function finished
-            painter.drawLine(
-                i - self.hatched_pattern_index_offset*2, 
-                hatch_width, 
-                hatch_width + i - self.hatched_pattern_index_offset*2, 
-                0)
+        # Create the hatching pattern across the entire pixmap
+        for i in range(-hatch_width, hatch_width, pen_width * 6):
+            painter.drawLine(i, hatch_width, hatch_width + i, 0)
 
         painter.end()
 
         hatch_brush = QBrush(pixmap)
-        item.setBackground(hatch_brush)
 
-        self.hatched_pattern_index_offset+=1
+        # Calculate the offset based on the item's position in the view
+        index = item.index()
+        item_rect = view.visualRect(index)
+        hatch_brush.setTransform(QTransform().translate(item_rect.x(), item_rect.y()))
+
+        item.setBackground(hatch_brush)
+        '''

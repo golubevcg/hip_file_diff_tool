@@ -156,13 +156,13 @@ class HipFileComparator:
         new_data = NodeData("")
         new_data.parent_path = source_node_data.parent_path
         new_data.tag = "deleted"
+        new_data.is_hatched = True
         index = get_ordered_dict_key_index(self.source_data, path)
         self.target_data = ordered_dict_insert(self.target_data, index, path, new_data)
+
         source_node_data.tag = "deleted"
-        
-        self.source_node_data.color = COLORS["red"]
-        self.source_node_data.alpha = 110
-        self.source_node_data.is_hatched = True
+        source_node_data.color = COLORS["red"]
+        source_node_data.alpha = 100
 
     def _compare_node_params(self, path: str, source_node_data):
         """
@@ -180,21 +180,21 @@ class HipFileComparator:
                 # add empty parm to target data
                 self.source_data[path].tag = "edited"
                 self.source_data[path].color = COLORS["red"]
-                self.source_data[path].alpha = 110
+                self.source_data[path].alpha = 100
 
                 source_parm = self.source_data[path].get_parm_by_name(parm_name)
                 source_parm.tag = "edited"
-                source_parm.color = COLORS["red"]
+                source_parm.color = "red"
                 source_parm.alpha = 55
 
                 self.target_data[path].tag = "edited"
                 self.target_data[path].color = COLORS["red"]
-                self.target_data[path].alpha = 110
+                self.target_data[path].alpha = 100
 
                 parm = ParamData(parm_name, "", "deleted")
-                parm.color = COLORS["red"]
                 parm.alpha = 55 
                 parm.is_active = False
+                parm.is_hatched = True
 
                 self.target_data[path].add_parm(
                         parm_name, 
@@ -213,7 +213,7 @@ class HipFileComparator:
 
             source_node_data.tag = "edited"
             source_node_data.color = COLORS["red"]
-            source_node_data.alpha = 110 
+            source_node_data.alpha = 100 
             
             target_parm.tag = "edited"
             target_parm.color = COLORS["green"]
@@ -221,7 +221,7 @@ class HipFileComparator:
 
             self.target_data[path].tag = "edited"
             self.target_data[path].color = COLORS["green"]
-            self.target_data[path].alpha = 110 
+            self.target_data[path].alpha = 100 
 
     def _handle_created_params(self):
         for path, target_data in self.target_data.items(): 
@@ -237,10 +237,9 @@ class HipFileComparator:
 
                 target_data.tag = "edited"
                 target_data.color = COLORS["green"]
-                target_data.alpha = 110
+                target_data.alpha = 100
 
                 parm = ParamData(parm_name, "", "created")
-                parm.color = COLORS["red"]
                 parm.alpha = 55
                 parm.is_hatched = True
                 parm.is_active = False
@@ -251,8 +250,7 @@ class HipFileComparator:
                 )
                 
                 self.source_data[path].tag = "edited"
-                self.source_data[path].color = COLORS["red"]
-                self.source_data[path].alpha = 110
+                self.source_data[path].alpha = 100
 
     def _handle_created_nodes(self):
         """Handle nodes that are newly created."""
@@ -274,13 +272,12 @@ class HipFileComparator:
         index = get_ordered_dict_key_index(self.target_data, path)
 
         self.source_data = ordered_dict_insert(self.source_data, index, path, new_data)
-        self.source_data[path].color = COLORS["red"]
-        self.source_data[path].alpha = 110 
+        self.source_data[path].alpha = 100 
         self.source_data[path].is_hatched = True
 
         self.target_data[path].tag = "created"
         self.target_data[path].color = COLORS["green"]
-        self.target_data[path].alpha = 110 
+        self.target_data[path].alpha = 100 
 
 
         

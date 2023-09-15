@@ -3,7 +3,7 @@ from typing import Dict, Optional, Set
 from hutil.Qt.QtCore import QSortFilterProxyModel, QModelIndex
 from hutil.Qt.QtGui import QStandardItem
 
-from ui.custom_standart_item_model import DATA_ROLE, PATH_ROLE
+from ui.constants import DATA_ROLE, PATH_ROLE
 
 class RecursiveFilterProxyModel(QSortFilterProxyModel):
     """

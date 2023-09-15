@@ -2,7 +2,7 @@ from typing import List
 
 from hutil.Qt.QtWidgets import QTreeView
 from hutil.Qt.QtCore import Qt, QModelIndex
-from hutil.Qt.QtGui import QMouseEvent
+from hutil.Qt.QtGui import QMouseEvent, QPainter
 
 class CustomQTreeView(QTreeView):
     """
@@ -65,3 +65,8 @@ class CustomQTreeView(QTreeView):
         :return: A list of QModelIndex representing each child.
         """
         return [index.child(row, 0) for row in range(self.model().rowCount(index))]
+
+    def paintEvent(self, event):
+        painter = QPainter(self.viewport())
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        super(CustomQTreeView, self).paintEvent(event)

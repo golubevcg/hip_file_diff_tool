@@ -3,7 +3,7 @@ import os
 from hutil.Qt.QtGui import QPixmap, QIcon
 from hutil.Qt.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QFileDialog
 
-from ui.custom_standart_item_model import ICONS_PATH
+from ui.constants import ICONS_PATH
 
 
 class FileSelector(QWidget):

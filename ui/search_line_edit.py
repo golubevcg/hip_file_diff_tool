@@ -5,7 +5,7 @@ from hutil.Qt.QtWidgets import QWidget, QLineEdit, QAbstractItemView, QAction
 from hutil.Qt.QtCore import Qt
 from hutil.Qt.QtGui import QPixmap, QIcon
 
-from ui.custom_standart_item_model import DATA_ROLE, PATH_ROLE, ICONS_PATH
+from ui.constants import DATA_ROLE, PATH_ROLE, ICONS_PATH
 from ui.recursive_filter_proxy_model import RecursiveFilterProxyModel
 
 

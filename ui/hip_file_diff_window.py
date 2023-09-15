@@ -6,12 +6,14 @@ from hutil.Qt.QtWidgets import (
     QMessageBox, QAbstractItemView, QCheckBox, QSpacerItem, QSizePolicy
 )
 from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
+from hutil.Qt.QtGui import QPainter
 
 from api.hip_file_comparator import HipFileComparator
 from ui.custom_qtree_view import CustomQTreeView
 from ui.custom_standart_item_model import CustomStandardItemModel
 from ui.file_selector import FileSelector
 from ui.search_line_edit import QTreeViewSearch
+from ui.custom_standart_item_model import HatchedItemDelegate
 
 
 
@@ -27,6 +29,19 @@ class HipFileDiffWindow(QMainWindow):
         super(HipFileDiffWindow, self).__init__()
         self.hip_comparator: HipFileComparator = None
         self.init_ui()
+
+        # TESTING
+        # SET SOURCE PATH
+        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source.hipnc")
+        # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source.hipnc")
+
+        # SET TARGET PATH
+        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source_edited.hipnc")
+        # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source_edited.hipnc")
+
+
+        # CLICK
+        self.handle_compare_button_click()
 
     def init_ui(self) -> None:
         """Initialize UI components."""
@@ -133,6 +148,8 @@ class HipFileDiffWindow(QMainWindow):
         :return: Configured QTreeView instance.
         """
         tree_view = CustomQTreeView(self)
+        tree_view.setItemDelegate(HatchedItemDelegate(tree_view))
+
         tree_view.setObjectName(obj_name)
         tree_view.header().hide()
         tree_view.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -184,24 +201,29 @@ class HipFileDiffWindow(QMainWindow):
                 border-radius: 10px;
             }
             QTreeView::branch:has-siblings:!adjoins-item {
-                border-image: url("ui/icons/vline.svg") 0;
+                border-image: url("ui/icons/vline.svg")  center center no-repeat;
                 }
             QTreeView::branch:has-siblings:adjoins-item {
-                border-image: url("ui/icons/more.svg") 0;
+                border-image: url("ui/icons/more.svg")  center center no-repeat;
             }
             QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-                border-image: url("ui/icons/end.svg") 0;
+                border-image: url("ui/icons/end.svg")  center center no-repeat;
             }
             QTreeView::branch:has-children:!has-siblings:closed,
             QTreeView::branch:closed:has-children:has-siblings {
-                border-image: url(ui/icons/closed.svg) 0;
+                border-image: url(ui/icons/closed.svg)  center center no-repeat;
             }
             QTreeView::branch:open:has-children:!has-siblings,
             QTreeView::branch:open:has-children:has-siblings {
-                border-image: url("ui/icons/opened.svg") 0;
+                border-image: url("ui/icons/opened.svg")  center center no-repeat;
             }
             QTreeView::branch:!adjoins-item{
-                border-image: url("ui/icons/empty.svg") 0;
+                border-image: url("ui/icons/empty.svg")  center center no-repeat;
+            }
+            QTreeView::item {
+                height: 1.1em; 
+                font-size: 0.4em; 
+                padding: 0.11em;
             }
             QTreeView::item:hover {
                 background: rgb(71, 71, 71);
@@ -213,12 +235,12 @@ class HipFileDiffWindow(QMainWindow):
             QScrollBar:vertical {
                 border: none;
                 background: #333333;
-                width: 30px;
+                width: 20px;
                 border: 1px solid #3c3c3c;
             }
             QScrollBar::handle:vertical {
                 background: #464646;
-                min-width: 30px;
+                min-width: 20px;
             }
             QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
                 border: none;
