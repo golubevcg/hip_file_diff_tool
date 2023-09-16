@@ -192,46 +192,5 @@ class CustomStandardItemModel(QStandardItemModel):
             qcolor.setAlpha(item_data.alpha)
             item.setBackground(QBrush(qcolor))
 
-        if item_data.is_hatched:
-            self.fill_item_with_hatched_pattern(item, self.view)
-
         if item_data.tag and item_data.tag != "value":
             self.view.expand_to_index(item, self.view)
-
-    def fill_item_with_hatched_pattern(self, item: QStandardItem, view) -> None:
-        """
-        Fill the background of a QStandardItem with a diagonal hatched pattern.
-
-        :param item: The QStandardItem to fill.
-        :param view: The QAbstractItemView in which the item is displayed.
-        """
-        # Create a QPixmap for the global hatching pattern
-        hatch_width = 1000  # Adjust for desired frequency
-        '''
-        pixmap = QPixmap(hatch_width, hatch_width)
-        pixmap.fill(Qt.transparent)  # or any background color
-
-        # Create a brush for the hatching pattern
-        pen_color = QColor("#505050")  # Change for desired line color
-        pen_width = 3  # Change for desired line thickness
-        pen = QPen(pen_color, pen_width)
-        pen.setCapStyle(Qt.FlatCap)
-
-        painter = QPainter(pixmap)
-        painter.setPen(pen)
-
-        # Create the hatching pattern across the entire pixmap
-        for i in range(-hatch_width, hatch_width, pen_width * 6):
-            painter.drawLine(i, hatch_width, hatch_width + i, 0)
-
-        painter.end()
-
-        hatch_brush = QBrush(pixmap)
-
-        # Calculate the offset based on the item's position in the view
-        index = item.index()
-        item_rect = view.visualRect(index)
-        hatch_brush.setTransform(QTransform().translate(item_rect.x(), item_rect.y()))
-
-        item.setBackground(hatch_brush)
-        '''

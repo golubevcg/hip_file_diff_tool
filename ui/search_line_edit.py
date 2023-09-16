@@ -45,7 +45,6 @@ class QTreeViewSearch(QLineEdit):
         """Connect UI events to their handlers."""
         self.search_action.triggered.connect(self.filter_tree_view)
         self.textChanged.connect(self.filter_tree_view)
-        self.textChanged.connect(self.handle_text_change)
         self.returnPressed.connect(self.select_first_match)
 
     def init_styles(self):
@@ -68,13 +67,17 @@ class QTreeViewSearch(QLineEdit):
 
     def filter_tree_view(self):
         """Filter the tree view based on the search input."""
-        self.proxy_model.reset_proxy_view()
 
+        self.proxy_model.reset_proxy_view()
         self.secondary_proxy_model.reset_proxy_view()
 
         search_text = self.text().strip()
         if not search_text:
-            return  # If no search text, just reset and return
+            self.restore_tree_state()
+            if self.second_search:
+                self.second_search.restore_tree_state()
+
+            return
         
         self.proxy_model.setFilterRole(Qt.DisplayRole)
         self.proxy_model.setFilterFixedString(search_text)
@@ -123,13 +126,6 @@ class QTreeViewSearch(QLineEdit):
         if first_index.isValid():
             self.treeview.setCurrentIndex(first_index)
             self.treeview.scrollTo(first_index, QAbstractItemView.PositionAtTop)
-
-    def handle_text_change(self):
-        """Restore tree state when the search text is empty."""
-        if not self.text():
-            self.restore_tree_state()
-            if self.second_search:
-                self.second_search.restore_tree_state()
 
     def capture_tree_state(self):
         """Store the expanded/collapsed state of tree view items."""

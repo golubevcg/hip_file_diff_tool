@@ -16,7 +16,6 @@ from ui.search_line_edit import QTreeViewSearch
 from ui.custom_standart_item_model import HatchedItemDelegate
 
 
-
 class HipFileDiffWindow(QMainWindow):
     """
     Main window for displaying the differences between two .hip files.
@@ -27,6 +26,7 @@ class HipFileDiffWindow(QMainWindow):
 
     def __init__(self):
         super(HipFileDiffWindow, self).__init__()
+
         self.hip_comparator: HipFileComparator = None
         self.init_ui()
 
@@ -38,7 +38,6 @@ class HipFileDiffWindow(QMainWindow):
         # SET TARGET PATH
         self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source_edited.hipnc")
         # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source_edited.hipnc")
-
 
         # CLICK
         self.handle_compare_button_click()
@@ -157,6 +156,7 @@ class HipFileDiffWindow(QMainWindow):
 
         if hide_scrollbar:
             tree_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
         return tree_view
 
     def setup_signals_and_slots(self) -> None:
@@ -326,14 +326,14 @@ class HipFileDiffWindow(QMainWindow):
             self.source_search_qline_edit.capture_tree_state()
             self.target_search_qline_edit.capture_tree_state()
 
-            self.source_treeview.model().invalidateFilter()
-            self.target_treeview.model().invalidateFilter()
+            self.source_treeview.model().reset_proxy_view()
+            self.target_treeview.model().reset_proxy_view()
         else:
             self.source_model.show_only_edited = False
             self.target_model.show_only_edited = False
 
-            self.source_treeview.model().invalidateFilter()
-            self.target_treeview.model().invalidateFilter()
+            self.source_treeview.model().reset_proxy_view()
+            self.target_treeview.model().reset_proxy_view()
 
             self.source_search_qline_edit.restore_tree_state()
             self.target_search_qline_edit.restore_tree_state()

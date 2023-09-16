@@ -5,6 +5,7 @@ from hutil.Qt.QtGui import QStandardItem
 
 from ui.constants import DATA_ROLE, PATH_ROLE
 
+
 class RecursiveFilterProxyModel(QSortFilterProxyModel):
     """
     Subclass of QSortFilterProxyModel that enables recursive filtering.
@@ -21,12 +22,17 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
         source_index = self.sourceModel().index(source_row, 0, source_parent)
-        
+
         # If there's an active filter for paths and the item's path isn't in it, reject this row.
         item_path = self.sourceModel().data(source_index, self.path_role)
         if self._filtered_paths and item_path not in self._filtered_paths:
             return False
         
+        if self.sourceModel().show_only_edited:
+            is_edited = self.conditionForItem(source_index)
+            if not is_edited:
+                return False
+
         # Check if the current row matches the filter itself
         if self.filter_accepts_row_itself(source_row, source_parent):
             return True
@@ -37,6 +43,7 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
                 return True
                 
         return False
+
     
     def conditionForItem(self, index: QModelIndex) -> bool:
         """Check the new condition for a given item."""
