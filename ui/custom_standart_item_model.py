@@ -1,16 +1,16 @@
 import os
 import copy
 import zipfile
-from hutil.Qt.QtGui import (
-    QPixmap, QIcon, QStandardItemModel, QStandardItem,
-    QColor, QBrush, QPen, QPainter, QTransform
-)
-from hutil.Qt.QtWidgets import QStyledItemDelegate
-from hutil.Qt.QtCore import Qt
 from typing import Dict, Optional
 
+from hutil.Qt.QtGui import (
+    QPixmap, QIcon, QStandardItemModel, QStandardItem,
+    QColor, QBrush
+)
+from hutil.Qt.QtCore import Qt
+
 from ui.hatched_pattern_item_delegate import HatchedItemDelegate
-from ui.constants import *
+from ui.constants import ICONS_ZIP_PATH, PATH_ROLE, DATA_ROLE, ICON_MAPPINGS
 
 
 # --- CustomStandardItemModel ---
@@ -30,17 +30,11 @@ class CustomStandardItemModel(QStandardItemModel):
         self.show_only_edited = False
 
     def set_view(self, tree_view) -> None:
-        """Set the tree view widget to which the model is attached."""
+        """Associate the model with a tree view widget."""
         self.view = tree_view
 
     def _set_icon_from_zip(self, item: QStandardItem, icon_name: str, icons_zip: zipfile.ZipFile) -> None:
-        """
-        Extract the specified icon from a zip archive and set it to the given item.
-
-        :param item: The QStandardItem object.
-        :param icon_name: Name of the icon in the archive.
-        :param icons_zip: Zip archive containing icons.
-        """
+        """Extract and set icon to item from given zip file."""
         try:
             with icons_zip.open(icon_name) as file:
                 icon_data = file.read()
@@ -51,16 +45,7 @@ class CustomStandardItemModel(QStandardItemModel):
             pass
 
     def add_item_with_path(self, item_text: str, path: str, data, icons_zip: zipfile.ZipFile, parent: Optional[QStandardItem] = None) -> None:
-        """
-        Create a QStandardItem with specified properties and add it to the model.
-
-        :param item_text: Display text for the item.
-        :param path: Unique path associated with the item.
-        :param data: Data associated with the item.
-        :param icons_zip: Zip archive containing icons.
-        :param parent: Parent item (if any).
-        """
-        
+        """Add item with given attributes and associated path to the model."""
         item = QStandardItem(item_text)
         item.setData(path, self.path_role)
         item.setData(data, self.data_role)
@@ -79,22 +64,13 @@ class CustomStandardItemModel(QStandardItemModel):
             self._add_parm_items(item, data, parm_name, icons_zip)
 
     def _add_parm_items(self, item: QStandardItem, data, parm_name: str, icons_zip: zipfile.ZipFile) -> None:
-        """
-        Add parameter items (associated with a data object) as children of the given item.
-
-        :param item: The QStandardItem object.
-        :param data: Data object containing parameter information.
-        :param parm_name: Name of the parameter.
-        :param icons_zip: Zip archive containing icons.
-        """
+        """Add parameters as child items to given item."""
         parm = data.get_parm_by_name(parm_name)
 
         if not parm.tag:
             return
         
-        updated_parm_name = parm_name
-        if parm.is_active == False:
-            updated_parm_name = ""
+        updated_parm_name = parm_name if parm.is_active else ""
 
         path = item.data(self.path_role)
         parm_path = f"{path}/{parm_name}"
@@ -109,12 +85,9 @@ class CustomStandardItemModel(QStandardItemModel):
         item.appendRow(parm_item)
         self.item_dictionary[parm_path] = parm_item
 
-        value = ""
-        if parm.is_active != False:
-            value = parm.value
-
+        value = str(parm.value) if parm.is_active else ""
         value_path = f"{parm_path}/value"
-        value_item = QStandardItem(str(value))
+        value_item = QStandardItem(value)
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         value_data = copy.copy(parm)
         value_data.tag = 'value'
@@ -125,72 +98,38 @@ class CustomStandardItemModel(QStandardItemModel):
         self.item_dictionary[value_path] = value_item
 
     def get_item_by_path(self, path: str) -> Optional[QStandardItem]:
-        """
-        Retrieve the QStandardItem associated with a specific path.
-
-        :param path: Unique path of the desired item.
-        :return: Corresponding QStandardItem, or None if not found.
-        """
-
+        """Return the item associated with given path."""
         return self.item_dictionary.get(path)
 
     def populate_with_data(self, data, view_name: str) -> None:
-        """
-        Populate the model using a provided dataset.
-
-        :param data: Dataset to populate from.
-        :param view_name: Name of the associated view.
-        """
-
+        """Populate the model with given data and associate with a view."""
         with zipfile.ZipFile(ICONS_ZIP_PATH, 'r') as zip_ref:
             for path in data:
                 node_data = data[path]
-
                 node_name = node_data.name if node_data.name != "/" else view_name
                 parent_path = node_data.parent_path
                 parent_item = self.get_item_by_path(parent_path)
+                if parent_item or parent_path == "/":
+                    self.add_item_with_path(node_name, path, node_data, zip_ref, parent=parent_item)
 
-                if parent_path != "/" and not parent_item:
-                    continue
-
-                self.add_item_with_path(node_name, path, node_data, zip_ref, parent=parent_item)
-        
         self.paint_items_and_expand(self.invisibleRootItem(), view_name)
 
     def paint_items_and_expand(self, parent_item, view_name: str) -> None:
-        """
-        Recursively iterate over items to style and possibly expand them.
-
-        :param parent_item: Starting item for the recursive traversal.
-        :param view_name: Name of the associated view.
-        """
+        """Recursively style and expand items starting from the parent item."""
         for row in range(parent_item.rowCount()):
             for column in range(parent_item.columnCount()):
                 child_item = parent_item.child(row, 0)
-                item_data = child_item.data(Qt.UserRole + 2)
-
-                tag = item_data.tag
-                # Using the new _apply_item_style function
-                if tag:
-                    self._apply_item_style_and_expansion(child_item)
-
                 if child_item:
+                    self._apply_item_style_and_expansion(child_item)
                     self.paint_items_and_expand(child_item, view_name)
 
     def _apply_item_style_and_expansion(self, item: QStandardItem) -> None:
-        """
-        Apply the appropriate style and expansion to the item based on its tag and view_name.
-
-        :param item: The QStandardItem to apply the style to.
-        """
-
+        """Style and expand the given item based on its properties."""
         item_data = item.data(Qt.UserRole + 2)
-
         color = item_data.color
-        qcolor = QColor(color)
         if color:
+            qcolor = QColor(color)
             qcolor.setAlpha(item_data.alpha)
             item.setBackground(QBrush(qcolor))
-
         if item_data.tag and item_data.tag != "value":
             self.view.expand_to_index(item, self.view)

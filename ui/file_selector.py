@@ -2,18 +2,13 @@ import os
 
 from hutil.Qt.QtGui import QPixmap, QIcon
 from hutil.Qt.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QFileDialog
-
 from ui.constants import ICONS_PATH
 
 
 class FileSelector(QWidget):
     """
-    A custom QWidget for selecting and displaying a file path.
-
-    Attributes:
-        layout (QHBoxLayout): Layout containing the lineEdit and browseButton.
-        lineEdit (QLineEdit): Displays the selected file path.
-        browseButton (QPushButton): Triggers the file selection dialog.
+    A custom QWidget for selecting and displaying a file path. This widget combines a QLineEdit and a QPushButton 
+    for file browsing.
     """
 
     def __init__(self, parent: QWidget = None):
@@ -21,43 +16,36 @@ class FileSelector(QWidget):
         Initialize the FileSelector widget.
 
         Args:
-            parent (QWidget, optional): Parent widget. Defaults to None.
+            parent (QWidget, optional): The parent widget for the FileSelector. Defaults to None.
         """
-        super(FileSelector, self).__init__(parent)
+        super().__init__(parent)
 
-        # Setting up the layout and components
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(1, 1, 1, 1)
+
         self.setup_line_edit()
         self.setup_browse_button()
-
-        # Applying styles
         self._set_styles()
-        self.setContentsMargins(0, 0, 0, 0)  # left, top, right, bottom
+
+        self.setContentsMargins(0, 0, 0, 0)
 
     def setup_line_edit(self):
-        """Initialize and configure the QLineEdit component."""
+        """Configure the QLineEdit component."""
         self.lineEdit = QLineEdit(self)
         self.lineEdit.setFixedHeight(30)
         self.layout.addWidget(self.lineEdit)
 
     def setup_browse_button(self):
-        """Initialize and configure the browse QPushButton component."""
+        """Configure the QPushButton component for file browsing."""
         self.browseButton = QPushButton(self)
-        self.browseButton.setObjectName("BrowseButton")
-        self.browseButton.setFixedSize(30, 30)
-        
-        # Setting button icon
         pixmap = QPixmap(os.path.join(ICONS_PATH, "folder.png"))
         self.browseButton.setIcon(QIcon(pixmap))
-        
-        # Connecting the button click signal
+        self.browseButton.setFixedSize(30, 30)
         self.browseButton.clicked.connect(self.browse)
-        
         self.layout.addWidget(self.browseButton)
 
     def browse(self):
-        """Open a file dialog and update the QLineEdit with the selected file path."""
+        """Open a file dialog and set the selected file path to the QLineEdit."""
         fname, _ = QFileDialog.getOpenFileName(self, 'Open file')
         if fname:
             self.lineEdit.setText(fname)
@@ -67,7 +55,7 @@ class FileSelector(QWidget):
         Set the content of the QLineEdit.
 
         Args:
-            text (str): Text to display in the QLineEdit.
+            text (str): The text to display in the QLineEdit.
         """
         self.lineEdit.setText(text)
 
@@ -76,20 +64,20 @@ class FileSelector(QWidget):
         Set placeholder text for the QLineEdit.
 
         Args:
-            text (str): Placeholder text to display.
+            text (str): Placeholder text to be displayed when QLineEdit is empty.
         """
         self.lineEdit.setPlaceholderText(text)
 
     def text(self) -> str:
-        """Get the current text from the QLineEdit.
-        
+        """Return the current text from the QLineEdit.
+
         Returns:
-            str: Text from the QLineEdit.
+            str: Text currently displayed in the QLineEdit.
         """
         return self.lineEdit.text()
 
     def _set_styles(self):
-        """Set the CSS styles for the widget's components."""
+        """Private method to apply CSS styles for the widget components."""
         # Styles for the browse button
         self.browseButton.setStyleSheet('''
             QPushButton{

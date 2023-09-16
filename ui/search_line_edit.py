@@ -26,17 +26,14 @@ class QTreeViewSearch(QLineEdit):
         self.proxy_model.setSourceModel(self.target_model)
         self.treeview.setModel(self.proxy_model)
         
-        # Define expanded state and placeholder text
         self.expanded_state = {}
         self.setPlaceholderText("Search")
         
-        # Setup search icon action
         pixmap = QPixmap(os.path.join(ICONS_PATH, "search.png"))
         self.search_action = QAction(self)
         self.search_action.setIcon(QIcon(pixmap))
         self.addAction(self.search_action, QLineEdit.TrailingPosition)
         
-        # Secondary model initialization
         self.secondary_proxy_model = None
         self.secondary_treeview = None
         self.second_search = None
@@ -48,7 +45,7 @@ class QTreeViewSearch(QLineEdit):
         self.returnPressed.connect(self.select_first_match)
 
     def init_styles(self):
-        """Define styles for the search widget."""
+        """Set the visual styles for the search widget."""
         self.setStyleSheet(
             '''
             QLineEdit{
@@ -66,8 +63,7 @@ class QTreeViewSearch(QLineEdit):
         )
 
     def filter_tree_view(self):
-        """Filter the tree view based on the search input."""
-
+        """Apply filter on tree view based on search input."""
         self.proxy_model.reset_proxy_view()
         self.secondary_proxy_model.reset_proxy_view()
 
@@ -76,7 +72,6 @@ class QTreeViewSearch(QLineEdit):
             self.restore_tree_state()
             if self.second_search:
                 self.second_search.restore_tree_state()
-
             return
         
         self.proxy_model.setFilterRole(Qt.DisplayRole)
@@ -87,19 +82,19 @@ class QTreeViewSearch(QLineEdit):
         self.synchronize_trees()
 
     def synchronize_trees(self):
-        """Synchronize the primary and secondary tree views."""
+        """Keep the primary and secondary tree views in sync."""
         visible_paths = self.get_visible_paths()
         self.filter_secondary_tree(visible_paths)
 
     def get_visible_paths(self) -> Set[str]:
-        """Retrieve visible paths from the primary tree view."""
+        """Retrieve paths that are visible in the primary tree view."""
         visible_paths = set()
         root = self.proxy_model.index(0, 0)
         self.collect_paths(root, visible_paths)
         return visible_paths
 
     def collect_paths(self, index, paths: Set[str]):
-        """Recursively collect visible paths starting from the given index."""
+        """Recursively gather paths visible from the given index."""
         if not index.isValid():
             return
         
@@ -109,7 +104,7 @@ class QTreeViewSearch(QLineEdit):
             self.collect_paths(child_index, paths)
 
     def filter_secondary_tree(self, paths: Set[str]):
-        """Filter items in the secondary tree view based on visible paths."""
+        """Update items in the secondary tree view based on provided paths."""
         self.secondary_proxy_model.setFilterFixedString("")
         if not paths:
             self.secondary_proxy_model.setFilterFixedString("ImpossibleStringThatMatchesNothing")
@@ -121,46 +116,21 @@ class QTreeViewSearch(QLineEdit):
             self.secondary_treeview.expandAll()
 
     def select_first_match(self):
-        """Select the first item in the tree view that matches the search query."""
+        """Highlight the first item in tree view that matches the search."""
         first_index = self.proxy_model.index(0, 0)
         if first_index.isValid():
             self.treeview.setCurrentIndex(first_index)
             self.treeview.scrollTo(first_index, QAbstractItemView.PositionAtTop)
 
     def capture_tree_state(self):
-        """Store the expanded/collapsed state of tree view items."""
+        """Remember the current expanded/collapsed state of tree view items."""
         for row in range(self.treeview.model().rowCount()):
             index = self.treeview.model().index(row, 0)
             self._capture_state(index)
 
     def _capture_state(self, index):
-        """Recursively store the state of tree view items."""
+        """Recursively store the expansion state of tree view items."""
         if index.isValid():
             path = self.treeview.model().data(index, PATH_ROLE)
             self.expanded_state[path] = self.treeview.isExpanded(index)
-            for row in range(self.treeview.model().rowCount(index)):
-                child_index = self.treeview.model().index(row, 0, index)
-                self._capture_state(child_index)
-
-    def restore_tree_state(self):
-        """Restore the expanded/collapsed state of tree view items."""
-        for row in range(self.treeview.model().rowCount()):
-            index = self.treeview.model().index(row, 0)
-            self._restore_state(index)
-
-    def _restore_state(self, index):
-        """Recursively restore the state of tree view items."""
-        if index.isValid():
-            path = self.treeview.model().data(index, PATH_ROLE)
-            self.treeview.setExpanded(index, self.expanded_state.get(path, False))
-            for row in range(self.treeview.model().rowCount(index)):
-                child_index = self.treeview.model().index(row, 0, index)
-                self._restore_state(child_index)
-
-    def focusInEvent(self, event):
-        """Handle the focus-in event and capture the tree state."""
-        super().focusInEvent(event)
-        if not self.text():
-            self.capture_tree_state()
-            if self.second_search:
-                self.second_search.capture_tree_state()
+           

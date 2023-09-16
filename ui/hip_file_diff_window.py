@@ -3,23 +3,22 @@ from zipfile import ZipFile
 
 from hutil.Qt.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
-    QMessageBox, QAbstractItemView, QCheckBox, QSpacerItem, QSizePolicy
+    QMessageBox, QAbstractItemView, QCheckBox, QSizePolicy
 )
 from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
 from hutil.Qt.QtGui import QPainter
 
 from api.hip_file_comparator import HipFileComparator
 from ui.custom_qtree_view import CustomQTreeView
-from ui.custom_standart_item_model import CustomStandardItemModel
+from ui.custom_standart_item_model import CustomStandardItemModel, HatchedItemDelegate
 from ui.file_selector import FileSelector
 from ui.search_line_edit import QTreeViewSearch
-from ui.custom_standart_item_model import HatchedItemDelegate
 
 
 class HipFileDiffWindow(QMainWindow):
     """
     Main window for displaying the differences between two .hip files.
-
+    
     Attributes:
         hip_comparator (HipFileComparator): Instance to compare two hip files.
     """
@@ -29,18 +28,6 @@ class HipFileDiffWindow(QMainWindow):
 
         self.hip_comparator: HipFileComparator = None
         self.init_ui()
-
-        # TESTING
-        # SET SOURCE PATH
-        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source.hipnc")
-        # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source.hipnc")
-
-        # SET TARGET PATH
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source_edited.hipnc")
-        # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/test_scenes/billowy_smoke_source_edited.hipnc")
-
-        # CLICK
-        self.handle_compare_button_click()
 
     def init_ui(self) -> None:
         """Initialize UI components."""
@@ -103,7 +90,9 @@ class HipFileDiffWindow(QMainWindow):
         self.target_layout.setContentsMargins(3, 3, 3, 3)
 
     def setup_tree_views(self) -> None:
-        """Setup QTreeViews and associate models for source and target sections."""
+        """
+        Setup QTreeViews and associate models for source and target sections.
+        """
         self.source_treeview = self.create_tree_view("source")
         self.source_model = CustomStandardItemModel()
         self.source_model.set_view(self.source_treeview)
@@ -137,14 +126,16 @@ class HipFileDiffWindow(QMainWindow):
         self.source_model.rowsInserted.connect(self.source_search_qline_edit.proxy_model.invalidate)
         self.source_model.rowsRemoved.connect(self.source_search_qline_edit.proxy_model.invalidate)
         
-    def create_tree_view(self, obj_name: str, hide_scrollbar:bool = True ) -> CustomQTreeView:
+    def create_tree_view(self, obj_name: str, hide_scrollbar: bool = True) -> CustomQTreeView:
         """
         Create a QTreeView with specified properties.
-
-        :param obj_name: Object name for the QTreeView.
-        :param hide_scrollbar: bool parameter hide scrollbar or not.
-
-        :return: Configured QTreeView instance.
+        
+        Args:
+        - obj_name (str): Object name for the QTreeView.
+        - hide_scrollbar (bool): If True, hide the scrollbar. Default is True.
+        
+        Returns:
+        - CustomQTreeView: Configured QTreeView instance.
         """
         tree_view = CustomQTreeView(self)
         tree_view.setItemDelegate(HatchedItemDelegate(tree_view))
@@ -171,7 +162,8 @@ class HipFileDiffWindow(QMainWindow):
         """
         Connect expansion signals for a QTreeView.
 
-        :param tree_view: The QTreeView instance.
+        Args:
+        - tree_view (CustomQTreeView): The QTreeView instance.
         """
         tree_view.expanded.connect(lambda index: self.sync_expand(index, expand=True))
         tree_view.collapsed.connect(lambda index: self.sync_expand(index, expand=False))
@@ -290,7 +282,9 @@ class HipFileDiffWindow(QMainWindow):
         self.main_layout.addLayout(self.checkbox_h_layout)
 
     def handle_compare_button_click(self) -> None:
-        """Handle logic when the load button is clicked."""
+        """
+        Handle the logic when the "Compare" button is clicked.
+        """
         source_path = self.source_file_line_edit.text()
         target_path = self.target_file_line_edit.text()
         
@@ -318,7 +312,13 @@ class HipFileDiffWindow(QMainWindow):
         self.source_treeview.model().invalidateFilter()
         self.target_treeview.model().invalidateFilter()
 
-    def on_checkbox_toggled(self, state):
+    def on_checkbox_toggled(self, state) -> None:
+        """
+        Handle the logic when "Show only edited nodes" checkbox is toggled.
+
+        Args:
+        - state: Current state of the checkbox.
+        """
         if state == Qt.Checked:
             self.source_model.show_only_edited = True
             self.target_model.show_only_edited = True
@@ -341,9 +341,10 @@ class HipFileDiffWindow(QMainWindow):
     def sync_expand(self, index, expand: bool = True) -> None:
         """
         Synchronize expansion state between tree views.
-
-        :param index: QModelIndex of the item being expanded or collapsed.
-        :param expand: Whether the item is expanded (True) or collapsed (False).
+        
+        Args:
+        - index: QModelIndex of the item being expanded or collapsed.
+        - expand (bool): If True, item is expanded. If False, it's collapsed.
         """
         event_proxy_model = index.model()
         
@@ -369,7 +370,8 @@ class HipFileDiffWindow(QMainWindow):
         """
         Synchronize vertical scrolling between tree views.
 
-        :param value: Vertical scroll position.
+        Args:
+        - value (int): Vertical scroll position.
         """
         # Fetch the source of the signal
         source_scrollbar = self.sender()

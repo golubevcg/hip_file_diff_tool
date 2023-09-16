@@ -4,29 +4,30 @@ from hutil.Qt.QtWidgets import QTreeView
 from hutil.Qt.QtCore import Qt, QModelIndex
 from hutil.Qt.QtGui import QMouseEvent, QPainter
 
+
 class CustomQTreeView(QTreeView):
     """
-    CustomQTreeView class for drawing references as main data tree.
+    A custom QTreeView that provides additional functionalities such as 
+    recursive expanding/collapsing of items and enhanced mouse click handling.
     """
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """
-        Handle mouse press events. Expands or collapses all children when 
-        the shift key is pressed during the click.
+        Handle mouse press events to detect a Shift+Click and expand or collapse
+        all children of the clicked node accordingly.
 
-        :param event: The mouse event.
+        :param event: The mouse event triggered by user's action.
         """
-        super(CustomQTreeView, self).mousePressEvent(event)
+        super().mousePressEvent(event)
 
         if event.modifiers() & Qt.ShiftModifier:
             self.expand_or_collapse_all(self.indexAt(event.pos()))
 
     def expand_or_collapse_all(self, index: QModelIndex) -> None:
         """
-        Toggles the expansion state (expand if collapsed, collapse if expanded)
-        for the given index and all its descendants.
+        Toggle the expansion state for the specified index and its descendants.
 
-        :param index: QModelIndex from the QTreeView.
+        :param index: The QModelIndex of the item in the QTreeView.
         """
         toggle_expansion = not self.isExpanded(index)
         self.recursive_expand_or_collapse(index, toggle_expansion)
@@ -34,10 +35,10 @@ class CustomQTreeView(QTreeView):
 
     def recursive_expand_or_collapse(self, index: QModelIndex, expand: bool) -> None:
         """
-        Recursively toggles the expansion state for the given index and its descendants.
+        Recursively set the expansion state for the given index and its descendants.
 
-        :param index: QModelIndex from the QTreeView.
-        :param expand: Boolean indicating whether to expand or collapse.
+        :param index: QModelIndex of the item in the QTreeView.
+        :param expand: Boolean indicating desired state (True for expand, False for collapse).
         """
         for child_row in range(self.model().rowCount(index)):
             child_index = index.child(child_row, 0)
@@ -46,10 +47,10 @@ class CustomQTreeView(QTreeView):
 
     def expand_to_index(self, item, treeview: QTreeView) -> None:
         """
-        Expands the treeview to the specified item's index.
-        
-        :param item: The item to expand to.
-        :param treeview: The QTreeView to expand.
+        Expand the QTreeView to reveal the specified item.
+
+        :param item: The QStandardItem whose position in the tree you want to reveal.
+        :param treeview: The QTreeView in which the item resides.
         """
         index = treeview.model().indexFromItem(item)
         parent = index.parent()
@@ -59,14 +60,19 @@ class CustomQTreeView(QTreeView):
 
     def get_child_indices(self, index: QModelIndex) -> List[QModelIndex]:
         """
-        Return all child indices for the given index.
+        Retrieve all child indices for the given index.
 
-        :param index: QModelIndex from the QTreeView.
-        :return: A list of QModelIndex representing each child.
+        :param index: QModelIndex of the item in the QTreeView.
+        :return: List of QModelIndex instances representing each child.
         """
         return [index.child(row, 0) for row in range(self.model().rowCount(index))]
 
-    def paintEvent(self, event):
+    def paintEvent(self, event) -> None:
+        """
+        Handle painting the QTreeView, enabling anti-aliasing for smoother visuals.
+
+        :param event: The paint event triggered by the Qt framework.
+        """
         painter = QPainter(self.viewport())
         painter.setRenderHint(QPainter.Antialiasing, True)
-        super(CustomQTreeView, self).paintEvent(event)
+        super().paintEvent(event)
