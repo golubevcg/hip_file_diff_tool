@@ -133,3 +133,9 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         """
         self._filtered_paths = paths
         self.invalidateFilter()
+
+    def reset_proxy_view(self):
+        self.set_filtered_paths(set())  # Clear the paths filter
+        self.setFilterFixedString("")
+        self.sort(-1)
+        self.invalidateFilter()

@@ -68,9 +68,10 @@ class QTreeViewSearch(QLineEdit):
 
     def filter_tree_view(self):
         """Filter the tree view based on the search input."""
-        self.proxy_model.invalidateFilter()
-        self.proxy_model.setFilterFixedString("")
-        
+        self.proxy_model.reset_proxy_view()
+
+        self.secondary_proxy_model.reset_proxy_view()
+
         search_text = self.text().strip()
         if not search_text:
             return  # If no search text, just reset and return
