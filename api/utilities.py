@@ -1,7 +1,11 @@
 from collections import OrderedDict
+from typing import Any, TypeVar
+
+K = TypeVar('K')
+V = TypeVar('V')
 
 
-def ordered_dict_insert(d: OrderedDict, index: int, key: str, value: any) -> OrderedDict:
+def ordered_dict_insert(d: OrderedDict[K, V], index: int, key: K, value: V) -> OrderedDict[K, V]:
     """
     Insert a key-value pair into an OrderedDict at a specified index.
 
@@ -17,7 +21,7 @@ def ordered_dict_insert(d: OrderedDict, index: int, key: str, value: any) -> Ord
     return OrderedDict(before + after)
 
 
-def get_ordered_dict_key_index(ordered_dict: OrderedDict, target_key: str) -> int:
+def get_ordered_dict_key_index(ordered_dict: OrderedDict[K, V], target_key: K) -> int:
     """
     Return the index of a key in an OrderedDict.
 
@@ -25,4 +29,7 @@ def get_ordered_dict_key_index(ordered_dict: OrderedDict, target_key: str) -> in
     :param target_key: The key to find the index for.
     :return: The index of the target_key if found, raises an error otherwise.
     """
-    return list(ordered_dict.keys()).index(target_key)
+    for idx, key in enumerate(ordered_dict):
+        if key == target_key:
+            return idx
+    raise KeyError(f"'{target_key}' not found in the OrderedDict.")

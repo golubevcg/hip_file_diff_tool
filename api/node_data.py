@@ -1,6 +1,8 @@
 from collections import OrderedDict
+from typing import Any, Optional
 
 from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
+
 
 class NodeData:
     """
@@ -10,10 +12,13 @@ class NodeData:
         name (str): Name of the node.
         path (str): Path to the node, usually represented as a unique string. None by default.
         type (str): Type of the node, represented as a string. Empty string by default.
-        icon (str): path to the icon representing the node. Empty string by default.
+        icon (str): Path to the icon representing the node. Empty string by default.
         tag (str or None): A tag for categorization or special marking of the node. None by default.
         parent_path (str): Path to the parent of this node. Empty string by default.
         parms (OrderedDict): An ordered dictionary containing node parameters.
+        color (Optional[str]): The color associated with the node. None by default.
+        alpha (int): The opacity value (0-255) for the node visualization. 255 by default.
+        is_hatched (bool): Indicates whether the node has a hatched pattern. False by default.
     """
     
     def __init__(self, name: str):
@@ -22,28 +27,27 @@ class NodeData:
         
         :param name: The name of the node.
         """
-        self.name = name
-        self.path = None
-        self.type = ""
-        self.icon = ""
-        self.tag = None
-        self.parent_path = ""
-        self.parms = OrderedDict()
+        self.name: str = name
+        self.path: str = None
+        self.type: str = ""
+        self.icon: str = ""
+        self.tag: str = None
+        self.parent_path: str = ""
+        self.parms: OrderedDict[str, Any] = OrderedDict()
+        self.color: Optional[str] = None
+        self.alpha: int = 255
+        self.is_hatched: bool = False
 
-        self.color = None
-        self.alpha = 255
-        self.is_hatched = False
-
-    def add_parm(self, name: str, parm) -> None:
+    def add_parm(self, name: str, param: Any) -> None:
         """
         Add a parameter to the node's parameter dictionary.
         
         :param name: The name of the parameter.
-        :param parm: The parameter data to be added.
+        :param param: The parameter data to be added.
         """
-        self.parms[name] = parm
+        self.parms[name] = param
 
-    def get_parm_by_name(self, name: str):
+    def get_parm_by_name(self, name: str) -> Any:
         """
         Retrieve a parameter by its name from the node's parameter dictionary.
         
@@ -52,10 +56,9 @@ class NodeData:
         :raises ValueError: If the parameter name is not found in the dictionary.
         """
         if name not in self.parms:
-            raise ValueError("this parm not in dict")
+            raise ValueError(f"Parameter '{name}' is not found in the dictionary.")
         
         return self.parms[name]
     
     def __repr__(self):
-        # return f"{self.name}, {','.join(self.parms.keys())}\n"
         return f"{self.name}\n"

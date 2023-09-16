@@ -1,5 +1,4 @@
 import os
-import copy
 from collections import OrderedDict
 import hou
 from api.node_data import NodeData
@@ -7,21 +6,13 @@ from api.param_data import ParamData
 from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
 
 SUPPORTED_FILE_FORMATS = {"hip", "hipnc"}
-
 COLORS = {
     "red": "#b50400",
     "green": "#6ba100",
 }
 
-
 class HipFileComparator:
-    """
-    Comparator class for comparing two Houdini HIP files.
-
-    Attributes:
-    - source_hip_file: Path to the source HIP file.
-    - target_hip_file: Path to the target HIP file.
-    """
+    """Comparator class for comparing two Houdini HIP files."""
     
     def __init__(self, source_hip_file: str, target_hip_file: str):
         """
@@ -30,8 +21,8 @@ class HipFileComparator:
         :param source_hip_file: Path to the source HIP file.
         :param target_hip_file: Path to the target HIP file.
         """
-        self.check_file_path(source_hip_file)
-        self.check_file_path(target_hip_file)
+        self._check_file_path(source_hip_file, "source")
+        self._check_file_path(target_hip_file, "target")
         
         self.source_hip_file = source_hip_file
         self.target_hip_file = target_hip_file
@@ -42,19 +33,14 @@ class HipFileComparator:
 
         self.is_compared = False
 
-    def check_file_path(self, path: str):
-        """
-        Check if the provided path is valid and corresponds to a supported file format.
-
-        :param path: The file path to check.
-        :raises RuntimeError: If the path doesn't exist or the file format is unsupported.
-        """
+    def _check_file_path(self, path: str, file_type: str) -> None:
+        """Check if the provided path is valid and of a supported format."""
         if not os.path.exists(path):
-            raise RuntimeError("Incorrect source path specified, such file doesn't exist.")
+            raise RuntimeError(f"Incorrect {file_type} path specified. Such file doesn't exist.")
         
         _, extension = os.path.splitext(path)
         if extension[1:] not in SUPPORTED_FILE_FORMATS:
-            raise RuntimeError("Incorrect source file specified, only .hip files supported.")
+            raise RuntimeError(f"Incorrect {file_type} file format. Supported formats are: {', '.join(SUPPORTED_FILE_FORMATS)}.")
 
     def get_hip_data(self, hip_path: str) -> dict:
         """
@@ -67,9 +53,7 @@ class HipFileComparator:
             raise ValueError("No source file specified!")
         
         self._load_hip_file(hip_path)
-
         data_dict = {}
-
         for node in hou.node("/").allNodes():
             if node.isInsideLockedHDA():
                 continue
@@ -78,11 +62,7 @@ class HipFileComparator:
         return data_dict
 
     def _load_hip_file(self, hip_path: str) -> None:
-        """
-        Load a specified HIP file into Houdini.
-
-        :param hip_path: The path to the HIP file.
-        """
+        """Load a specified HIP file into Houdini."""
         hou.hipFile.clear()
         hou.hipFile.load(hip_path, suppress_save_prompt=True, ignore_load_warnings=True)
 
@@ -98,40 +78,28 @@ class HipFileComparator:
         node_data.type = node.type()
         node_data.icon = node.type().icon()
         node_data.parent_path = self._get_parent_path(node)
-
         for parm in node.parms():
             node_data.add_parm(parm.name(), ParamData(parm.name(), parm.eval(), None))
-
         return node_data
 
-    def _get_parent_path(self, node):
-        """
-        Returns the path of a node's parent.
-
-        :param node: The node for which to retrieve the parent's path.
-        :return: The path of the parent, or None if no parent is found.
-        """
+    def _get_parent_path(self, node) -> str:
+        """Return the path of a node's parent or None if no parent is found."""
         try:
             return node.parent().path()
-        except:
+        except AttributeError:
             return None
 
-    def compare(self):
-        """
-        Compare the source and target HIP files to identify differences.
-
-        :raises ValueError: If either source or target file paths are not set.
-        """
+    def compare(self) -> None:
+        """Compare the source and target HIP files to identify differences."""
         self._validate_file_paths()
         self.source_data = self.get_hip_data(self.source_hip_file)
         self.target_data = self.get_hip_data(self.target_hip_file)
-        
         self._handle_deleted_and_edited_nodes()
         self._handle_created_nodes()
         self._handle_created_params()
         self.is_compared = True
 
-    def _validate_file_paths(self):
+    def _validate_file_paths(self) -> None:
         """Validate that both source and target file paths are set."""
         if not self.source_hip_file:
             raise ValueError("Error, no source file specified!")
@@ -224,6 +192,7 @@ class HipFileComparator:
             self.target_data[path].alpha = 100 
 
     def _handle_created_params(self):
+        """Handle items for node params that are newly created."""
         for path, target_data in self.target_data.items(): 
             for parm_name in list(target_data.parms):
                 if parm_name in self.source_data[path].parms:
@@ -278,6 +247,3 @@ class HipFileComparator:
         self.target_data[path].tag = "created"
         self.target_data[path].color = COLORS["green"]
         self.target_data[path].alpha = 100 
-
-
-        
