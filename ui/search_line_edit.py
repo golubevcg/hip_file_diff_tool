@@ -68,10 +68,18 @@ class QTreeViewSearch(QLineEdit):
 
     def filter_tree_view(self):
         """Filter the tree view based on the search input."""
-        regex_str = f".*{self.text()}.*"
+        self.proxy_model.invalidateFilter()
+        self.proxy_model.setFilterFixedString("")
+        
+        search_text = self.text().strip()
+        if not search_text:
+            return  # If no search text, just reset and return
+        
         self.proxy_model.setFilterRole(Qt.DisplayRole)
-        self.proxy_model.setFilterRegExp(regex_str)
+        self.proxy_model.setFilterFixedString(search_text)
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        
+        self.proxy_model.invalidateFilter()
         self.synchronize_trees()
 
     def synchronize_trees(self):
@@ -90,6 +98,7 @@ class QTreeViewSearch(QLineEdit):
         """Recursively collect visible paths starting from the given index."""
         if not index.isValid():
             return
+        
         paths.add(self.proxy_model.data(index, PATH_ROLE))
         for row in range(self.proxy_model.rowCount(index)):
             child_index = self.proxy_model.index(row, 0, index)
@@ -104,6 +113,7 @@ class QTreeViewSearch(QLineEdit):
 
         if self.secondary_proxy_model:
             self.secondary_proxy_model.set_filtered_paths(paths)
+            self.proxy_model.set_filtered_paths(paths)
             self.secondary_treeview.expandAll()
 
     def select_first_match(self):

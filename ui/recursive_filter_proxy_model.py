@@ -20,33 +20,22 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         self._filtered_paths: Set[str] = set()
 
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
-        """
-        Determine if a row should be included based on filtering conditions.
+        source_index = self.sourceModel().index(source_row, 0, source_parent)
         
-        :param source_row: Row number in the source model.
-        :param source_parent: Parent index in the source model.
-        :return: True if the row is accepted, False otherwise.
-        """
-        
-        index = self.sourceModel().index(source_row, 0, source_parent)
-        item_path = self.sourceModel().data(index, self.path_role)
-
-        if self.sourceModel().show_only_edited:
-            return self.conditionForItem(index)
-            
-        # Path-specific filtering
+        # If there's an active filter for paths and the item's path isn't in it, reject this row.
+        item_path = self.sourceModel().data(source_index, self.path_role)
         if self._filtered_paths and item_path not in self._filtered_paths:
             return False
         
-        # Original recursive behavior:
+        # Check if the current row matches the filter itself
         if self.filter_accepts_row_itself(source_row, source_parent):
             return True
-        
-        # Check children matches
-        source_index = self.sourceModel().index(source_row, 0, source_parent)
+
+        # Recurse children and see if any of them match
         for i in range(self.sourceModel().rowCount(source_index)):
             if self.filterAcceptsRow(i, source_index):
                 return True
+                
         return False
     
     def conditionForItem(self, index: QModelIndex) -> bool:
