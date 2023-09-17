@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Set
+from typing import Optional, Set
 
 from hutil.Qt.QtCore import QSortFilterProxyModel, QModelIndex
 from hutil.Qt.QtGui import QStandardItem
@@ -18,7 +18,9 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         self.data_role = DATA_ROLE
         self._filtered_paths: Set[str] = set()
 
-    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
+    def filterAcceptsRow(
+        self, source_row: int, source_parent: QModelIndex
+    ) -> bool:
         """Check if a row in the source model should be included in the proxy model."""
         source_index = self.sourceModel().index(source_row, 0, source_parent)
         item_path = self.sourceModel().data(source_index, self.path_role)

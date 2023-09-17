@@ -39,13 +39,15 @@ class HipFileComparator:
         """Check if the provided path is valid and of a supported format."""
         if not os.path.exists(path):
             raise RuntimeError(
-                f"Incorrect {file_type} path specified. Such file doesn't exist."
+                f"Incorrect {file_type} \
+                path specified. Such file doesn't exist."
             )
 
         _, extension = os.path.splitext(path)
         if extension[1:] not in SUPPORTED_FILE_FORMATS:
             raise RuntimeError(
-                f"Incorrect {file_type} file format. Supported formats are: {', '.join(SUPPORTED_FILE_FORMATS)}."
+                f"Incorrect {file_type} file format. \
+                Supported formats are: {', '.join(SUPPORTED_FILE_FORMATS)}."
             )
 
     def get_hip_data(self, hip_path: str) -> dict:
@@ -70,7 +72,9 @@ class HipFileComparator:
     def _load_hip_file(self, hip_path: str) -> None:
         """Load a specified HIP file into Houdini."""
         hou.hipFile.clear()
-        hou.hipFile.load(hip_path, suppress_save_prompt=True, ignore_load_warnings=True)
+        hou.hipFile.load(
+            hip_path, suppress_save_prompt=True, ignore_load_warnings=True
+        )
 
     def _extract_node_data(self, node) -> NodeData:
         """
@@ -85,7 +89,9 @@ class HipFileComparator:
         node_data.icon = node.type().icon()
         node_data.parent_path = self._get_parent_path(node)
         for parm in node.parms():
-            node_data.add_parm(parm.name(), ParamData(parm.name(), parm.eval(), None))
+            node_data.add_parm(
+                parm.name(), ParamData(parm.name(), parm.eval(), None)
+            )
         return node_data
 
     def _get_parent_path(self, node) -> str:
@@ -132,7 +138,9 @@ class HipFileComparator:
         new_data.tag = "deleted"
         new_data.is_hatched = True
         index = get_ordered_dict_key_index(self.source_data, path)
-        self.target_data = ordered_dict_insert(self.target_data, index, path, new_data)
+        self.target_data = ordered_dict_insert(
+            self.target_data, index, path, new_data
+        )
 
         source_node_data.tag = "deleted"
         source_node_data.color = COLORS["red"]
@@ -158,7 +166,9 @@ class HipFileComparator:
                 self.source_data[path].color = COLORS["red"]
                 self.source_data[path].alpha = 100
 
-                source_parm = self.source_data[path].get_parm_by_name(parm_name)
+                source_parm = self.source_data[path].get_parm_by_name(
+                    parm_name
+                )
                 source_parm.tag = "edited"
                 source_parm.color = "red"
                 source_parm.alpha = 55
@@ -228,7 +238,9 @@ class HipFileComparator:
         source_paths = set(self.source_data.keys())
         target_paths = set(self.target_data.keys())
 
-        for path in target_paths - source_paths:  # Faster set difference operation
+        for path in (
+            target_paths - source_paths
+        ):  # Faster set difference operation
             self._mark_node_as_created(path)
 
     def _mark_node_as_created(self, path: str):
@@ -242,7 +254,9 @@ class HipFileComparator:
         new_data.tag = "created"
         index = get_ordered_dict_key_index(self.target_data, path)
 
-        self.source_data = ordered_dict_insert(self.source_data, index, path, new_data)
+        self.source_data = ordered_dict_insert(
+            self.source_data, index, path, new_data
+        )
         self.source_data[path].alpha = 100
         self.source_data[path].is_hatched = True
 

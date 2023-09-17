@@ -1,9 +1,6 @@
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock
 
-import hou
-
-from api import hip_file_comparator
 from api.hip_file_comparator import HipFileComparator
 
 
@@ -15,26 +12,34 @@ class TestHipFileComparator(unittest.TestCase):
         # Create some dummy paths
         self.invalid_ext_path = "test/test_scenes/invalid_ext_file.txt"
         self.nonexistent_path = "test/test_scenes/nonexistent/file.hip"
-        self.comparator = HipFileComparator(self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE)
+        self.comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
+        )
 
     @patch("api.hip_file_comparator.hou")
     def test_check_file_path_valid(self, mock_hou):
         """Test _check_file_path with a valid HIP file."""
-        comparator = HipFileComparator(self.SOURCE_HIP_FILE, self.SOURCE_HIP_FILE)
+        comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.SOURCE_HIP_FILE
+        )
         # No exception should be raised
         comparator._check_file_path(self.SOURCE_HIP_FILE, "source")
 
     @patch("api.hip_file_comparator.hou")
     def test_check_file_path_invalid_extension(self, mock_hou):
         """Test _check_file_path with an invalid file extension."""
-        comparator = HipFileComparator(self.SOURCE_HIP_FILE, self.SOURCE_HIP_FILE)
+        comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.SOURCE_HIP_FILE
+        )
         with self.assertRaises(RuntimeError):
             comparator._check_file_path(self.invalid_ext_path, "source")
 
     @patch("api.hip_file_comparator.hou")
     def test_check_file_path_nonexistent_file(self, mock_hou):
         """Test _check_file_path with a nonexistent file."""
-        comparator = HipFileComparator(self.SOURCE_HIP_FILE, self.SOURCE_HIP_FILE)
+        comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.SOURCE_HIP_FILE
+        )
         with self.assertRaises(RuntimeError):
             comparator._check_file_path(self.nonexistent_path, "source")
 
@@ -72,13 +77,16 @@ class TestHipFileComparator(unittest.TestCase):
     def test_get_hip_data_locked_hda(self, mock_hou):
         """Test get_hip_data with a node inside a locked HDA."""
 
-        # Mocking the behavior of hou.node("/").allNodes() with a node that is inside a locked HDA
+        # Mocking the behavior of hou.node("/").allNodes()
+        # with a node that is inside a locked HDA
         mock_node = Mock()
         mock_node.isInsideLockedHDA.return_value = True
         mock_hou.node.return_value.allNodes.return_value = [mock_node]
 
         result = self.comparator.get_hip_data(self.SOURCE_HIP_FILE)
-        self.assertEqual(result, {})  # No data should be retrieved for locked HDA nodes
+        self.assertEqual(
+            result, {}
+        )  # No data should be retrieved for locked HDA nodes
 
     @patch("api.hip_file_comparator.hou.hipFile.clear")
     @patch("api.hip_file_comparator.hou.hipFile.load")
@@ -87,7 +95,9 @@ class TestHipFileComparator(unittest.TestCase):
 
         mock_clear.assert_called_once()
         mock_load.assert_called_once_with(
-            self.SOURCE_HIP_FILE, suppress_save_prompt=True, ignore_load_warnings=True
+            self.SOURCE_HIP_FILE,
+            suppress_save_prompt=True,
+            ignore_load_warnings=True,
         )
 
     @patch("api.hip_file_comparator.hou.hipFile.load")

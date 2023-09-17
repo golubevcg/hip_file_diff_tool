@@ -8,15 +8,22 @@ class NodeData:
 
     Attributes:
         name (str): Name of the node.
-        path (str): Path to the node, usually represented as a unique string. None by default.
-        type (str): Type of the node, represented as a string. Empty string by default.
-        icon (str): Path to the icon representing the node. Empty string by default.
+        path (str): Path to the node, usually represented as a unique string.
+                    None by default.
+        type (str): Type of the node, represented as a string.
+                    Empty string by default.
+        icon (str): Path to the icon representing the node.
+                    Empty string by default.
         tag (str or None): A tag. None by default.
-        parent_path (str): Path to the parent of this node. Empty string by default.
+        parent_path (str): Path to the parent of this node.
+                           Empty string by default.
         parms (OrderedDict): An ordered dictionary containing node parameters.
-        color (Optional[str]): The color associated with the node. None by default.
-        alpha (int): The opacity value (0-255) for the node visualization. 255 by default.
-        is_hatched (bool): Indicates whether the node has a hatched pattern. False by default.
+        color (Optional[str]): The color associated with the node.
+                               None by default.
+        alpha (int): The opacity value (0-255) for the node visualization.
+                     255 by default.
+        is_hatched (bool): Indicates whether the node has a hatched pattern.
+                           False by default.
     """
 
     def __init__(self, name: str):
@@ -51,10 +58,13 @@ class NodeData:
 
         :param name: The name of the parameter to be retrieved.
         :return: The parameter data associated with the provided name.
-        :raises ValueError: If the parameter name is not found in the dictionary.
+        :raises ValueError: If the parameter name is not found
+                            in the dictionary.
         """
         if name not in self.parms:
-            raise ValueError(f"Parameter '{name}' is not found in the dictionary.")
+            raise ValueError(
+                f"Parameter '{name}' is not found in the dictionary."
+            )
 
         return self.parms[name]
 

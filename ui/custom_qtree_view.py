@@ -13,8 +13,8 @@ class CustomQTreeView(QTreeView):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """
-        Handle mouse press events to detect a Shift+Click and expand or collapse
-        all children of the clicked node accordingly.
+        Handle mouse press events to detect a Shift+Click
+        and expand or collapse all children of the clicked node accordingly.
 
         :param event: The mouse event triggered by user's action.
         """
@@ -25,7 +25,8 @@ class CustomQTreeView(QTreeView):
 
     def expand_or_collapse_all(self, index: QModelIndex) -> None:
         """
-        Toggle the expansion state for the specified index and its descendants.
+        Toggle the expansion state for the specified index and its
+        descendants.
 
         :param index: The QModelIndex of the item in the QTreeView.
         """
@@ -33,12 +34,16 @@ class CustomQTreeView(QTreeView):
         self.recursive_expand_or_collapse(index, toggle_expansion)
         self.setExpanded(index, toggle_expansion)
 
-    def recursive_expand_or_collapse(self, index: QModelIndex, expand: bool) -> None:
+    def recursive_expand_or_collapse(
+        self, index: QModelIndex, expand: bool
+    ) -> None:
         """
-        Recursively set the expansion state for the given index and its descendants.
+        Recursively set the expansion state for the given index
+         and its descendants.
 
         :param index: QModelIndex of the item in the QTreeView.
-        :param expand: Boolean indicating desired state (True for expand, False for collapse).
+        :param expand: Boolean indicating desired state
+                       (True for expand, False for collapse).
         """
         for child_row in range(self.model().rowCount(index)):
             child_index = index.child(child_row, 0)
@@ -49,7 +54,8 @@ class CustomQTreeView(QTreeView):
         """
         Expand the QTreeView to reveal the specified item.
 
-        :param item: The QStandardItem whose position in the tree you want to reveal.
+        :param item: The QStandardItem whose position in the tree
+                     you want to reveal.
         :param treeview: The QTreeView in which the item resides.
         """
         index = treeview.model().indexFromItem(item)
@@ -65,11 +71,14 @@ class CustomQTreeView(QTreeView):
         :param index: QModelIndex of the item in the QTreeView.
         :return: List of QModelIndex instances representing each child.
         """
-        return [index.child(row, 0) for row in range(self.model().rowCount(index))]
+        return [
+            index.child(row, 0) for row in range(self.model().rowCount(index))
+        ]
 
     def paintEvent(self, event) -> None:
         """
-        Handle painting the QTreeView, enabling anti-aliasing for smoother visuals.
+        Handle painting the QTreeView, enabling anti-aliasing
+        for smoother visuals.
 
         :param event: The paint event triggered by the Qt framework.
         """

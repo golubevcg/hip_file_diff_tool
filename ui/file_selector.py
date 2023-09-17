@@ -1,14 +1,20 @@
 import os
 
 from hutil.Qt.QtGui import QPixmap, QIcon
-from hutil.Qt.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QFileDialog
+from hutil.Qt.QtWidgets import (
+    QWidget,
+    QHBoxLayout,
+    QLineEdit,
+    QPushButton,
+    QFileDialog,
+)
 from ui.constants import ICONS_PATH
 
 
 class FileSelector(QWidget):
     """
-    A custom QWidget for selecting and displaying a file path. This widget combines a QLineEdit and a QPushButton
-    for file browsing.
+    A custom QWidget for selecting and displaying a file path.
+    This widget combines a QLineEdit and a QPushButton for file browsing.
     """
 
     def __init__(self, parent: QWidget = None):
@@ -16,7 +22,8 @@ class FileSelector(QWidget):
         Initialize the FileSelector widget.
 
         Args:
-            parent (QWidget, optional): The parent widget for the FileSelector. Defaults to None.
+            parent (QWidget, optional): Parent widget for the FileSelector.
+                                        Defaults to None.
         """
         super().__init__(parent)
 
@@ -45,7 +52,7 @@ class FileSelector(QWidget):
         self.layout.addWidget(self.browseButton)
 
     def browse(self):
-        """Open a file dialog and set the selected file path to the QLineEdit."""
+        """Open a file dialog and set file path to the QLineEdit."""
         fname, _ = QFileDialog.getOpenFileName(self, "Open file")
         if fname:
             self.lineEdit.setText(fname)
@@ -64,7 +71,8 @@ class FileSelector(QWidget):
         Set placeholder text for the QLineEdit.
 
         Args:
-            text (str): Placeholder text to be displayed when QLineEdit is empty.
+            text (str): Placeholder text to be displayed
+                        when QLineEdit is empty.
         """
         self.lineEdit.setPlaceholderText(text)
 
@@ -109,6 +117,6 @@ class FileSelector(QWidget):
                 color: #919191;
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
-            }            
+            }
         """
         )

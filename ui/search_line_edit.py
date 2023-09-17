@@ -5,14 +5,16 @@ from hutil.Qt.QtWidgets import QWidget, QLineEdit, QAbstractItemView, QAction
 from hutil.Qt.QtCore import Qt
 from hutil.Qt.QtGui import QPixmap, QIcon
 
-from ui.constants import DATA_ROLE, PATH_ROLE, ICONS_PATH
+from ui.constants import PATH_ROLE, ICONS_PATH
 from ui.recursive_filter_proxy_model import RecursiveFilterProxyModel
 
 
 class QTreeViewSearch(QLineEdit):
     """Search widget for filtering items within a QTreeView."""
 
-    def __init__(self, treeview, target_model, parent: Optional[QWidget] = None):
+    def __init__(
+        self, treeview, target_model, parent: Optional[QWidget] = None
+    ):
         super().__init__(parent)
         self.init_ui(treeview, target_model)
         self.init_events()
@@ -58,7 +60,7 @@ class QTreeViewSearch(QLineEdit):
             QLineEdit:hover, QLineEdit:selected {
                 color: #919191;
                 background-color: white;
-            }            
+            }
             """
         )
 
@@ -122,7 +124,9 @@ class QTreeViewSearch(QLineEdit):
         first_index = self.proxy_model.index(0, 0)
         if first_index.isValid():
             self.treeview.setCurrentIndex(first_index)
-            self.treeview.scrollTo(first_index, QAbstractItemView.PositionAtTop)
+            self.treeview.scrollTo(
+                first_index, QAbstractItemView.PositionAtTop
+            )
 
     def capture_tree_state(self):
         """Remember the current expanded/collapsed state of tree view items."""

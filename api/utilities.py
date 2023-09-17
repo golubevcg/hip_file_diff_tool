@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Any, TypeVar
+from typing import TypeVar
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -23,7 +23,9 @@ def ordered_dict_insert(
     return OrderedDict(before + after)
 
 
-def get_ordered_dict_key_index(ordered_dict: OrderedDict[K, V], target_key: K) -> int:
+def get_ordered_dict_key_index(
+    ordered_dict: OrderedDict[K, V], target_key: K
+) -> int:
     """
     Return the index of a key in an OrderedDict.
 

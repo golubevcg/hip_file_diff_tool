@@ -1,7 +1,6 @@
-import os
 import copy
 import zipfile
-from typing import Dict, Optional
+from typing import Optional
 
 from hutil.Qt.QtGui import (
     QPixmap,
@@ -76,7 +75,11 @@ class CustomStandardItemModel(QStandardItemModel):
             self._add_parm_items(item, data, parm_name, icons_zip)
 
     def _add_parm_items(
-        self, item: QStandardItem, data, parm_name: str, icons_zip: zipfile.ZipFile
+        self,
+        item: QStandardItem,
+        data,
+        parm_name: str,
+        icons_zip: zipfile.ZipFile,
     ) -> None:
         """Add parameters as child items to given item."""
         parm = data.get_parm_by_name(parm_name)
@@ -120,7 +123,9 @@ class CustomStandardItemModel(QStandardItemModel):
         with zipfile.ZipFile(ICONS_ZIP_PATH, "r") as zip_ref:
             for path in data:
                 node_data = data[path]
-                node_name = node_data.name if node_data.name != "/" else view_name
+                node_name = (
+                    node_data.name if node_data.name != "/" else view_name
+                )
                 parent_path = node_data.parent_path
                 parent_item = self.get_item_by_path(parent_path)
                 if parent_item or parent_path == "/":

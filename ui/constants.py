@@ -21,7 +21,9 @@ with open(ICONS_MAPPING_PATH, "r") as file:
         if line.startswith("#") or ":=" not in line:
             continue
         key, value = line.split(":=")
-        ICON_MAPPINGS[key.strip()] = value.strip().rstrip(";").replace("_", "/", 1)
+        ICON_MAPPINGS[key.strip()] = (
+            value.strip().rstrip(";").replace("_", "/", 1)
+        )
 
 PATH_ROLE = Qt.UserRole + 1
 DATA_ROLE = Qt.UserRole + 2

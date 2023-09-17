@@ -105,7 +105,9 @@ class HipFileDiffWindow(QMainWindow):
         self.source_treeview.setModel(self.source_model)
         self.source_layout.addWidget(self.source_treeview)
 
-        self.target_treeview = self.create_tree_view("target", hide_scrollbar=False)
+        self.target_treeview = self.create_tree_view(
+            "target", hide_scrollbar=False
+        )
         self.target_model = CustomStandardItemModel()
         self.target_model.set_view(self.target_treeview)
         self.target_treeview.setModel(self.target_model)
@@ -123,8 +125,12 @@ class HipFileDiffWindow(QMainWindow):
         self.target_search_qline_edit.setPlaceholderText("Search in target")
         self.target_layout.addWidget(self.target_search_qline_edit)
 
-        self.source_search_qline_edit.second_search = self.target_search_qline_edit
-        self.target_search_qline_edit.second_search = self.source_search_qline_edit
+        self.source_search_qline_edit.second_search = (
+            self.target_search_qline_edit
+        )
+        self.target_search_qline_edit.second_search = (
+            self.source_search_qline_edit
+        )
 
         self.target_search_qline_edit.secondary_treeview = self.source_treeview
         self.target_search_qline_edit.secondary_proxy_model = (
@@ -179,8 +185,12 @@ class HipFileDiffWindow(QMainWindow):
         self.load_button.clicked.connect(self.handle_compare_button_click)
         self.connect_tree_view_expansion(self.source_treeview)
         self.connect_tree_view_expansion(self.target_treeview)
-        self.target_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
-        self.source_treeview.verticalScrollBar().valueChanged.connect(self.sync_scroll)
+        self.target_treeview.verticalScrollBar().valueChanged.connect(
+            self.sync_scroll
+        )
+        self.source_treeview.verticalScrollBar().valueChanged.connect(
+            self.sync_scroll
+        )
 
     def connect_tree_view_expansion(self, tree_view: CustomQTreeView) -> None:
         """
@@ -189,8 +199,12 @@ class HipFileDiffWindow(QMainWindow):
         Args:
         - tree_view (CustomQTreeView): The QTreeView instance.
         """
-        tree_view.expanded.connect(lambda index: self.sync_expand(index, expand=True))
-        tree_view.collapsed.connect(lambda index: self.sync_expand(index, expand=False))
+        tree_view.expanded.connect(
+            lambda index: self.sync_expand(index, expand=True)
+        )
+        tree_view.collapsed.connect(
+            lambda index: self.sync_expand(index, expand=False)
+        )
 
     def apply_stylesheet(self) -> None:
         """Apply a custom stylesheet to the main window."""
@@ -237,8 +251,8 @@ class HipFileDiffWindow(QMainWindow):
                 border-image: url("ui/icons/empty.svg")  center center no-repeat;
             }
             QTreeView::item {
-                height: 1.1em; 
-                font-size: 0.4em; 
+                height: 1.1em;
+                font-size: 0.4em;
                 padding: 0.11em;
             }
             QTreeView::item:hover {
@@ -297,7 +311,9 @@ class HipFileDiffWindow(QMainWindow):
 
     def setup_checkboxes(self):
         self.show_only_edited_checkbox = QCheckBox("Show only edited nodes")
-        self.show_only_edited_checkbox.stateChanged.connect(self.on_checkbox_toggled)
+        self.show_only_edited_checkbox.stateChanged.connect(
+            self.on_checkbox_toggled
+        )
 
         self.checkbox_h_layout = QHBoxLayout()
         self.checkbox_h_layout.addWidget(self.show_only_edited_checkbox)
@@ -313,7 +329,9 @@ class HipFileDiffWindow(QMainWindow):
 
         if not (os.path.exists(source_path) and os.path.exists(target_path)):
             QMessageBox.warning(
-                self, "Invalid Paths", "Please select valid .hip files to compare."
+                self,
+                "Invalid Paths",
+                "Please select valid .hip files to compare.",
             )
             return
 
@@ -396,7 +414,9 @@ class HipFileDiffWindow(QMainWindow):
         )
 
         index_in_other_proxy = other_view.model().mapFromSource(
-            other_view.model().sourceModel().indexFromItem(item_in_other_source_model)
+            other_view.model()
+            .sourceModel()
+            .indexFromItem(item_in_other_source_model)
         )
         other_view.setExpanded(index_in_other_proxy, expand)
 
