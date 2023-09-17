@@ -5,11 +5,13 @@ from api.node_data import NodeData
 from api.param_data import ParamData
 from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
 
+
 SUPPORTED_FILE_FORMATS = {"hip", "hipnc"}
 COLORS = {
     "red": "#b50400",
     "green": "#6ba100",
 }
+
 
 class HipFileComparator:
     """Comparator class for comparing two Houdini HIP files."""
