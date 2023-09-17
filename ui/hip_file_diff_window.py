@@ -1,16 +1,22 @@
 import os
-from zipfile import ZipFile
 
 from hutil.Qt.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QSplitter,
-    QMessageBox, QAbstractItemView, QCheckBox, QSizePolicy
+    QMainWindow,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QSplitter,
+    QMessageBox,
+    QAbstractItemView,
+    QCheckBox,
 )
 from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
-from hutil.Qt.QtGui import QPainter
 
 from api.hip_file_comparator import HipFileComparator
 from ui.custom_qtree_view import CustomQTreeView
-from ui.custom_standart_item_model import CustomStandardItemModel, HatchedItemDelegate
+from ui.custom_standart_item_model import CustomStandardItemModel
+from ui.hatched_pattern_item_delegate import HatchedItemDelegate
 from ui.file_selector import FileSelector
 from ui.search_line_edit import QTreeViewSearch
 
@@ -18,7 +24,7 @@ from ui.search_line_edit import QTreeViewSearch
 class HipFileDiffWindow(QMainWindow):
     """
     Main window for displaying the differences between two .hip files.
-    
+
     Attributes:
         hip_comparator (HipFileComparator): Instance to compare two hip files.
     """
@@ -40,7 +46,7 @@ class HipFileDiffWindow(QMainWindow):
 
     def set_window_properties(self) -> None:
         """Set main window properties."""
-        self.setWindowTitle('.hip files diff tool')
+        self.setWindowTitle(".hip files diff tool")
         self.setGeometry(300, 300, 2000, 1300)
         self.main_widget = QWidget(self)
         self.setCentralWidget(self.main_widget)
@@ -105,11 +111,15 @@ class HipFileDiffWindow(QMainWindow):
         self.target_treeview.setModel(self.target_model)
         self.target_layout.addWidget(self.target_treeview)
 
-        self.source_search_qline_edit = QTreeViewSearch(self.source_treeview, self.source_model, self.target_treeview)
+        self.source_search_qline_edit = QTreeViewSearch(
+            self.source_treeview, self.source_model, self.target_treeview
+        )
         self.source_search_qline_edit.setPlaceholderText("Search in source")
         self.source_layout.addWidget(self.source_search_qline_edit)
 
-        self.target_search_qline_edit = QTreeViewSearch(self.target_treeview, self.target_model)
+        self.target_search_qline_edit = QTreeViewSearch(
+            self.target_treeview, self.target_model
+        )
         self.target_search_qline_edit.setPlaceholderText("Search in target")
         self.target_layout.addWidget(self.target_search_qline_edit)
 
@@ -117,23 +127,37 @@ class HipFileDiffWindow(QMainWindow):
         self.target_search_qline_edit.second_search = self.source_search_qline_edit
 
         self.target_search_qline_edit.secondary_treeview = self.source_treeview
-        self.target_search_qline_edit.secondary_proxy_model = self.source_treeview.model()
-        self.target_model.rowsInserted.connect(self.target_search_qline_edit.proxy_model.invalidate)
-        self.target_model.rowsRemoved.connect(self.target_search_qline_edit.proxy_model.invalidate)
+        self.target_search_qline_edit.secondary_proxy_model = (
+            self.source_treeview.model()
+        )
+        self.target_model.rowsInserted.connect(
+            self.target_search_qline_edit.proxy_model.invalidate
+        )
+        self.target_model.rowsRemoved.connect(
+            self.target_search_qline_edit.proxy_model.invalidate
+        )
 
         self.source_search_qline_edit.secondary_treeview = self.target_treeview
-        self.source_search_qline_edit.secondary_proxy_model = self.target_treeview.model()
-        self.source_model.rowsInserted.connect(self.source_search_qline_edit.proxy_model.invalidate)
-        self.source_model.rowsRemoved.connect(self.source_search_qline_edit.proxy_model.invalidate)
-        
-    def create_tree_view(self, obj_name: str, hide_scrollbar: bool = True) -> CustomQTreeView:
+        self.source_search_qline_edit.secondary_proxy_model = (
+            self.target_treeview.model()
+        )
+        self.source_model.rowsInserted.connect(
+            self.source_search_qline_edit.proxy_model.invalidate
+        )
+        self.source_model.rowsRemoved.connect(
+            self.source_search_qline_edit.proxy_model.invalidate
+        )
+
+    def create_tree_view(
+        self, obj_name: str, hide_scrollbar: bool = True
+    ) -> CustomQTreeView:
         """
         Create a QTreeView with specified properties.
-        
+
         Args:
         - obj_name (str): Object name for the QTreeView.
         - hide_scrollbar (bool): If True, hide the scrollbar. Default is True.
-        
+
         Returns:
         - CustomQTreeView: Configured QTreeView instance.
         """
@@ -171,7 +195,7 @@ class HipFileDiffWindow(QMainWindow):
     def apply_stylesheet(self) -> None:
         """Apply a custom stylesheet to the main window."""
         self.setStyleSheet(
-        """
+            """
             QMainWindow{
                 background-color: #3c3c3c;
             }
@@ -272,7 +296,6 @@ class HipFileDiffWindow(QMainWindow):
         )
 
     def setup_checkboxes(self):
-
         self.show_only_edited_checkbox = QCheckBox("Show only edited nodes")
         self.show_only_edited_checkbox.stateChanged.connect(self.on_checkbox_toggled)
 
@@ -287,11 +310,13 @@ class HipFileDiffWindow(QMainWindow):
         """
         source_path = self.source_file_line_edit.text()
         target_path = self.target_file_line_edit.text()
-        
+
         if not (os.path.exists(source_path) and os.path.exists(target_path)):
-            QMessageBox.warning(self, "Invalid Paths", "Please select valid .hip files to compare.")
+            QMessageBox.warning(
+                self, "Invalid Paths", "Please select valid .hip files to compare."
+            )
             return
-        
+
         self.source_model.clear()
         self.source_treeview.item_dictionary = {}
         self.source_treeview.model().invalidateFilter()
@@ -303,11 +328,14 @@ class HipFileDiffWindow(QMainWindow):
         self.hip_comparator = HipFileComparator(source_path, target_path)
         self.hip_comparator.compare()
 
-        # Assuming 'comparison_result' contains the differences, 
-        # you can now update your tree views based on the results. 
-        # This is a placeholder. You will likely have a more complex way of populating your views.
-        self.source_model.populate_with_data(self.hip_comparator.source_data, self.source_treeview.objectName())
-        self.target_model.populate_with_data(self.hip_comparator.target_data, self.target_treeview.objectName())
+        # Assuming 'comparison_result' contains the differences,
+        # we can now update our tree views based on the results.
+        self.source_model.populate_with_data(
+            self.hip_comparator.source_data, self.source_treeview.objectName()
+        )
+        self.target_model.populate_with_data(
+            self.hip_comparator.target_data, self.target_treeview.objectName()
+        )
 
         self.source_treeview.model().invalidateFilter()
         self.target_treeview.model().invalidateFilter()
@@ -341,13 +369,13 @@ class HipFileDiffWindow(QMainWindow):
     def sync_expand(self, index, expand: bool = True) -> None:
         """
         Synchronize expansion state between tree views.
-        
+
         Args:
         - index: QModelIndex of the item being expanded or collapsed.
         - expand (bool): If True, item is expanded. If False, it's collapsed.
         """
         event_proxy_model = index.model()
-        
+
         if isinstance(event_proxy_model, QSortFilterProxyModel):
             event_source_model = event_proxy_model.sourceModel()
         else:
@@ -358,12 +386,18 @@ class HipFileDiffWindow(QMainWindow):
         else:
             other_view = self.source_treeview
 
-        event_item = event_source_model.itemFromIndex(event_proxy_model.mapToSource(index))
+        event_item = event_source_model.itemFromIndex(
+            event_proxy_model.mapToSource(index)
+        )
         event_item_path = event_item.data(event_source_model.path_role)
 
-        item_in_other_source_model = other_view.model().sourceModel().get_item_by_path(event_item_path)
+        item_in_other_source_model = (
+            other_view.model().sourceModel().get_item_by_path(event_item_path)
+        )
 
-        index_in_other_proxy = other_view.model().mapFromSource(other_view.model().sourceModel().indexFromItem(item_in_other_source_model))
+        index_in_other_proxy = other_view.model().mapFromSource(
+            other_view.model().sourceModel().indexFromItem(item_in_other_source_model)
+        )
         other_view.setExpanded(index_in_other_proxy, expand)
 
     def sync_scroll(self, value: int) -> None:
@@ -375,12 +409,12 @@ class HipFileDiffWindow(QMainWindow):
         """
         # Fetch the source of the signal
         source_scrollbar = self.sender()
-        
+
         # Determine the target scrollbar for synchronization
         if source_scrollbar == self.source_treeview.verticalScrollBar():
             target_scrollbar = self.target_treeview.verticalScrollBar()
         else:
             target_scrollbar = self.source_treeview.verticalScrollBar()
-        
+
         # Update the target's scrollbar position to match the source's
         target_scrollbar.setValue(value)

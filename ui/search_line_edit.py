@@ -25,15 +25,15 @@ class QTreeViewSearch(QLineEdit):
         self.proxy_model = RecursiveFilterProxyModel(self.treeview)
         self.proxy_model.setSourceModel(self.target_model)
         self.treeview.setModel(self.proxy_model)
-        
+
         self.expanded_state = {}
         self.setPlaceholderText("Search")
-        
+
         pixmap = QPixmap(os.path.join(ICONS_PATH, "search.png"))
         self.search_action = QAction(self)
         self.search_action.setIcon(QIcon(pixmap))
         self.addAction(self.search_action, QLineEdit.TrailingPosition)
-        
+
         self.secondary_proxy_model = None
         self.secondary_treeview = None
         self.second_search = None
@@ -47,7 +47,7 @@ class QTreeViewSearch(QLineEdit):
     def init_styles(self):
         """Set the visual styles for the search widget."""
         self.setStyleSheet(
-            '''
+            """
             QLineEdit{
                 font: 10pt "Arial";
                 color: #818181;
@@ -59,7 +59,7 @@ class QTreeViewSearch(QLineEdit):
                 color: #919191;
                 background-color: white;
             }            
-            '''
+            """
         )
 
     def filter_tree_view(self):
@@ -73,11 +73,11 @@ class QTreeViewSearch(QLineEdit):
             if self.second_search:
                 self.second_search.restore_tree_state()
             return
-        
+
         self.proxy_model.setFilterRole(Qt.DisplayRole)
         self.proxy_model.setFilterFixedString(search_text)
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        
+
         self.proxy_model.invalidateFilter()
         self.synchronize_trees()
 
@@ -97,7 +97,7 @@ class QTreeViewSearch(QLineEdit):
         """Recursively gather paths visible from the given index."""
         if not index.isValid():
             return
-        
+
         paths.add(self.proxy_model.data(index, PATH_ROLE))
         for row in range(self.proxy_model.rowCount(index)):
             child_index = self.proxy_model.index(row, 0, index)
@@ -107,7 +107,9 @@ class QTreeViewSearch(QLineEdit):
         """Update items in the secondary tree view based on provided paths."""
         self.secondary_proxy_model.setFilterFixedString("")
         if not paths:
-            self.secondary_proxy_model.setFilterFixedString("ImpossibleStringThatMatchesNothing")
+            self.secondary_proxy_model.setFilterFixedString(
+                "ImpossibleStringThatMatchesNothing"
+            )
             return
 
         if self.secondary_proxy_model:
@@ -133,4 +135,3 @@ class QTreeViewSearch(QLineEdit):
         if index.isValid():
             path = self.treeview.model().data(index, PATH_ROLE)
             self.expanded_state[path] = self.treeview.isExpanded(index)
-           

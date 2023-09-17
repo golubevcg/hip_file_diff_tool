@@ -7,7 +7,7 @@ from ui.constants import ICONS_PATH
 
 class FileSelector(QWidget):
     """
-    A custom QWidget for selecting and displaying a file path. This widget combines a QLineEdit and a QPushButton 
+    A custom QWidget for selecting and displaying a file path. This widget combines a QLineEdit and a QPushButton
     for file browsing.
     """
 
@@ -46,7 +46,7 @@ class FileSelector(QWidget):
 
     def browse(self):
         """Open a file dialog and set the selected file path to the QLineEdit."""
-        fname, _ = QFileDialog.getOpenFileName(self, 'Open file')
+        fname, _ = QFileDialog.getOpenFileName(self, "Open file")
         if fname:
             self.lineEdit.setText(fname)
 
@@ -79,7 +79,8 @@ class FileSelector(QWidget):
     def _set_styles(self):
         """Private method to apply CSS styles for the widget components."""
         # Styles for the browse button
-        self.browseButton.setStyleSheet('''
+        self.browseButton.setStyleSheet(
+            """
             QPushButton{
                 font: 8pt "Arial";
                 background-color: transparent;
@@ -90,10 +91,12 @@ class FileSelector(QWidget):
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
             }
-        ''')
+        """
+        )
 
         # Styles for the line edit
-        self.lineEdit.setStyleSheet('''
+        self.lineEdit.setStyleSheet(
+            """
             QLineEdit{
                 font: 10pt "Arial";
                 color: #818181;
@@ -107,4 +110,5 @@ class FileSelector(QWidget):
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
             }            
-        ''')
+        """
+        )

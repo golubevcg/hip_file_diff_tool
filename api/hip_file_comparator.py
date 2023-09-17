@@ -15,7 +15,7 @@ COLORS = {
 
 class HipFileComparator:
     """Comparator class for comparing two Houdini HIP files."""
-    
+
     def __init__(self, source_hip_file: str, target_hip_file: str):
         """
         Initialize the comparator with source and target HIP files.
@@ -25,10 +25,10 @@ class HipFileComparator:
         """
         self._check_file_path(source_hip_file, "source")
         self._check_file_path(target_hip_file, "target")
-        
+
         self.source_hip_file = source_hip_file
         self.target_hip_file = target_hip_file
-        
+
         self.source_data = OrderedDict()
         self.target_data = OrderedDict()
         self.diff_data = OrderedDict()
@@ -38,11 +38,15 @@ class HipFileComparator:
     def _check_file_path(self, path: str, file_type: str) -> None:
         """Check if the provided path is valid and of a supported format."""
         if not os.path.exists(path):
-            raise RuntimeError(f"Incorrect {file_type} path specified. Such file doesn't exist.")
-        
+            raise RuntimeError(
+                f"Incorrect {file_type} path specified. Such file doesn't exist."
+            )
+
         _, extension = os.path.splitext(path)
         if extension[1:] not in SUPPORTED_FILE_FORMATS:
-            raise RuntimeError(f"Incorrect {file_type} file format. Supported formats are: {', '.join(SUPPORTED_FILE_FORMATS)}.")
+            raise RuntimeError(
+                f"Incorrect {file_type} file format. Supported formats are: {', '.join(SUPPORTED_FILE_FORMATS)}."
+            )
 
     def get_hip_data(self, hip_path: str) -> dict:
         """
@@ -53,7 +57,7 @@ class HipFileComparator:
         """
         if not hip_path:
             raise ValueError("No source file specified!")
-        
+
         self._load_hip_file(hip_path)
         data_dict = {}
         for node in hou.node("/").allNodes():
@@ -141,8 +145,10 @@ class HipFileComparator:
         :param path: The path of the node.
         :param source_node_data: The data associated with the source node.
         """
-        
-        for parm_name in list(source_node_data.parms):  # Avoids copying the entire dictionary
+
+        for parm_name in list(
+            source_node_data.parms
+        ):  # Avoids copying the entire dictionary
             source_parm = source_node_data.get_parm_by_name(parm_name)
 
             # deleted param
@@ -162,14 +168,11 @@ class HipFileComparator:
                 self.target_data[path].alpha = 100
 
                 parm = ParamData(parm_name, "", "deleted")
-                parm.alpha = 55 
+                parm.alpha = 55
                 parm.is_active = False
                 parm.is_hatched = True
 
-                self.target_data[path].add_parm(
-                        parm_name, 
-                        parm
-                    )
+                self.target_data[path].add_parm(parm_name, parm)
                 continue
 
             target_parm = self.target_data[path].get_parm_by_name(parm_name)
@@ -179,27 +182,27 @@ class HipFileComparator:
 
             source_parm.tag = "edited"
             source_parm.color = COLORS["red"]
-            source_parm.alpha = 55 
+            source_parm.alpha = 55
 
             source_node_data.tag = "edited"
             source_node_data.color = COLORS["red"]
-            source_node_data.alpha = 100 
-            
+            source_node_data.alpha = 100
+
             target_parm.tag = "edited"
             target_parm.color = COLORS["green"]
-            target_parm.alpha = 55 
+            target_parm.alpha = 55
 
             self.target_data[path].tag = "edited"
             self.target_data[path].color = COLORS["green"]
-            self.target_data[path].alpha = 100 
+            self.target_data[path].alpha = 100
 
     def _handle_created_params(self):
         """Handle items for node params that are newly created."""
-        for path, target_data in self.target_data.items(): 
+        for path, target_data in self.target_data.items():
             for parm_name in list(target_data.parms):
                 if parm_name in self.source_data[path].parms:
                     continue
-                
+
                 # created param
                 target_parm = target_data.get_parm_by_name(parm_name)
                 target_parm.tag = "created"
@@ -215,11 +218,8 @@ class HipFileComparator:
                 parm.is_hatched = True
                 parm.is_active = False
 
-                self.source_data[path].add_parm(
-                    parm_name, 
-                    parm
-                )
-                
+                self.source_data[path].add_parm(parm_name, parm)
+
                 self.source_data[path].tag = "edited"
                 self.source_data[path].alpha = 100
 
@@ -227,7 +227,7 @@ class HipFileComparator:
         """Handle nodes that are newly created."""
         source_paths = set(self.source_data.keys())
         target_paths = set(self.target_data.keys())
-        
+
         for path in target_paths - source_paths:  # Faster set difference operation
             self._mark_node_as_created(path)
 
@@ -243,9 +243,9 @@ class HipFileComparator:
         index = get_ordered_dict_key_index(self.target_data, path)
 
         self.source_data = ordered_dict_insert(self.source_data, index, path, new_data)
-        self.source_data[path].alpha = 100 
+        self.source_data[path].alpha = 100
         self.source_data[path].is_hatched = True
 
         self.target_data[path].tag = "created"
         self.target_data[path].color = COLORS["green"]
-        self.target_data[path].alpha = 100 
+        self.target_data[path].alpha = 100

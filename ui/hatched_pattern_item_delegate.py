@@ -1,20 +1,14 @@
-import os
-import copy
-import zipfile
-
-from hutil.Qt.QtGui import (
-    QPixmap, QColor, QBrush, QPen, QPainter, QIcon, 
-    QStandardItemModel, QStandardItem, QTransform
-)
+from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter
 from hutil.Qt.QtWidgets import QStyledItemDelegate
 from hutil.Qt.QtCore import Qt
 from ui.constants import DATA_ROLE
+
 
 class HatchedItemDelegate(QStyledItemDelegate):
     """
     Custom item delegate class that supports hatched patterns as backgrounds.
     """
-    
+
     def paint(self, painter: QPainter, option, index) -> None:
         """
         Custom paint method to render items with a hatched pattern.
@@ -40,7 +34,7 @@ class HatchedItemDelegate(QStyledItemDelegate):
         hatch_width = 1000
         pixmap = QPixmap(hatch_width, hatch_width)
         pixmap.fill(Qt.transparent)
-        
+
         pen_color = QColor("#505050")
         pen_width = 3
         pen = QPen(pen_color, pen_width)

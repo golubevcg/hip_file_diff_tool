@@ -7,7 +7,7 @@ from hutil.Qt.QtCore import Qt, QSize
 from hutil.Qt.QtWidgets import QStyleFactory
 
 
-def main(): 
+def main():
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, False)
     app = QApplication(sys.argv)
@@ -16,5 +16,5 @@ def main():
     sys.exit(app.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

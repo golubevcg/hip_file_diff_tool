@@ -4,25 +4,28 @@ import zipfile
 from typing import Dict, Optional
 
 from hutil.Qt.QtGui import (
-    QPixmap, QIcon, QStandardItemModel, QStandardItem,
-    QColor, QBrush
+    QPixmap,
+    QIcon,
+    QStandardItemModel,
+    QStandardItem,
+    QColor,
+    QBrush,
 )
 from hutil.Qt.QtCore import Qt
 
-from ui.hatched_pattern_item_delegate import HatchedItemDelegate
 from ui.constants import ICONS_ZIP_PATH, PATH_ROLE, DATA_ROLE, ICON_MAPPINGS
 
 
 # --- CustomStandardItemModel ---
 class CustomStandardItemModel(QStandardItemModel):
     """
-    Custom implementation of QStandardItemModel with functionality 
+    Custom implementation of QStandardItemModel with functionality
     for handling items with unique paths and icon management.
     """
 
     def __init__(self, *args, **kwargs):
         super(CustomStandardItemModel, self).__init__(*args, **kwargs)
-        
+
         self.item_dictionary = {}
         self.path_role = PATH_ROLE
         self.data_role = DATA_ROLE
@@ -33,7 +36,9 @@ class CustomStandardItemModel(QStandardItemModel):
         """Associate the model with a tree view widget."""
         self.view = tree_view
 
-    def _set_icon_from_zip(self, item: QStandardItem, icon_name: str, icons_zip: zipfile.ZipFile) -> None:
+    def _set_icon_from_zip(
+        self, item: QStandardItem, icon_name: str, icons_zip: zipfile.ZipFile
+    ) -> None:
         """Extract and set icon to item from given zip file."""
         try:
             with icons_zip.open(icon_name) as file:
@@ -44,7 +49,14 @@ class CustomStandardItemModel(QStandardItemModel):
         except Exception:
             pass
 
-    def add_item_with_path(self, item_text: str, path: str, data, icons_zip: zipfile.ZipFile, parent: Optional[QStandardItem] = None) -> None:
+    def add_item_with_path(
+        self,
+        item_text: str,
+        path: str,
+        data,
+        icons_zip: zipfile.ZipFile,
+        parent: Optional[QStandardItem] = None,
+    ) -> None:
         """Add item with given attributes and associated path to the model."""
         item = QStandardItem(item_text)
         item.setData(path, self.path_role)
@@ -63,13 +75,15 @@ class CustomStandardItemModel(QStandardItemModel):
         for parm_name in data.parms:
             self._add_parm_items(item, data, parm_name, icons_zip)
 
-    def _add_parm_items(self, item: QStandardItem, data, parm_name: str, icons_zip: zipfile.ZipFile) -> None:
+    def _add_parm_items(
+        self, item: QStandardItem, data, parm_name: str, icons_zip: zipfile.ZipFile
+    ) -> None:
         """Add parameters as child items to given item."""
         parm = data.get_parm_by_name(parm_name)
 
         if not parm.tag:
             return
-        
+
         updated_parm_name = parm_name if parm.is_active else ""
 
         path = item.data(self.path_role)
@@ -78,7 +92,7 @@ class CustomStandardItemModel(QStandardItemModel):
         parm_item.setData(parm, self.data_role)
         parm_item.setData(parm_path, self.path_role)
         parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
-        
+
         if parm.is_active:
             self._set_icon_from_zip(parm_item, "VOP/parameter.svg", icons_zip)
 
@@ -90,7 +104,7 @@ class CustomStandardItemModel(QStandardItemModel):
         value_item = QStandardItem(value)
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         value_data = copy.copy(parm)
-        value_data.tag = 'value'
+        value_data.tag = "value"
         value_item.setData(value_data, self.data_role)
         value_item.setData(value_path, self.path_role)
 
@@ -103,14 +117,16 @@ class CustomStandardItemModel(QStandardItemModel):
 
     def populate_with_data(self, data, view_name: str) -> None:
         """Populate the model with given data and associate with a view."""
-        with zipfile.ZipFile(ICONS_ZIP_PATH, 'r') as zip_ref:
+        with zipfile.ZipFile(ICONS_ZIP_PATH, "r") as zip_ref:
             for path in data:
                 node_data = data[path]
                 node_name = node_data.name if node_data.name != "/" else view_name
                 parent_path = node_data.parent_path
                 parent_item = self.get_item_by_path(parent_path)
                 if parent_item or parent_path == "/":
-                    self.add_item_with_path(node_name, path, node_data, zip_ref, parent=parent_item)
+                    self.add_item_with_path(
+                        node_name, path, node_data, zip_ref, parent=parent_item
+                    )
 
         self.paint_items_and_expand(self.invisibleRootItem(), view_name)
 

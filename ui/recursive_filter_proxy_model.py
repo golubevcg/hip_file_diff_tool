@@ -26,9 +26,12 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         # If there's an active filter for paths and the item's path isn't in it, reject this row.
         if self._filtered_paths and item_path not in self._filtered_paths:
             return False
-        
+
         # If source model has a condition to show only edited items
-        if hasattr(self.sourceModel(), 'show_only_edited') and self.sourceModel().show_only_edited:
+        if (
+            hasattr(self.sourceModel(), "show_only_edited")
+            and self.sourceModel().show_only_edited
+        ):
             if not self.conditionForItem(source_index):
                 return False
 
@@ -46,7 +49,7 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
     def conditionForItem(self, index: QModelIndex) -> bool:
         """
         Check the condition for a given item.
-        
+
         :param index: QModelIndex representing the item.
         :return: True if the item matches the condition, False otherwise.
         """
@@ -61,7 +64,9 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
 
         return False
 
-    def filter_accepts_row_itself(self, source_row: int, source_parent: QModelIndex) -> bool:
+    def filter_accepts_row_itself(
+        self, source_row: int, source_parent: QModelIndex
+    ) -> bool:
         """Check if the source row itself meets the filter criteria."""
         return super().filterAcceptsRow(source_row, source_parent)
 
@@ -78,17 +83,17 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
     def get_item_by_path(self, path: str) -> Optional[QStandardItem]:
         """
         Retrieve an item by its unique path.
-        
+
         :param path: Unique path identifier for the item.
         :return: QStandardItem if found, otherwise None.
         """
-        item_dictionary = getattr(self.sourceModel(), 'item_dictionary', None)
+        item_dictionary = getattr(self.sourceModel(), "item_dictionary", None)
         return item_dictionary.get(path) if item_dictionary else None
 
     def set_filtered_paths(self, paths: Set[str]) -> None:
         """
         Define a set of paths to filter by.
-        
+
         :param paths: Set of paths to be used for filtering.
         """
         self._filtered_paths = paths

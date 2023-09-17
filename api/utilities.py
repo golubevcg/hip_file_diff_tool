@@ -1,11 +1,13 @@
 from collections import OrderedDict
 from typing import Any, TypeVar
 
-K = TypeVar('K')
-V = TypeVar('V')
+K = TypeVar("K")
+V = TypeVar("V")
 
 
-def ordered_dict_insert(d: OrderedDict[K, V], index: int, key: K, value: V) -> OrderedDict[K, V]:
+def ordered_dict_insert(
+    d: OrderedDict[K, V], index: int, key: K, value: V
+) -> OrderedDict[K, V]:
     """
     Insert a key-value pair into an OrderedDict at a specified index.
 

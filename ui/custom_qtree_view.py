@@ -7,7 +7,7 @@ from hutil.Qt.QtGui import QMouseEvent, QPainter
 
 class CustomQTreeView(QTreeView):
     """
-    A custom QTreeView that provides additional functionalities such as 
+    A custom QTreeView that provides additional functionalities such as
     recursive expanding/collapsing of items and enhanced mouse click handling.
     """
 
