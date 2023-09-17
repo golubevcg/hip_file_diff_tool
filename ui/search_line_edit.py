@@ -135,7 +135,34 @@ class QTreeViewSearch(QLineEdit):
             self._capture_state(index)
 
     def _capture_state(self, index):
-        """Recursively store the expansion state of tree view items."""
+        """Recursively store the state of tree view items."""
         if index.isValid():
             path = self.treeview.model().data(index, PATH_ROLE)
             self.expanded_state[path] = self.treeview.isExpanded(index)
+            for row in range(self.treeview.model().rowCount(index)):
+                child_index = self.treeview.model().index(row, 0, index)
+                self._capture_state(child_index)
+
+    def restore_tree_state(self):
+        """Restore the expanded/collapsed state of tree view items."""
+        for row in range(self.treeview.model().rowCount()):
+            index = self.treeview.model().index(row, 0)
+            self._restore_state(index)
+
+    def _restore_state(self, index):
+        """Recursively restore the state of tree view items."""
+        if index.isValid():
+            path = self.treeview.model().data(index, PATH_ROLE)
+            self.treeview.setExpanded(index, self.expanded_state.get(path, False))
+            for row in range(self.treeview.model().rowCount(index)):
+                child_index = self.treeview.model().index(row, 0, index)
+                self._restore_state(child_index)
+
+    def focusInEvent(self, event):
+        """Handle the focus-in event and capture the tree state."""
+        super().focusInEvent(event)
+        if not self.text():
+            self.capture_tree_state()
+            if self.second_search:
+                self.second_search.capture_tree_state()
+
