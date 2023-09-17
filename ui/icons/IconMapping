@@ -1,0 +1,875 @@
+# This file sets up a mapping between icon names and the names of the icon that
+# will be used instead.
+# These substitutions are performed unconditionally, so be careful when adding
+# new icons.
+
+DESKTOP_shortcut := DESKTOP_blank;
+
+BUTTONS_hq_browser := BUTTONS_internet;
+BUTTONS_sg_browser := BUTTONS_internet;
+BUTTONS_tools := BUTTONS_node_palette;
+BUTTONS_filter_processes := BUTTONS_filter_settings;
+
+SOP_null := COMMON_null;
+SOP_delete := COMMON_delete;
+SOP_file := COMMON_file;
+SOP_subnet := COMMON_subnet;
+SOP_switch := COMMON_switch;
+
+SOP_channel := NETWORKS_chop;
+SOP_constraintnetwork := NETWORKS_chop;
+SOP_muscle := OBJ_muscle;
+SOP_popnet := NETWORKS_pop;
+
+SOP_alembicxform := SOP_alembic;
+SOP_alembicarchive := SOP_alembic;
+SOP_alembicgroup := SOP_alembic;
+SOP_alembicprimitive := SOP_alembic;
+SOP_bakeode := MISC_generic;
+SOP_bakevex := MISC_generic;
+SOP_cache := MISC_generic;
+SOP_clothmatchpanels := MISC_generic;
+SOP_clothmatchseams := MISC_generic;
+SOP_collisionsource := SHELF_deforming_object;
+SOP_control := MISC_generic;
+SOP_convexdecomposition := SHELF_rbdconvexproxy;
+SOP_dopio := SOP_dopimport;
+SOP_extracttransform := OBJ_extractgeo;
+SOP_flipsource := SHELF_fluid_source;
+SOP_flipfabsink := SHELF_fluid_sink;
+SOP_grainsource := SHELF_convert_to_particlegrain;
+SOP_matchtopology := MISC_generic;
+SOP_sort := MISC_generic;
+SOP_starburst := MISC_generic;
+SOP_superquad := MISC_generic;
+SOP_wiretransfershape := MISC_generic;
+SOP_vopsop := NETWORKS_vop_sop;
+SOP_vex := NETWORKS_vop;
+SOP_knife := SHELF_knife;
+SOP_gluecluster := PARTS_glue;
+SOP_particlefluidtank := SHELF_flip_tank;
+SOP_lopimport := OBJ_lopimport;
+SOP_oceanevaluate := SHELF_wave;
+SOP_oceanspectrum := SHELF_wave;
+SOP_oceansource := SHELF_oceanwaves;
+SOP_oceanwaves := SHELF_oceanwaves;
+SOP_opencl := COMMON_opencl;
+SOP_pointvelocity := POP_velocity;
+SOP_python := MISC_python;
+SOP_pyrosolver := DOP_pyrosolver;
+SOP_pyrosource := SHELF_convert_to_fire;
+SOP_rbdbulletsolver := DOP_bulletsolver;
+SOP_rbdconfigure := DOP_rbdconfigureobject;
+SOP_kinefx-rop_gltfcharacteroutput := ROP_kinefx-gltfcharacter;
+SOP_shapediff := DATATYPES_direction_vector;
+SOP_split := DOP_split;
+SOP_sprite := POP_sprite;
+SOP_testsim_crowdtransition := CROWDS_transition;
+SOP_testsim_ragdoll := DOP_rbdragdollobject;
+SOP_timewarp := COP2_warp;
+SOP_output := VOP_output;
+SOP_bend := SHELF_twist_twist;
+SOP_copyxform := SOP_duplicate;
+SOP_fasciasolidify := MISC_fascia;
+SOP_neighborsearchcl := VOP_neighbour;
+
+SOP_capturepaint := SOP_capturelayerpaint;
+SOP_guideprocess := SOP_comb;
+SOP_hairclump := FUR_paint_clumping;
+SOP_guidegroom := FUR_shears;
+SOP_strokecache := FUR_recache_strokes;
+SOP_guideinit := FUR_initialize_guides;
+SOP_guidepartition := FUR_addparting;
+SOP_guidedeform := FUR_animate;
+SOP_guidetransfer := FUR_transfer;
+SOP_hairgen := FUR_hairgen;
+SOP_guidedraw := SOP_drawhair;
+SOP_haircardgen := FUR_haircardgen;
+
+SOP_vellumsolver := DOP_vellumsolver;
+SOP_vellumconstraints := DOP_vellumconstraints;
+SOP_vellumconstraintproperty := DOP_vellumconstraintproperty;
+SOP_vellumdrape := SHELF_vellum_cloth;
+SOP_vellumconstraints_grain := SHELF_vellum_grains;
+
+SOP_kinefx-adapttoterrain := CROWDS_agentterrainadaptation;
+SOP_kinefx-extractlocomotion := CHOP_extractlocomotion;
+SOP_kinefx-mocapimport := SHELF_motion_capture;
+SOP_kinefx-motionclipextractlocomotion := CHOP_extractlocomotion;
+
+SOP_tree_controller := SHELF_tree_deciduous;
+SOP_tree_trunk_generator := SHELF_tree_trunk;
+SOP_tree_branch_placer := SHELF_tree_branch;
+SOP_tree_branch_generator := SHELF_tree_branch_generator;
+SOP_tree_simple_leaf := SHELF_tree_leaf;
+SOP_tree_leaf_generator := SHELF_tree_leaf_generator;
+
+SOP_tetfracture := SOP_solidfracture;
+
+DOP_femsolidobject := DOP_solidobject;
+DOP_femsolidconfigureobject := DOP_solidobject;
+DOP_femhybridobject := DOP_hybridobject;
+DOP_femhybridconfigureobject := DOP_hybridobject;
+
+SOP_OpenVDB := COMMON_openvdb;
+SOP_gltf := COMMON_gltf;
+ROP_gltf := COMMON_gltf;
+OBJ_gltf_hierarchy := COMMON_gltf;
+
+SOP_fluidsource := SHELF_fluid_source;
+DOP_sourcevolume := SOP_volume;
+SOP_whitewatersource := SHELF_whitewater;
+SOP_pyrosourcespread := SHELF_spyro_firespread;
+DOP_smokeobject_sparse := DOP_smokeobject;
+SHELF_spyro_groundexplosion := SHELF_explosion;
+SHELF_spyro_airexplosion := SHELF_aerial_explosion;
+SHELF_spyro_fireball := SHELF_fireball;
+
+DOP_clothattachconstraint := DOP_clothattachtobody;
+
+DOP_null := COMMON_null;
+DOP_delete := COMMON_delete;
+DOP_file := COMMON_file;
+DOP_merge := COMMON_merge;
+DOP_subnet := COMMON_subnet;
+DOP_switch := COMMON_switch;
+
+DOP_anchoralignaxis := DOP_anchor;
+DOP_anchorobjpointgrouppos := DOP_anchor;
+DOP_anchorobjpointgrouprot := DOP_anchor;
+DOP_anchorobjpointidpos := DOP_anchor;
+DOP_anchorobjpointidrot := DOP_anchor;
+DOP_anchorobjpointnumpos := DOP_anchor;
+DOP_anchorobjpointnumrot := DOP_anchor;
+DOP_anchorobjprimpos := DOP_anchor;
+DOP_anchorobjregion := DOP_anchor;
+DOP_anchorobjspacepos := DOP_anchor;
+DOP_anchorobjspacerot := DOP_anchor;
+DOP_anchorobjsurfacepos := DOP_anchor;
+DOP_anchorobjsurfaceslide := DOP_anchor;
+DOP_anchortarget := DOP_anchor;
+DOP_anchorworldspacepos := DOP_anchor;
+DOP_anchorworldspacerot := DOP_anchor;
+
+DOP_conetwistconrel := DOP_rbdconetwistconstraint;
+DOP_conrelationship := DOP_applyrel;
+DOP_glueconrel := DOP_applyrel;
+DOP_grouprel := DOP_applyrel;
+DOP_hardconrel := DOP_applyrel;
+DOP_noconrel := DOP_applyrel;
+DOP_pumprel := SHELF_fluid_pump;
+DOP_sinkrel := SHELF_fluid_sink;
+DOP_sliderconrel := DOP_rbdsliderconstraint;
+DOP_softattachconrel := DOP_applyrel;
+DOP_sourcerel := SHELF_fluid_source;
+DOP_springconrel := CHOP_spring;
+DOP_targetrel := DOP_applyrel;
+DOP_twostateconrel := DOP_applyrel;
+DOP_colliderel := COMMON_collision;
+DOP_volumecollider := COMMON_collision;
+DOP_rbdguide := SHELF_rbd_guided;
+SOP_rbdguidesetup := SHELF_rbd_guided;
+
+DOP_sbdconstraint := DOP_constraint;
+DOP_femfuseconstraint := DOP_clothstitchconstraint;
+DOP_femregionconstraint := SHELF_constrain_region;
+
+DOP_femsolver := DOP_finiteelementsolver;
+DOP_femsolvercore := DOP_finiteelementsolver;
+DOP_femtargetconstraint := SHELF_cloth_follow_animation;
+DOP_gasupresobject := DOP_gasupres;
+
+DOP_output := VOP_output;
+DOP_subnetoutput := VOP_suboutput;
+POP_fluid := SHELF_convert_to_particlefluid;
+DOP_popgrains := SHELF_convert_to_particlegrain;
+DOP_constraintnetworkvisualization := SOP_rbdexplodedview;
+DOP_staticvisualization := MISC_visualize;
+DOP_volume := SOP_volume;
+DOP_whitewaterobject := SHELF_whitewater;
+DOP_impactanalysis := DOP_affector;
+
+COP2_render := ROP_mantra;
+COP2_vopcop2gen := COP2_vexgenerate;
+COP2_vopcop2filter := COP2_vexfilter;
+COP2_loop := CHOP_cycle;
+COP2_loopdata := BUTTONS_jump;
+IMG_img := NETWORKS_cop2;
+
+CHANNELS_hide_box := BUTTONS_reselect;
+CHANNELS_cut_keys := BUTTONS_cut;
+CHANNELS_copy_keys := BUTTONS_copy;
+CHANNELS_paste_keys := BUTTONS_paste;
+CHANNELS_delete_keys := BUTTONS_remove;
+CHANNELS_set_keys := PLAYBAR_set_key;
+
+CHANNELS_dope_cut := BUTTONS_cut;
+CHANNELS_dope_copy := BUTTONS_copy;
+CHANNELS_dope_paste := BUTTONS_paste;
+CHANNELS_dope_replace := BUTTONS_replace;
+CHANNELS_dope_delete := BUTTONS_delete;
+CHANNELS_dope_set_keys := PLAYBAR_set_key;
+
+SHELF_constraint_bake := CHANNELS_bake_keys;
+SHELF_constraint_delete := SOP_delete;
+SHELF_constraint_toggle := DATATYPES_boolean;
+
+CHOP_agent := CROWDS_agent;
+CHOP_blend := COMMON_blend;
+CHOP_comp := COP2_composite;
+CHOP_constraintblend := OBJ_blend;
+CHOP_constraintexport := CHOP_export;
+CHOP_constraintgetlocalspace := COP2_fetch;
+CHOP_constraintgetparentspace := COP2_fetch;
+CHOP_constraintgetworldspace := COP2_fetch;
+CHOP_constraintlookat := SHELF_lookat;
+CHOP_constraintobject := CHOP_object;
+CHOP_constraintobjectoffset := CHOP_object;
+CHOP_constraintobjectpretransform := CHOP_pretransform;
+CHOP_constraintpath := SHELF_followpath;
+CHOP_constraintparent := SHELF_parent;
+CHOP_constraintparentx := SHELF_parent;
+CHOP_constraintpoints := OBJ_rivet;
+CHOP_constraintsequence := OBJ_blend;
+CHOP_constraintsimpleblend := OBJ_blend;
+CHOP_constraintsurface := OBJ_sticky;
+CHOP_constrainttransform := CHOP_transform;
+CHOP_driver := CHOP_channel;
+CHOP_delete := COMMON_delete;
+CHOP_dynamicwarp := SOP_kinefx-dynamicwarp;
+CHOP_extend := COP2_extend;
+CHOP_extractbonetransforms := CHOP_transformchain;
+CHOP_fetch := COP2_fetch;
+CHOP_fetchchop := COP2_fetch;
+CHOP_fbx := ROP_fbx;
+CHOP_file := COMMON_file;
+CHOP_for := SOP_foreach;
+CHOP_function := COP2_function;
+CHOP_hold := CHOP_delay;
+CHOP_identity := VOP_constant;
+CHOP_invert := VOP_invert;
+CHOP_layer := COP2_layer;
+CHOP_lookup := COP2_lookup;
+CHOP_mouse := KEYS_mouse;
+CHOP_multiply := VOP_multiply;
+CHOP_noise := COP2_noise;
+CHOP_null := COMMON_null;
+CHOP_output := VOP_output;
+CHOP_rename := COP2_rename;
+CHOP_sequence := COP2_sequence;
+CHOP_shift := COP2_shift;
+CHOP_shuffle := COP2_shuffle;
+CHOP_stash := SOP_stash;
+CHOP_stashpose := SOP_kinefx-rigstashpose;
+CHOP_subnet := COMMON_subnet;
+CHOP_switch := COMMON_switch;
+CHOP_timeshift := SOP_timeshift;
+CHOP_timerange := COP2_timescale;
+CHOP_trim := COP2_trim;
+CHOP_vector := COP2_vector;
+CHOP_warp := COP2_warp;
+CHOPNET_ch := NETWORKS_chop;
+CHOP_pose := SOP_posespacedeform;
+
+OBJ_subnet := COMMON_subnet;
+OBJ_guidesim := FUR_add_dynamics;
+OBJ_indirectlight := OBJ_light_gi;
+OBJ_mcacclaim := SHELF_motion_capture;
+OBJ_viewportisolator := VIEW_display_objects;
+
+OBJ_STATE_pose := TOOLS_pose;
+
+OBJ_fur := SOP_fur;
+OBJ_haircardgen := FUR_haircardgen;
+
+OBJ_autorigs := OBJ_autorig;
+OBJ_autobonechaininterface := OBJ_autorig_blank;
+OBJ_autorigs_module_foot := OBJ_autorig_foot;
+OBJ_autorigs_module_hand := OBJ_autorig_hand;
+OBJ_autorigs_module_leg := OBJ_autorig_leg;
+OBJ_autorigs_module_arm := OBJ_autorig_arm;
+OBJ_autorigs_module_spine := OBJ_autorig_spine;
+OBJ_autorigs_module_head := OBJ_autorig_head;
+OBJ_autorigs_module_master := OBJ_character_placer;
+
+POP_null := COMMON_null;
+POP_subnet := COMMON_subnet;
+POP_switch := COMMON_switch;
+PART_popnet := NETWORKS_pop;
+
+POP_event := MISC_generic;
+POP_softbody := SOP_spring;
+POP_state := MISC_generic;
+POP_suppress := MISC_generic;
+POP_v_sprinkler := MISC_generic;
+POP_voppop := NETWORKS_vop_pop;
+POP_vex := NETWORKS_vop;
+
+SHOP_v_fluffy := SHELF_clouds;
+SHOP_v_metacloud := SHELF_clouds;
+SHOP_vopimage3d := SHELF_clouds;
+SHOP_v_gilight := OBJ_light_gi;
+SHOP_v_rayshadow := SHELF_shadow;
+SHOP_vopcvex := SHELF_factory;
+SHOP_vopshadow := SHELF_shadow;
+SHOP_mergecoshader := COMMON_merge;
+SHOP_subnet := COMMON_subnet;
+SHOP_switch := COMMON_switch;
+SHOP_v_textfog := SHELF_atmosphere;
+SHOP_vopfog := SHELF_atmosphere;
+SHOP_v_litfog := SHELF_atmosphere;
+SHOP_v_pathtracer := SHELF_atmosphere;
+SHOP_v_photontracer := SHELF_atmosphere;
+SHOP_v_uniform := SHELF_atmosphere;
+SHOP_v_zdepth := SHELF_atmosphere;
+SHOP_v_fastzmap := SHELF_atmosphere;
+
+SHOP_pyro := SHELF_fireball;
+
+VOP_addgroup := SOP_group;
+VOP_align := SOP_matchaxis;
+VOP_bakeexports := COMMON_bake;
+VOP_bbox := SOP_bound;
+VOP_bumpmap := COP2_bump;
+VOP_bumpnoise := COP2_bump;
+VOP_classcast := SOP_name;
+VOP_classicshadercore:= VOP_surfacemodel;
+VOP_copinput := NETWORKS_cop2;
+VOP_envmap := COP2_env;
+VOP_extractxform := COP2_xform;
+VOP_fakecaustics := OBJ_light_caustic;
+VOP_frontface := COP2_frontface;
+VOP_hair := SOP_fur;
+VOP_hasmetadata := COP2_metadata;
+VOP_image3d := SHELF_clouds;
+VOP_image3dvolume := SHELF_clouds;
+VOP_inline := NETWORKS_vop;
+VOP_irradiance := OBJ_light_environment;
+VOP_lighting := OBJ_light;
+VOP_lookat := SHELF_lookat;
+VOP_metadata := COP2_metadata;
+VOP_null := COMMON_null;
+VOP_orient := SOP_matchaxis;
+VOP_photon_output := VOP_output;
+VOP_principledshader := VOP_principled;
+VOP_principledshader-2.0 := VOP_principled;
+VOP_principledshadercore := VOP_principled;
+VOP_pyroshader := SHELF_fireball;
+VOP_rampparm := DATATYPES_ramp;
+VOP_shinymetal := VOP_reflective;
+VOP_spline := SOP_curve;
+VOP_subnet := COMMON_subnet;
+VOP_switch := COMMON_switch;
+VOP_texture := SOP_texture;
+VOP_usdglobal := COMMON_usd;
+VOP_usdtransform2d := SOP_uvtransform;
+VOP_uvproject := SOP_project;
+VOP_uvxfrom := SOP_uvtransform;
+VOP_transform := COP2_xform;
+VOP_snippet := COMMON_wrangle;
+VOP_renderstate := MISC_generic;
+VOP_hairmodel := SHELF_hair;
+VOP_block_begin := SOP_block_begin;
+VOP_block_end := SOP_block_end;
+VOP_hascopinput := VOP_isconnected;
+VOP_ocio_import := COMMON_opencolorio;
+VOP_ocio_transform := COMMON_opencolorio;
+VOP_diffuse := VOP_pbrdiffuse;
+VOP_pbrglass := VOP_glass;
+VOP_pbrhair_r := VOP_pbrhair;
+VOP_pbrhair_trt := VOP_pbrhair;
+VOP_pbrhair_tt := VOP_pbrhair;
+VOP_pbrlighting := OBJ_light;
+VOP_volumeshadercore := SHELF_smoke_heavy;
+VOP_materialbuilder := SHOP_material;
+VOP_ocean_samplelayers := SHELF_oceanwaves;
+VOP_shadercallexport := MISC_generic;
+VOP_unifiednoise_static := VOP_unifiednoise;
+VOP_hairshader := SHELF_vellum_hair2;
+
+VOP_kma_aov := VOP_kma_mtlx;
+VOP_kma_curvature := COMMON_houdinimaterialx;
+VOP_kma_hair := SHELF_vellum_hair3;
+VOP_kma_pyropreview:= VOP_pyroadvancedshader;
+VOP_kma_fakecaustics := OBJ_light_caustic;
+VOP_kma_nesteddielectrics := VOP_kma_mtlx;
+VOP_kma_rayhitlevelfalloff := VOP_kma_mtlx;
+VOP_kma_rayimport := VOP_kma_mtlx;
+VOP_kma_roundededge := COMMON_houdinimaterialx;
+VOP_kma_voronoinoise2d := COMMON_houdinimaterialx;
+VOP_kma_voronoinoise3d := COMMON_houdinimaterialx;
+VOP_kma_uvlens := VOP_physicallens;
+VOP_kma_ocio_transform := COMMON_opencolorio;
+VOP_kma_volume := COMMON_houdinimaterialx;
+
+VOP_kma_pyroanisotropy := MTLX_pyro_generic;
+VOP_kma_pyrofireemission := MTLX_pyro_generic;
+VOP_kma_pyroscattercolor := MTLX_pyro_generic;
+VOP_kma_pyroscatteremission := MTLX_pyro_generic;
+VOP_kma_pyroshader := MTLX_pyro_generic;
+
+VOP_hmtlxbias := COMMON_houdinimaterialx;
+VOP_hmtlxcolorcorrect := MTLX_colorcorrect;
+VOP_hmtlxcomplement := COMMON_houdinimaterialx;
+VOP_hmtlxcubicrampc := COMMON_houdinimaterialx;
+VOP_hmtlxcubicrampf := COMMON_houdinimaterialx;
+VOP_hmtlxfacingratio := COMMON_houdinimaterialx;
+VOP_hmtlxgain := COMMON_houdinimaterialx;
+VOP_hmtlxrampc := COMMON_houdinimaterialx;
+VOP_hmtlxrampf := COMMON_houdinimaterialx;
+
+VOP_kinefx-lookat := CROWDS_agentlookat;
+VOP_kinefx-lookatconstraint := CROWDS_agentlookat;
+VOP_kinefx-mappoint := SOP_kinefx-mappoints;
+VOP_kinefx-parentblend := OBJ_blend;
+VOP_kinefx-posedifference := CHOP_posedifference;
+VOP_kinefx-reversefoot := SOP_kinefx-reversefoot;
+
+ROP_fetch := COP2_fetch;
+ROP_merge := COMMON_merge;
+ROP_null := COMMON_null;
+ROP_subnet := COMMON_subnet;
+ROP_switch := COMMON_switch;
+
+ROP_ifd := ROP_mantra;
+ROP_rib := ROP_rman;
+ROP_mentalray := ROP_mental;
+ROP_alf := ROP_alfred;
+ROP_alembic := SOP_alembic;
+ROP_usd := COMMON_usd;
+
+ROP_bake_animation := CHANNELS_bake_keys;
+ROP_channel := NETWORKS_chop;
+ROP_code := MISC_generic;
+ROP_codedata := MISC_generic;
+ROP_comp := NETWORKS_cop2;
+ROP_dop := NETWORKS_dop;
+ROP_geometry := OBJ_geo;
+ROP_shell := SOP_unix;
+ROP_mdd := SOP_mdd;
+ROP_hq := SHELF_factory;
+ROP_karma := MISC_karma;
+
+ROP_kinefx-filmboxfbxcharacter := SOP_kinefx-rop_fbxcharacteroutput;
+ROP_kinefx-filmboxfbxanimation := SOP_kinefx-rop_fbxanimoutput;
+
+MPI_popvector := MPI_vector;
+MPI_limitbound := MPI_bound;
+
+SHELF_noise := DOP_noise;
+
+NODEFLAGS_unloaded := NODEFLAGS_unload;
+NODEFLAGS_loaded := NODEFLAGS_unload;
+
+BUTTONS_export_view_camera := OBJ_camera;
+BUTTONS_editstate_peak := SOP_peak;
+BUTTONS_match_pivot_rotation := BUTTONS_match_pivot;
+
+# Crowd remappings
+SOP_agentclip := CROWDS_agentclip;
+SOP_agentclipproperties := CROWDS_agentedit;
+SOP_agentedit := CROWDS_agentedit;
+SOP_agentprep := CROWDS_agent;
+SOP_agentcliptransitiongraph := CROWDS_transition;
+SOP_agentterrainadaptation := CROWDS_agentterrainadaptation;
+SOP_crowdsource := CROWDS_crowdsource;
+DOP_agentarcingcliplayer := CROWDS_agentedit;
+DOP_agentcliplayer := CROWDS_agentedit;
+DOP_agentlookat := CROWDS_agentlookat;
+DOP_agentlookatapply := CROWDS_agentlookat;
+DOP_agentterrainadaptation := CROWDS_agentterrainadaptation;
+DOP_agentterrainprojection := CROWDS_agentterrainprojection;
+DOP_crowdobject := CROWDS_agent;
+DOP_crowdsolver := CROWDS_crowdsolver;
+DOP_crowdstate := CROWDS_state;
+DOP_crowdtransition := CROWDS_transition;
+DOP_crowdtrigger := CROWDS_trigger;
+DOP_crowdtriggerlogic := CROWDS_triggerlogic;
+DOP_popsteeravoid := CROWDS_popsteeravoid;
+DOP_popsteerobstacle := CROWDS_popsteerobstacle;
+DOP_popsteerseek := CROWDS_popsteerseek;
+DOP_popsteerseparate := CROWDS_popsteerseparate;
+OBJ_agentcam := CROWDS_agentcam;
+OBJ_formationcrowdsexample := MISC_present;
+OBJ_fuzzyObstacleAvoidance := MISC_present;
+OBJ_fuzzystatetransition := MISC_present;
+OBJ_ragdollrunexample := MISC_present;
+OBJ_stadiumcrowdsexample := MISC_present;
+OBJ_streetcrowdsexample := MISC_present;
+
+# All gas DOPs use the same set, no few!
+DOP_bulletrbdsolver := DOP_bulletsolver;
+DOP_gasadaptiveviscosity := DOP_gas;
+DOP_gasadjustelasticity := DOP_gas;
+DOP_gasadjustparticlecoordinates := DOP_gas;
+DOP_gasadvect := DOP_gas;
+DOP_gasadvectcl := DOP_gas;
+DOP_gasanalysis := DOP_gas;
+DOP_gasattribswap := DOP_gas;
+DOP_gasblur := DOP_gas;
+DOP_gasbuildoccupancymask := DOP_gas;
+DOP_gasbuildrelationshipmask := DOP_gas;
+DOP_gasbuoyancy := DOP_gas;
+DOP_gascalculate := DOP_gas;
+DOP_gascollisiondetect := DOP_gas;
+DOP_gascombustion := DOP_gas;
+DOP_gascomputeparticleattributes := DOP_gas;
+DOP_gascorrectbymarkers := DOP_gas;
+DOP_gascross := DOP_gas;
+DOP_gasdamp := DOP_gas;
+DOP_gasdiffuse := DOP_gas;
+DOP_gasdissipate := DOP_gas;
+DOP_gasdisturb := DOP_gas;
+DOP_gasdisturbfieldcl := DOP_gas;
+DOP_gasdsd := DOP_gas;
+DOP_gaseachdatasolver := DOP_gas;
+DOP_gaselasticity := DOP_gas;
+DOP_gasenforceboundary := DOP_gas;
+DOP_gasexternalforces := DOP_gas;
+DOP_gasextrapolate := DOP_gas;
+DOP_gasfeedback := DOP_gas;
+DOP_gasfieldtoparticle := DOP_gas;
+DOP_gasfieldvex := DOP_gas;
+DOP_gasfieldvop := DOP_gas;
+DOP_gasfieldwrangle := DOP_gas;
+DOP_gasgeometrydefragment := DOP_gas;
+DOP_gasgeometryoptiontransfer := DOP_gas;
+DOP_gasgeometrytosdf := DOP_gas;
+DOP_gasguidingvolume := DOP_gas;
+DOP_gasimpacttoattributes := DOP_gas;
+DOP_gasintegrator := DOP_gas;
+DOP_gasinterleavesolver := DOP_gas;
+DOP_gasintermittentsolve := DOP_gas;
+DOP_gaslimit := DOP_gas;
+DOP_gaslimitparticles := DOP_gas;
+DOP_gaslinearcombination := DOP_gas;
+DOP_gaslookup := DOP_gas;
+DOP_gasmatchfield := DOP_gas;
+DOP_gasnetfetchdata := DOP_gas;
+DOP_gasnetfieldborderexchange := DOP_gas;
+DOP_gasnetfieldsliceexchange := DOP_gas;
+DOP_gasnetslicebalance := DOP_gas;
+DOP_gasnetsliceexchange := DOP_gas;
+DOP_gasopencl := DOP_gas;
+DOP_gasparticleforces := DOP_gas;
+DOP_gasparticlemovetoiso := DOP_gas;
+DOP_gasparticleneighbourupdate := DOP_gas;
+DOP_gasparticlepressure := DOP_gas;
+DOP_gasparticleseparate := DOP_gas;
+DOP_gasparticletofield := DOP_gas;
+DOP_gasparticletosdf := DOP_gas;
+DOP_gasprojectnondivergent := DOP_gas;
+DOP_gasprojectnondivergentmultigrid := DOP_gas;
+DOP_gasprojectnondivergentvariational := DOP_gas;
+DOP_gasreduce := DOP_gas;
+DOP_gasreducelocal := DOP_gas;
+DOP_gasreinitializesdf := DOP_gas;
+DOP_gasrepeatsolver := DOP_gas;
+DOP_gasresizefield := DOP_gas;
+DOP_gasresizefluiddynamic := DOP_gas;
+DOP_gasrest := DOP_gas;
+DOP_gassandforces := DOP_gas;
+DOP_gassdftofog := DOP_gas;
+DOP_gasseedmarkers := DOP_gas;
+DOP_gasseedparticles := DOP_gas;
+DOP_gasseedvolume := DOP_gas;
+DOP_gasshred := DOP_gas;
+DOP_gasslicetoindexfield := DOP_gas;
+DOP_gassolver := DOP_gas;
+DOP_gassphdensity := DOP_gas;
+DOP_gassphforces := DOP_gas;
+DOP_gasstrainforces := DOP_gas;
+DOP_gasstrainintegrate := DOP_gas;
+DOP_gassubstep := DOP_gas;
+DOP_gassurfacesnap := DOP_gas;
+DOP_gassurfacetension := DOP_gas;
+DOP_gassynchronizefields := DOP_gas;
+DOP_gasturbulence := DOP_gas;
+DOP_gasvelocitystretch := DOP_gas;
+DOP_gasviscosity := DOP_gas;
+DOP_gasvorticleforces := DOP_gas;
+DOP_gasvorticlegeometry := DOP_gas;
+DOP_gasvorticlerecycle := DOP_gas;
+DOP_gaswavelets := DOP_gas;
+DOP_popfireworks := POP_fireworks;
+DOP_popgroup := POP_group;
+DOP_popmetaballforce := SOP_force;
+DOP_popreplicate := POP_split;
+DOP_popsource := POP_source;
+DOP_rigidbodysolver := DOP_rbdsolver;
+DOP_visualizegeometry := SOP_visualize;
+
+# The SOP * Fields use the same as the non-SOP prefixed
+DOP_sopscalarfield := DOP_scalarfield;
+DOP_sopvectorfield := DOP_vectorfield;
+DOP_sopmatrixfield := DOP_matrixfield;
+DOP_sopindexfield := DOP_indexfield;
+
+IMAGE_auto_save := BUTTONS_auto_save;
+IMAGE_render_save := BUTTONS_save_image;
+
+# SHOP mappings
+# SHOP_surface - Has a new icon
+SHOP_surfaceshadow := VOP_surfaceshadow;
+SHOP_displace := SOP_mountain;
+SHOP_geometry := OBJ_geo;
+SHOP_light := OBJ_light;
+SHOP_shadow := VOP_shadow;
+SHOP_fog := SHOP_vopfog;
+SHOP_lens := OBJ_camera;
+SHOP_output := OBJ_camera;
+SHOP_background := VIEW_display_background;
+SHOP_texture := SOP_texture;
+SHOP_environment := COP2_env;
+SHOP_photon := MISC_generic;
+SHOP_emitter := MISC_generic;
+SHOP_generic := MISC_generic;
+SHOP_contour := MISC_generic;
+SHOP_contourstore := MISC_generic;
+SHOP_contourcontrast := MISC_generic;
+SHOP_image3d := SOP_volume;
+SHOP_properties := MISC_generic;
+SHOP_coshader := NETWORKS_generic;
+SHOP_cvex := DATATYPES_vex;
+
+SHOP_rsl_vopdisplace := SHOP_vopdisplace;
+SHOP_rsl_vopimager := OBJ_camera;
+SHOP_rsl_voplight := SHOP_voplight;
+SHOP_rsl_vopmaterial := SHOP_vopmaterial;
+SHOP_rsl_vopsurface := SHOP_vopsurface;
+SHOP_rsl_vopvolume := SHOP_vopfog;
+
+VOPNET_surface := SHOP_surface;
+VOPNET_displace := SOP_mountain;
+VOPNET_light := OBJ_light;
+VOPNET_fog := SHOP_vopfog;
+VOPNET_shadow := VOP_shadow;
+VOPNET_photon := MISC_generic;
+VOPNET_image3d := SOP_volume;
+VOPNET_cvex := DATATYPES_vex;
+
+VOPNET_rsl_surface := SHOP_surface;
+VOPNET_rsl_displace := SOP_mountain;
+VOPNET_rsl_imager := OBJ_camera;
+VOPNET_rsl_light := OBJ_light;
+VOPNET_rsl_volume := SHOP_vopfog;
+
+VOPNET_chop := NETWORKS_chop;
+VOPNET_cop2filter := NETWORKS_cop2;
+VOPNET_cop2gen := COP2_color;
+VOPNET_pop := NETWORKS_vop_pop;
+VOPNET_sop := NETWORKS_vop_sop;
+
+MWS_findmaterial := SHELF_find_material;
+
+SOP_agent := CROWDS_agent;
+SOP_agentproxy := CROWDS_agent;
+ROP_agent := CROWDS_agent;
+SOP_agentlayer := CROWDS_agentlayer;
+SOP_agentlookat := CROWDS_agentlookat;
+
+# All crowd VOPs get the same icon because
+# there's too many to make them custom
+VOP_agentaddclip := CROWDS_agent;
+VOP_agentclipcatalog := CROWDS_agent;
+VOP_agentcliplength := CROWDS_agent;
+VOP_agentclipnames := CROWDS_agent;
+VOP_agentclipsample := CROWDS_agent;
+VOP_agentclipsamplerate := CROWDS_agent;
+VOP_agentcliptimes := CROWDS_agent;
+VOP_agentclipweights := CROWDS_agent;
+VOP_agentconverttransforms := CROWDS_agent;
+VOP_agentlayerbindings := CROWDS_agent;
+VOP_agentlayername := CROWDS_agent;
+VOP_agentlayers := CROWDS_agent;
+VOP_agentlayershapes := CROWDS_agent;
+VOP_agentrigchildren := CROWDS_agent;
+VOP_agentrigfind := CROWDS_agent;
+VOP_agentrigparent := CROWDS_agent;
+VOP_agenttransformcount := CROWDS_agent;
+VOP_agenttransformnames := CROWDS_agent;
+VOP_agenttransforms := CROWDS_agent;
+
+VOP_setagentclipnames := CROWDS_agentedit;
+VOP_setagentcliptimes := CROWDS_agentedit;
+VOP_setagentclipweights := CROWDS_agentedit;
+VOP_setagentlayer := CROWDS_agentedit;
+VOP_setagenttransforms := CROWDS_agentedit;
+
+VOP_mtlxfakecaustics := OBJ_light_caustic;
+
+NETWORKS_topgeometry := NETWORKS_top;
+
+TOP_subnet := COMMON_subnet;
+TOP_null := COMMON_null;
+TOP_output := VOP_output;
+TOP_switch := COMMON_switch;
+TOP_errorhandler := MISC_bug;
+
+TOP_attributecopy := SOP_attribcopy;
+TOP_attributecreate := SOP_attribcreate;
+TOP_attributedelete := SOP_attribdelete;
+TOP_attributerandomize := SOP_attribrandomize;
+TOP_attributerename := SOP_attribute;
+
+TOP_mapall := TOP_gatherall;
+TOP_mapbyexpression := TOP_expression;
+TOP_mapbyindex := TOP_gatherbyindex;
+TOP_mapbyrange := TOP_gatherbyindex;
+
+TOP_merge := COMMON_merge;
+TOP_partitionbyattribute := TOP_partitionbydata;
+TOP_partitionbyexpression := TOP_expression;
+TOP_partitionbyindex := TOP_gatherbyindex;
+TOP_partitionbyrange := TOP_gatherbyindex;
+
+TOP_pythonmapper := MISC_python;
+TOP_pythonpartitioner := MISC_python;
+TOP_pythonprocessor := MISC_python;
+TOP_pythonscript := MISC_python;
+TOP_pythonserver := MISC_python;
+
+TOP_ropcomposite := NETWORKS_cop2;
+TOP_environmentedit := BUTTONS_environment;
+TOP_error := SOP_error;
+TOP_ffmpegencodevideo := TOP_ffmpeg;
+TOP_ffmpegextractimages := TOP_ffmpeg;
+TOP_filerange := TOP_filepattern;
+TOP_filerename := MISC_rename;
+TOP_invoke := SOP_invoke;
+TOP_inprocessscheduler := TOP_scheduler;
+TOP_hqueuescheduler := MISC_hqueue_logo;
+TOP_localscheduler := TOP_scheduler;
+TOP_pythonscheduler := TOP_scheduler;
+TOP_rendersetup := ROP_mantra;
+TOP_renderifd := ROP_mantra;
+TOP_ropalembic := SOP_alembic;
+TOP_ropfbx := ROP_fbx;
+TOP_ropgeometry := OBJ_geo;
+TOP_ropkarma := MISC_karma;
+TOP_ropusd := COMMON_usd;
+TOP_ropmantra := ROP_mantra;
+TOP_sort := MISC_generic;
+TOP_split := DOP_split;
+TOP_textoutput := VOP_print;
+TOP_usdaddassetstogallery := SHELF_asset_library;
+TOP_usdrender := ROP_usdrender;
+TOP_usdimport := LOP_sceneimport;
+TOP_usdimportfiles := LOP_sceneimport;
+TOP_usdimportprims := LOP_sceneimport;
+TOP_wedge := ROP_wedge;
+TOP_wedgegeo := ROP_wedge;
+TOP_workitemimport := COMMON_import;
+
+TOP_waitforall := TOP_gatherall;
+
+LOP_additionalrendervars := LOP_rendervar;
+LOP_assignmaterial := SOP_material;
+LOP_attribvop := SOP_attribvop;
+LOP_attribwrangle := SOP_attribwrangle;
+LOP_bakeskinning := COMMON_bake;
+LOP_blend := OBJ_blend;
+LOP_cache := MISC_generic;
+LOP_camera := OBJ_camera;
+LOP_capsule := SOP_capsule;
+LOP_cone := SOP_cone;
+LOP_copyproperty := VOP_copy;
+LOP_cube := SOP_box;
+LOP_cylinder := SOP_tube;
+LOP_distantlight := OBJ_light_directional;
+LOP_domelight := SCENEGRAPH_domelight;
+LOP_error := SOP_error;
+LOP_fetch := SOP_object_merge;
+LOP_followpathconstraint := SHELF_followpath;
+LOP_foreach_begin := SOP_block_begin;
+LOP_foreach_end := SOP_block_end;
+LOP_insertionpoint := MISC_starthere;
+LOP_instancer := SOP_copytopoints;
+LOP_karma := MISC_karma;
+LOP_karmafogbox := SHELF_fog;
+LOP_light := OBJ_hlight;
+LOP_lookatconstraint := SHELF_lookat;
+LOP_mantradomelight := OBJ_light_environment;
+LOP_mantralight := OBJ_light;
+LOP_materialassign := SHOP_material;
+LOP_null := COMMON_null;
+LOP_object := OBJ_geo;
+LOP_optionblock_begin := SOP_compile_begin;
+LOP_optionblock_end := SOP_compile_end;
+LOP_output := VOP_output;
+LOP_parentconstraint := SHELF_parent_constraint;
+LOP_pointsconstraint := OBJ_rivet;
+LOP_prune := SOP_clean;
+LOP_pythonscript := MISC_python;
+LOP_retimeinstances := SOP_retime;
+LOP_sopmodify := SOP_edit;
+LOP_sphere := SOP_sphere;
+LOP_subnet := COMMON_subnet;
+LOP_surfaceconstraint := OBJ_sticky;
+LOP_switch := COMMON_switch;
+LOP_xform := SOP_xform;
+LOP_transformuv := SOP_uvtransform;
+LOP_volume := SOP_volume;
+
+NETWORKS_object := NETWORKS_obj;
+NETWORKS_driver := NETWORKS_rop;
+NETWORKS_stage := NETWORKS_lop;
+
+SCENEGRAPH_drawmode_overridden := MISC_override;
+SCENEGRAPH_overridden_and_postlayer := MISC_postlayer_and_override;
+SCENEGRAPH_something_overridden := MISC_override;
+SCENEGRAPH_something_postlayer := MISC_postlayer;
+SCENEGRAPH_collection := LOP_collection;
+
+TOOLS_select_obj_visible := TOOLS_select_visible;
+TOOLS_select_obj_contained := TOOLS_select_contained;
+TOOLS_select_obj_material := VIEW_materials;
+TOOLS_select_obj_constraints := NETWORKS_chop;
+TOOLS_select_obj_child := BUTTONS_down;
+TOOLS_select_obj_parent := BUTTONS_up;
+TOOLS_select_type_geo := TOOLS_select_objects;
+TOOLS_select_type_camera := TOOLS_view;
+TOOLS_select_type_light := VIEW_lighting_normal;
+TOOLS_select_type_null := OBJ_null;
+TOOLS_select_type_bone := NODEFLAGS_bone;
+TOOLS_select_type_other := NETVIEW_info_button_selected;
+TOOLS_select_show_name_hover := VIEW_display_objectnames_name;
+TOOLS_select_mask_geo := TOOLS_select_objects;
+
+VIEW_quickview_save_1 := NETVIEW_quickmark_set_1;
+VIEW_quickview_save_2 := NETVIEW_quickmark_set_2;
+VIEW_quickview_save_3 := NETVIEW_quickmark_set_3;
+VIEW_quickview_save_4 := NETVIEW_quickmark_set_4;
+VIEW_quickview_save_5 := NETVIEW_quickmark_set_5;
+VIEW_quickview_load_1 := NETVIEW_quickmark_go_1;
+VIEW_quickview_load_2 := NETVIEW_quickmark_go_2;
+VIEW_quickview_load_3 := NETVIEW_quickmark_go_3;
+VIEW_quickview_load_4 := NETVIEW_quickmark_go_4;
+VIEW_quickview_load_5 := NETVIEW_quickmark_go_5;
+VIEW_quickview_load_prev := NETVIEW_quickmark_back;
+VIEW_quickplane_save_1 := NETVIEW_quickmark_set_1;
+VIEW_quickplane_save_2 := NETVIEW_quickmark_set_2;
+VIEW_quickplane_save_3 := NETVIEW_quickmark_set_3;
+VIEW_quickplane_save_4 := NETVIEW_quickmark_set_4;
+VIEW_quickplane_save_5 := NETVIEW_quickmark_set_5;
+VIEW_quickplane_load_1 := NETVIEW_quickmark_go_1;
+VIEW_quickplane_load_2 := NETVIEW_quickmark_go_2;
+VIEW_quickplane_load_3 := NETVIEW_quickmark_go_3;
+VIEW_quickplane_load_4 := NETVIEW_quickmark_go_4;
+VIEW_quickplane_load_5 := NETVIEW_quickmark_go_5;
+VIEW_quickplane_load_prev := NETVIEW_quickmark_back;
+
+NETVIEW_kinematics_badge := CHOP_iksolver;
+NETVIEW_kinematics_badge_large := CHOP_iksolver;
+NETVIEW_needscook_badge := NETVIEW_reload_needsupdate;
+NETVIEW_needscook_badge_large := NETVIEW_reload_needsupdate;
+
+SHELF_character_picker := PANETYPES_custom;
+SHELF_pose_library := PANETYPES_custom;
+SHELF_flipconfigureflip := SOP_testgeometry_rubbertoy;
+SHELF_collsion := COMMON_collision;
+SHELF_crowd := CROWDS_crowdobject;
+SHELF_robot := MISC_robot;
+
+SOP_layoutbrushplace := SHELF_pick_and_place;
+
