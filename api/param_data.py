@@ -3,7 +3,7 @@ from enum import auto, Enum
 
 class ParamState(Enum):
     """
-    An enum representing the state of a node.
+    An enum representing the diff state of a param.
     """
     UNCHANGED = auto()
     VALUE = auto()

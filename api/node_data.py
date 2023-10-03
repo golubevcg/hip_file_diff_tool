@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 class NodeState(Enum):
     """
-    An enum representing the state of a node.
+    An enum representing the diff state of a node.
     """
     UNCHANGED = None
     EDITED = auto()
