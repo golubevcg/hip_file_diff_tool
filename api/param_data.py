@@ -8,6 +8,12 @@ class ParamState(Enum):
     UNCHANGED = auto()
     VALUE = auto()
 
+    def __str__(self):
+        return f"{self.name.lower()}"
+
+    def __format__(self, spec):
+        return f"{self.name.lower()}"
+
 class ParamData:
     """
     A class to represent parameter data associated with a node.
