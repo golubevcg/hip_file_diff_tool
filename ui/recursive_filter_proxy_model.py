@@ -55,8 +55,8 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         :param index: QModelIndex representing the item.
         :return: True if the item matches the condition, False otherwise.
         """
-        tag_value = self.sourceModel().data(index, self.data_role).tag
-        if tag_value:
+        state_value = self.sourceModel().data(index, self.data_role).state
+        if state_value:
             return True
 
         for i in range(self.sourceModel().rowCount(index)):

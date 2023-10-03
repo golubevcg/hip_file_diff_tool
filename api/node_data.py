@@ -1,5 +1,21 @@
 from collections import OrderedDict
+from enum import auto, Enum
 from typing import Any, Optional
+
+class NodeState(Enum):
+    """
+    An enum representing the state of a node.
+    """
+    UNCHANGED = None
+    EDITED = auto()
+    DELETED = auto()
+    CREATED = auto()
+
+    def __str__(self):
+        return f"{self.name.lower()}"
+
+    def __format__(self, spec):
+        return f"{self.name.lower()}"
 
 
 class NodeData:
@@ -14,7 +30,7 @@ class NodeData:
                     Empty string by default.
         icon (str): Path to the icon representing the node.
                     Empty string by default.
-        tag (str or None): A tag. None by default.
+        state (NodeState): The state of the node.
         parent_path (str): Path to the parent of this node.
                            Empty string by default.
         parms (OrderedDict): An ordered dictionary containing node parameters.
@@ -36,7 +52,7 @@ class NodeData:
         self.path: str = None
         self.type: str = ""
         self.icon: str = ""
-        self.tag: str = None
+        self.state: str = NodeState.UNCHANGED
         self.parent_path: str = ""
         self.parms: OrderedDict[str, Any] = OrderedDict()
         self.color: Optional[str] = None
@@ -69,4 +85,4 @@ class NodeData:
         return self.parms[name]
 
     def __repr__(self):
-        return f"{self.name}\n"
+        return f"{self.name}: {self.state}\n"
