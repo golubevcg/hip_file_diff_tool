@@ -1,19 +1,25 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from api.hip_file_comparator import HipFileComparator
+from api.hip_file_comparator import HdaFileComparator, HipFileComparator
+# from api.hip_file_comparator import HipFileComparator
 
 
 class TestHipFileComparator(unittest.TestCase):
     SOURCE_HIP_FILE = "test/test_scenes/billowy_smoke_source.hipnc"
     TARGET_HIP_FILE = "test/test_scenes/billowy_smoke_source_edited.hipnc"
+    SOURCE_HDA_FILE = "test/test_scenes/BoxHDA_source.hda"
+    TARGET_HDA_FILE = "test/test_scenes/BoxHDA_edited.hda"
 
     def setUp(self):
         # Create some dummy paths
         self.invalid_ext_path = "test/test_scenes/invalid_ext_file.txt"
         self.nonexistent_path = "test/test_scenes/nonexistent/file.hip"
-        self.comparator = HipFileComparator(
+        self.hip_comparator = HipFileComparator(
             self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
+        )
+        self.hda_comparator = HdaFileComparator(
+            self.SOURCE_HDA_FILE, self.TARGET_HDA_FILE
         )
 
     @patch("api.hip_file_comparator.hou")
@@ -26,13 +32,28 @@ class TestHipFileComparator(unittest.TestCase):
         comparator._check_file_path(self.SOURCE_HIP_FILE, "source")
 
     @patch("api.hip_file_comparator.hou")
-    def test_check_file_path_invalid_extension(self, mock_hou):
-        """Test _check_file_path with an invalid file extension."""
+    def test_check_hip_file_path_invalid_extension(self, mock_hou):
+        """
+        Test HipFileComparator._check_file_path with an invalid file extension.
+        """
         comparator = HipFileComparator(
             self.SOURCE_HIP_FILE, self.SOURCE_HIP_FILE
         )
         with self.assertRaises(RuntimeError):
             comparator._check_file_path(self.invalid_ext_path, "source")
+            comparator._check_file_path(self.SOURCE_HDA_FILE, "source")
+
+    @patch("api.hip_file_comparator.hou")
+    def test_check_hda_file_path_invalid_extension(self, mock_hou):
+        """
+        Test HdaFileComparator._check_file_path with an invalid file extension.
+        """
+        comparator = HdaFileComparator(
+            self.SOURCE_HDA_FILE, self.TARGET_HDA_FILE
+        )
+        with self.assertRaises(RuntimeError):
+            comparator._check_file_path(self.invalid_ext_path, "source")
+            comparator._check_file_path(self.SOURCE_HIP_FILE, "source")
 
     @patch("api.hip_file_comparator.hou")
     def test_check_file_path_nonexistent_file(self, mock_hou):
@@ -47,7 +68,13 @@ class TestHipFileComparator(unittest.TestCase):
     def test_get_hip_data_empty_path(self, mock_hou):
         """Test get_hip_data with an empty path."""
         with self.assertRaises(ValueError):
-            self.comparator.get_hip_data("")
+            self.hip_comparator.get_hip_data("")
+
+    @patch("api.hip_file_comparator.hou")
+    def test_get_hda_data_empty_path(self, mock_hou):
+        """Test get_hda_data with an empty path."""
+        with self.assertRaises(ValueError):
+            self.hda_comparator.get_hda_data("")
 
     @patch("api.hip_file_comparator.hou")
     def test_get_hip_data_valid(self, mock_hou):
@@ -70,7 +97,7 @@ class TestHipFileComparator(unittest.TestCase):
 
         mock_hou.node.return_value.allNodes.return_value = [mock_node]
 
-        result = self.comparator.get_hip_data(self.SOURCE_HIP_FILE)
+        result = self.hip_comparator.get_hip_data(self.SOURCE_HIP_FILE)
         self.assertIn("/mock_path", result)
 
     @patch("api.hip_file_comparator.hou")
@@ -83,7 +110,7 @@ class TestHipFileComparator(unittest.TestCase):
         mock_node.isInsideLockedHDA.return_value = True
         mock_hou.node.return_value.allNodes.return_value = [mock_node]
 
-        result = self.comparator.get_hip_data(self.SOURCE_HIP_FILE)
+        result = self.hip_comparator.get_hip_data(self.SOURCE_HIP_FILE)
         self.assertEqual(
             result, {}
         )  # No data should be retrieved for locked HDA nodes
@@ -91,7 +118,7 @@ class TestHipFileComparator(unittest.TestCase):
     @patch("api.hip_file_comparator.hou.hipFile.clear")
     @patch("api.hip_file_comparator.hou.hipFile.load")
     def test_load_hip_file_clears_and_loads(self, mock_load, mock_clear):
-        self.comparator._load_hip_file(self.SOURCE_HIP_FILE)
+        self.hip_comparator._load_hip_file(self.SOURCE_HIP_FILE)
 
         mock_clear.assert_called_once()
         mock_load.assert_called_once_with(
@@ -105,13 +132,11 @@ class TestHipFileComparator(unittest.TestCase):
         mock_load.side_effect = Exception("Failed to load")
 
         with self.assertRaises(Exception) as context:
-            self.comparator._load_hip_file(self.SOURCE_HIP_FILE)
+            self.hip_comparator._load_hip_file(self.SOURCE_HIP_FILE)
 
         self.assertEqual(str(context.exception), "Failed to load")
 
-    @patch(
-        "api.hip_file_comparator.NodeData"
-    )  # Adjust the patch to your module's actual name
+    @patch("api.hip_file_comparator.NodeData")
     def test_extract_node_data(self, MockNodeData):
         # Mocking the node and its properties
         mock_node = Mock()
@@ -123,7 +148,7 @@ class TestHipFileComparator(unittest.TestCase):
         mock_node.type.return_value = mock_node
 
         # Mocking _get_parent_path on the instance
-        self.comparator._get_parent_path = Mock(return_value="/path/to/parent")
+        self.hip_comparator._get_parent_path = Mock(return_value="/path/to/parent")
 
         # Mocking the node's parameters
         mock_parm = Mock()
@@ -132,7 +157,7 @@ class TestHipFileComparator(unittest.TestCase):
         mock_node.parms.return_value = [mock_parm]
 
         # Call the method under test
-        result = self.comparator._extract_node_data(mock_node)
+        result = self.hip_comparator._extract_node_data(mock_node)
 
         # Assertions
         MockNodeData.assert_called_once_with("mock_node")
@@ -144,4 +169,4 @@ class TestHipFileComparator(unittest.TestCase):
 
     def test_get_parent_path_with_empty_path(self):
         # This test assumes that passing an empty path will raise a ValueError.
-        self.comparator._get_parent_path("")
+        self.hip_comparator._get_parent_path("")

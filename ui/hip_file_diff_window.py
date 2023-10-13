@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from hutil.Qt.QtWidgets import (
     QMainWindow,
@@ -13,7 +14,13 @@ from hutil.Qt.QtWidgets import (
 )
 from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
 
-from api.hip_file_comparator import HipFileComparator
+from api.hip_file_comparator import (
+    HDA_FILE_FORMATS,
+    HIP_FILE_FORMATS,
+    HoudiniComparator,
+    HipFileComparator,
+    HdaFileComparator
+)
 from ui.custom_qtree_view import CustomQTreeView
 from ui.custom_standart_item_model import CustomStandardItemModel
 from ui.hatched_pattern_item_delegate import HatchedItemDelegate
@@ -32,7 +39,7 @@ class HipFileDiffWindow(QMainWindow):
     def __init__(self):
         super(HipFileDiffWindow, self).__init__()
 
-        self.hip_comparator: HipFileComparator = None
+        self.houdini_comparator: HoudiniComparator = None
         self.init_ui()
 
     def init_ui(self) -> None:
@@ -343,16 +350,20 @@ class HipFileDiffWindow(QMainWindow):
         self.target_treeview.item_dictionary = {}
         self.target_treeview.model().invalidateFilter()
 
-        self.hip_comparator = HipFileComparator(source_path, target_path)
-        self.hip_comparator.compare()
+        if Path(source_path).suffix[1:] in HIP_FILE_FORMATS:
+            self.houdini_comparator = HipFileComparator(source_path, target_path)
+        elif Path(source_path).suffix[1:] in HDA_FILE_FORMATS:
+            self.houdini_comparator = HdaFileComparator(source_path, target_path)
+
+        self.houdini_comparator.compare()
 
         # Assuming 'comparison_result' contains the differences,
         # we can now update our tree views based on the results.
         self.source_model.populate_with_data(
-            self.hip_comparator.source_data, self.source_treeview.objectName()
+            self.houdini_comparator.source_data, self.source_treeview.objectName()
         )
         self.target_model.populate_with_data(
-            self.hip_comparator.target_data, self.target_treeview.objectName()
+            self.houdini_comparator.target_data, self.target_treeview.objectName()
         )
 
         self.source_treeview.model().invalidateFilter()

@@ -1,6 +1,7 @@
 import copy
 import zipfile
 from typing import Optional
+from api.param_data import ParamState
 
 from hutil.Qt.QtGui import (
     QPixmap,
@@ -84,7 +85,7 @@ class CustomStandardItemModel(QStandardItemModel):
         """Add parameters as child items to given item."""
         parm = data.get_parm_by_name(parm_name)
 
-        if not parm.tag:
+        if not parm.state:
             return
 
         updated_parm_name = parm_name if parm.is_active else ""
@@ -107,7 +108,7 @@ class CustomStandardItemModel(QStandardItemModel):
         value_item = QStandardItem(value)
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         value_data = copy.copy(parm)
-        value_data.tag = "value"
+        value_data.state = ParamState.VALUE
         value_item.setData(value_data, self.data_role)
         value_item.setData(value_path, self.path_role)
 
@@ -128,10 +129,9 @@ class CustomStandardItemModel(QStandardItemModel):
                 )
                 parent_path = node_data.parent_path
                 parent_item = self.get_item_by_path(parent_path)
-                if parent_item or parent_path == "/":
-                    self.add_item_with_path(
-                        node_name, path, node_data, zip_ref, parent=parent_item
-                    )
+                self.add_item_with_path(
+                    node_name, path, node_data, zip_ref, parent=parent_item
+                )
 
         self.paint_items_and_expand(self.invisibleRootItem(), view_name)
 
@@ -152,5 +152,5 @@ class CustomStandardItemModel(QStandardItemModel):
             qcolor = QColor(color)
             qcolor.setAlpha(item_data.alpha)
             item.setBackground(QBrush(qcolor))
-        if item_data.tag and item_data.tag != "value":
+        if item_data.state and item_data.state != ParamState.VALUE:
             self.view.expand_to_index(item, self.view)

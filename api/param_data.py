@@ -1,3 +1,19 @@
+from enum import auto, Enum
+
+
+class ParamState(Enum):
+    """
+    An enum representing the diff state of a param.
+    """
+    UNCHANGED = auto()
+    VALUE = auto()
+
+    def __str__(self):
+        return f"{self.name.lower()}"
+
+    def __format__(self, spec):
+        return f"{self.name.lower()}"
+
 class ParamData:
     """
     A class to represent parameter data associated with a node.
@@ -5,7 +21,8 @@ class ParamData:
     Attributes:
         name (str): The name identifier for the parameter.
         value: The value associated with the parameter.
-        tag (str or None): A tag.
+        state (ParamState): The state of the parameter.
+                            ParamState.UNCHANGED by default.
         is_active (bool): Indicates whether the parameter is active.
                           True by default.
         color (Optional[str]): The color associated with the parameter.
@@ -20,7 +37,7 @@ class ParamData:
         self,
         name: str,
         value: str,
-        tag: str = None,
+        state: ParamState = ParamState.UNCHANGED,
         color: str = None,
         alpha: int = 255,
         is_hatched: bool = False,
@@ -30,7 +47,7 @@ class ParamData:
 
         :param name: The name identifier for the parameter.
         :param value: The value associated with the parameter.
-        :param tag: A tag for the parameter. Default is None.
+        :param state: A state for the parameter. Default is ParamState.UNCHANGED.
         :param color: The color associated with the parameter.
                       Default is None.
         :param alpha: The opacity value for the parameter visualization.
@@ -40,7 +57,7 @@ class ParamData:
         """
         self.name = name
         self.value = value
-        self.tag = tag
+        self.state = state
         self.is_active = True
         self.color = color
         self.alpha = alpha
@@ -50,11 +67,11 @@ class ParamData:
         return f"ParamData(\
                     name={self.name!r}, \
                     value={self.value!r}, \
-                    tag={self.tag!r}, \
+                    state={self.state!r}, \
                     color={self.color!r}, \
                     alpha={self.alpha}, \
                     is_hatched={self.is_hatched}\
                 )"
 
     def __str__(self):
-        return f"{self.name}, {self.tag}"
+        return f"{self.name}: {self.state}"
