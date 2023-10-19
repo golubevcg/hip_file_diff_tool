@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import os
 from collections import OrderedDict
+from pathlib import Path
+from api.hda_data import HdaData, HdaSection, HdaSectionState
 from api.node_data import NodeData, NodeState
 from api.param_data import ParamData
 from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
@@ -33,9 +35,9 @@ class HoudiniComparator(ABC):
         self.source_file = source_file
         self.target_file = target_file
 
-        self.source_data = OrderedDict()
-        self.target_data = OrderedDict()
-        self.diff_data = OrderedDict()
+        self.source_nodes = OrderedDict()
+        self.target_nodes = OrderedDict()
+        self.diff_nodes = OrderedDict()
 
         self.is_compared = False
 
@@ -93,32 +95,30 @@ class HoudiniComparator(ABC):
             source_parm = source_node_data.get_parm_by_name(parm_name)
 
             # deleted param
-            if parm_name not in self.target_data[path].parms:
+            if parm_name not in self.target_nodes[path].parms:
                 # add empty parm to target data
-                self.source_data[path].state = NodeState.EDITED
-                self.source_data[path].color = COLORS["red"]
-                self.source_data[path].alpha = 100
+                self.source_nodes[path].state = NodeState.EDITED
+                self.source_nodes[path].color = COLORS["red"]
+                self.source_nodes[path].alpha = 100
 
-                source_parm = self.source_data[path].get_parm_by_name(
-                    parm_name
-                )
+                source_parm = self.source_nodes[path].get_parm_by_name(parm_name)
                 source_parm.state = NodeState.EDITED
                 source_parm.color = "red"
                 source_parm.alpha = 55
 
-                self.source_data[path].state = NodeState.EDITED
-                self.target_data[path].color = COLORS["red"]
-                self.target_data[path].alpha = 100
+                self.source_nodes[path].state = NodeState.EDITED
+                self.target_nodes[path].color = COLORS["red"]
+                self.target_nodes[path].alpha = 100
 
                 parm = ParamData(parm_name, "", "deleted")
                 parm.alpha = 55
                 parm.is_active = False
                 parm.is_hatched = True
 
-                self.target_data[path].add_parm(parm_name, parm)
+                self.target_nodes[path].add_parm(parm_name, parm)
                 continue
 
-            target_parm = self.target_data[path].get_parm_by_name(parm_name)
+            target_parm = self.target_nodes[path].get_parm_by_name(parm_name)
 
             if str(source_parm.value) == str(target_parm.value):
                 continue
@@ -135,9 +135,9 @@ class HoudiniComparator(ABC):
             target_parm.color = COLORS["green"]
             target_parm.alpha = 55
 
-            self.target_data[path].state = NodeState.EDITED
-            self.target_data[path].color = COLORS["green"]
-            self.target_data[path].alpha = 100
+            self.target_nodes[path].state = NodeState.EDITED
+            self.target_nodes[path].color = COLORS["green"]
+            self.target_nodes[path].alpha = 100
 
     def _mark_node_as_created(self, path: str):
         """
@@ -146,19 +146,19 @@ class HoudiniComparator(ABC):
         :param path: The path of the node.
         """
         new_data = NodeData("")
-        new_data.parent_path = self.target_data[path].parent_path
+        new_data.parent_path = self.target_nodes[path].parent_path
         new_data.state = NodeState.CREATED
-        index = get_ordered_dict_key_index(self.target_data, path)
+        index = get_ordered_dict_key_index(self.target_nodes, path)
 
-        self.source_data = ordered_dict_insert(
-            self.source_data, index, path, new_data
+        self.source_nodes = ordered_dict_insert(
+            self.source_nodes, index, path, new_data
         )
-        self.source_data[path].alpha = 100
-        self.source_data[path].is_hatched = True
+        self.source_nodes[path].alpha = 100
+        self.source_nodes[path].is_hatched = True
 
-        self.target_data[path].state = NodeState.CREATED
-        self.target_data[path].color = COLORS["green"]
-        self.target_data[path].alpha = 100
+        self.target_nodes[path].state = NodeState.CREATED
+        self.target_nodes[path].color = COLORS["green"]
+        self.target_nodes[path].alpha = 100
 
     def _mark_node_as_deleted(self, path: str, source_node_data):
         """
@@ -171,9 +171,9 @@ class HoudiniComparator(ABC):
         new_data.parent_path = source_node_data.parent_path
         new_data.state = NodeState.DELETED
         new_data.is_hatched = True
-        index = get_ordered_dict_key_index(self.source_data, path)
-        self.target_data = ordered_dict_insert(
-            self.target_data, index, path, new_data
+        index = get_ordered_dict_key_index(self.source_nodes, path)
+        self.target_nodes = ordered_dict_insert(
+            self.target_nodes, index, path, new_data
         )
 
         source_node_data.state = NodeState.DELETED
@@ -182,17 +182,17 @@ class HoudiniComparator(ABC):
 
     def _handle_deleted_and_edited_nodes(self):
         """Handle nodes that are deleted or have edited parameters."""
-        for path, source_node_data in self.source_data.items():
-            if path not in self.target_data:
+        for path, source_node_data in self.source_nodes.items():
+            if path not in self.target_nodes:
                 self._mark_node_as_deleted(path, source_node_data)
             else:
                 self._compare_node_params(path, source_node_data)
 
     def _handle_created_params(self):
         """Handle items for node params that are newly created."""
-        for path, target_data in self.target_data.items():
+        for path, target_data in self.target_nodes.items():
             for parm_name in list(target_data.parms):
-                if parm_name in self.source_data[path].parms:
+                if parm_name in self.source_nodes[path].parms:
                     continue
 
                 # created param
@@ -210,15 +210,15 @@ class HoudiniComparator(ABC):
                 parm.is_hatched = True
                 parm.is_active = False
 
-                self.source_data[path].add_parm(parm_name, parm)
+                self.source_nodes[path].add_parm(parm_name, parm)
 
-                self.source_data[path].state = NodeState.EDITED
-                self.source_data[path].alpha = 100
+                self.source_nodes[path].state = NodeState.EDITED
+                self.source_nodes[path].alpha = 100
 
     def _handle_created_nodes(self):
         """Handle nodes that are newly created."""
-        source_paths = set(self.source_data.keys())
-        target_paths = set(self.target_data.keys())
+        source_paths = set(self.source_nodes.keys())
+        target_paths = set(self.target_nodes.keys())
 
         for path in (
             target_paths - source_paths
@@ -298,6 +298,13 @@ class HipFileComparator(HoudiniComparator):
 class HdaFileComparator(HoudiniComparator):
     """Comparator class for comparing two Houdini Digital Asset HDA files."""
 
+    def __init__(self, source_file: str, target_file: str):
+        super().__init__(source_file=source_file, target_file=target_file)
+
+        self.source_sections = OrderedDict()
+        self.target_sections = OrderedDict()
+        self.diff_sections = OrderedDict()
+
     def _check_file_path(self, path: str, file_type: str) -> None:
         """Check if the provided path is valid and of a supported format."""
         if not os.path.exists(path):
@@ -319,14 +326,47 @@ class HdaFileComparator(HoudiniComparator):
         """
 
         self._validate_file_paths()
-        self.source_data = self.get_hda_data(self.source_file)
-        self.target_data = self.get_hda_data(self.target_file)
+
+        self.source_nodes, self.source_sections = self.get_hda_data(self.source_file)
+        self.target_nodes, self.target_sections = self.get_hda_data(self.target_file)
+
+        self._handle_sections()
+
         self._handle_deleted_and_edited_nodes()
         self._handle_created_nodes()
+
         self._handle_created_params()
         self.is_compared = True
 
-    def get_hda_data(self, hda_path: str) -> dict:
+    def get_hda_sections(self, hda_path: str) -> dict:
+        if not hda_path:
+            raise ValueError("No hda file specified!")
+
+    def _handle_sections(self):
+        for source_section, target_section in zip(
+            self.source_sections.values(), self.target_sections.values()
+        ):
+            # deleted
+            if source_section.name not in self.target_sections:
+                self._mark_section_as_deleted(source_section.name, source_section)
+
+            # created
+            elif target_section.name not in self.source_sections:
+                self._mark_section_as_created(target_section.name)
+
+            # potentially edited
+            else:
+                self._compare_sections(source_section, target_section)
+
+    def _compare_sections(self, source_section, target_section):
+        diff = HdaSection.diff_sections(source_section, target_section)
+
+        if diff:
+            self.source_sections[source_section.name].state = HdaSectionState.EDITED
+            self.target_sections[target_section.name].state = HdaSectionState.EDITED
+            self.diff_sections[source_section.name] = diff
+
+    def get_hda_data(self, hda_path: str) -> (dict, dict):
         """
         Retrieve data from a given HDA file.
 
@@ -337,14 +377,41 @@ class HdaFileComparator(HoudiniComparator):
             raise ValueError("No hda file specified!")
 
         hou.hipFile.clear()
+        node_dict = {}
+        sections_dict = {}
+
         hda_node = self._load_hda_file(hda_path)
-        data_dict = {}
         for node in hda_node.allNodes():
             if node.isInsideLockedHDA():
                 continue
-            data_dict[node.path()] = self._extract_node_data(node)
+            node_dict[node.path()] = self._extract_node_data(node)
 
-        return data_dict
+        hda_data = HdaData(hda_path)
+        latest_definition = hda_data.latest_definition()
+        for section in latest_definition.sections:
+            sections_dict[section.name] = section
+
+        return node_dict, sections_dict
+
+    def _mark_section_as_created(self, name: str):
+        new_section = HdaSection("")
+        new_section.name = self.target_sections[name].name
+        new_section.state = HdaSectionState.CREATED
+        index = get_ordered_dict_key_index(self.target_sections, name)
+
+        self.source_sections = ordered_dict_insert(
+            self.source_sections, index, name, new_section
+        )
+
+    def _mark_section_as_deleted(self, name: str, source_section):
+        new_section = HdaSection("")
+        new_section.name = source_section.name
+        new_section.state = HdaSectionState.DELETED
+
+        index = get_ordered_dict_key_index(self.source_sections, name)
+        self.source_sections = ordered_dict_insert(
+            self.target_sections, index, name, new_section
+        )
 
     def _load_hda_file(self, hda_path: str) -> hou.Node:
         """Load a specified hda file as node and allow to edit its contents."""
@@ -360,3 +427,37 @@ class HdaFileComparator(HoudiniComparator):
         
         hda_node.allowEditingOfContents()
         return hda_node
+
+
+if __name__ == "__main__":
+    hda_source_path = Path(
+        Path(__file__).parent.parent, "test/test_scenes/BoxHDA_source.hda"
+    ).as_posix()
+
+    hda_target_path = Path(
+        Path(__file__).parent.parent, "test/test_scenes/BoxHDA_edited.hda"
+    ).as_posix()
+
+    hda_comparator = HdaFileComparator(hda_source_path, hda_target_path)
+    hda_comparator.compare()
+
+    print("-------")
+    print("Edited")
+    for name, diff in hda_comparator.diff_sections.items():
+        print(name, diff)
+
+    print("-------")
+    print("Source")
+    for source_section in hda_comparator.source_sections.values():
+        if source_section.state == HdaSectionState.DELETED:
+            print(f"Deleted: {source_section.name}")
+        elif source_section.state == HdaSectionState.CREATED:
+            print(f"Created: {source_section.name}")
+
+    print("-------")
+    print("Target")
+    for target_section in hda_comparator.target_sections.values():
+        if target_section.state == HdaSectionState.DELETED:
+            print(f"Deleted: {target_section.name}")
+        elif target_section.state == HdaSectionState.CREATED:
+            print(f"Created: {target_section.name}")

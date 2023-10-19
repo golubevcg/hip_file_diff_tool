@@ -3,10 +3,22 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import List, Union
-from xml.etree import ElementTree as ET
+from typing import Dict, List
+from api import utilities
 
 import hou
+
+
+class HdaSectionState(Enum):
+    """
+    An enum representing the diff state of a node.
+    """
+
+    UNCHANGED = None
+    EDITED = auto()
+    DELETED = auto()
+    CREATED = auto()
+
 
 class HdaSectionType(Enum):
     UNDEFINED = auto()
@@ -15,6 +27,15 @@ class HdaSectionType(Enum):
     HELP = auto()
     TOOLS_SHELF = auto()
 
+
+class HdaSectionContentType(Enum):
+    PLAIN_TEXT = auto()
+    PYTHON = auto()
+    HSCRIPT = auto()
+    XML = auto()
+    WIKI_MARKUP = auto()  # https://www.sidefx.com/docs/houdini/help/format.html
+
+
 @dataclass
 class HdaSection:
     """
@@ -22,12 +43,24 @@ class HdaSection:
     depending on their content.
     """
     name: str
-    type: HdaSectionType
-    content: Union[str, ET.Element]
-    is_python: bool
+    type: HdaSectionType = HdaSectionType.UNDEFINED
+    content: str = ""
+    content_type: HdaSectionContentType = HdaSectionContentType.PLAIN_TEXT
+    state: HdaSectionState = HdaSectionState.UNCHANGED
 
     def __repr__(self):
         return f"{self.name}"
+
+    @staticmethod
+    # def diff_section(source_section: Self, target_section: Self) -> List[str]:
+    def diff_sections(source_section, target_section) -> List[str]:
+        if not isinstance(target_section.content, type(source_section.content)):
+            raise TypeError(
+                f"Provided hda sections {source_section.name} and {target_section.name} are not of the same type."
+            )
+
+        diff = utilities.string_diff(source_section.content, target_section.content)
+        return diff
 
 @dataclass
 class HdaDefintion:
@@ -66,6 +99,7 @@ class HdaDefintion:
 
             is_expression = extra_file_options.get(f"{extra_file_name}/IsExpr")
             is_script = extra_file_options.get(f"{extra_file_name}/IsScript")
+            is_python = extra_file_options.get(f"{extra_file_name}/IsPython")
 
             if is_expression:
                 filetype = HdaSectionType.EXPRESSION
@@ -74,13 +108,20 @@ class HdaDefintion:
             else:
                 filetype = HdaSectionType.UNDEFINED
 
-            is_python = extra_file_options.get(f"{extra_file_name}/IsPython")
+            if is_expression or is_script:
+                if is_python:
+                    content_type = HdaSectionContentType.PYTHON
+                else:
+                    # FIXME: no idea if this is actually true ¯\_( ͡° ͜ʖ ͡°)_/¯
+                    content_type = HdaSectionContentType.HSCRIPT
+            else:
+                content_type = HdaSectionContentType.PLAIN_TEXT
 
             hda_script = HdaSection(
                 name=extra_file_name,
                 type=filetype,
                 content=content,
-                is_python=is_python
+                content_type=content_type,
                 )
 
             hda_extra_files.append(hda_script)
@@ -97,8 +138,8 @@ class HdaDefintion:
         tools_shelf_file = HdaSection(
             name="Tools.shelf",
             type=HdaSectionType.TOOLS_SHELF,
-            content=ET.fromstring(tools_shelf_xml_content),
-            is_python=False
+            content=tools_shelf_xml_content,
+            content_type=HdaSectionContentType.XML,
         )
         return tools_shelf_file
 
@@ -112,9 +153,40 @@ class HdaDefintion:
             name="Help",
             type=HdaSectionType.HELP,
             content=help_string,
-            is_python=False
+            content_type=HdaSectionContentType.WIKI_MARKUP,
         )
         return help_file
+
+    @staticmethod
+    # def diff_definition_sections(source_hda_definition: Self, target_hda_definition: Self):
+    def diff_definition_sections(source_hda_definition, target_hda_definition) -> Dict:
+        diffs = {}
+
+        source_definition_section_names = {
+            section.name for section in source_hda_definition.sections
+        }
+        target_definition_section_names = {
+            section.name for section in target_hda_definition.sections
+        }
+
+        matching_source_sections = (
+            section
+            for section in source_hda_definition.sections
+            if section.name in target_definition_section_names
+        )
+        matching_target_sections = (
+            section
+            for section in target_hda_definition.sections
+            if section.name in source_definition_section_names
+        )
+
+        for source_section, target_section in zip(
+            matching_source_sections, matching_target_sections
+        ):
+            diff = HdaSection.diff_sections(source_section, target_section)
+            diffs[source_section.name] = diff
+
+        return diffs
     
 class HdaData:
     """
@@ -128,7 +200,7 @@ class HdaData:
     def _get_definitions(self) -> List[HdaDefintion]:
         return [
             HdaDefintion.from_hou_hda_definition(hda_def) 
-            for hda_def in hou.hda.definitionsInFile(hda_path)
+            for hda_def in hou.hda.definitionsInFile(self.path)
         ]
 
     def latest_definition(self) -> HdaDefintion:
@@ -138,11 +210,14 @@ class HdaData:
 
 
 if __name__ == "__main__":
-    hda_path = Path(
+    hda_source_path = Path(
+        Path(__file__).parent.parent, "test/test_scenes/BoxHDA_source.hda"
+    ).as_posix()
+
+    hda_target_path = Path(
         Path(__file__).parent.parent, "test/test_scenes/BoxHDA_edited.hda"
     ).as_posix()
 
-    hda = HdaData(hda_path)
-    latest_hda_def = hda.latest_definition()
-    print(latest_hda_def)
-
+    hda_source = HdaData(hda_source_path).latest_definition()
+    hda_target = HdaData(hda_target_path).latest_definition()
+    print(HdaDefintion.diff_definition_sections(hda_source, hda_target))

@@ -360,10 +360,10 @@ class HipFileDiffWindow(QMainWindow):
         # Assuming 'comparison_result' contains the differences,
         # we can now update our tree views based on the results.
         self.source_model.populate_with_data(
-            self.houdini_comparator.source_data, self.source_treeview.objectName()
+            self.houdini_comparator.source_nodes, self.source_treeview.objectName()
         )
         self.target_model.populate_with_data(
-            self.houdini_comparator.target_data, self.target_treeview.objectName()
+            self.houdini_comparator.target_nodes, self.target_treeview.objectName()
         )
 
         self.source_treeview.model().invalidateFilter()
