@@ -432,11 +432,11 @@ class HdaFileComparator(HoudiniComparator):
 
 if __name__ == "__main__":
     hda_source_path = Path(
-        Path(__file__).parent.parent, "test/test_scenes/BoxHDA_source.hda"
+        Path(__file__).parent.parent, "test/fixtures/BoxHDA_source.hda"
     ).as_posix()
 
     hda_target_path = Path(
-        Path(__file__).parent.parent, "test/test_scenes/BoxHDA_edited.hda"
+        Path(__file__).parent.parent, "test/fixtures/BoxHDA_edited.hda"
     ).as_posix()
 
     hda_comparator = HdaFileComparator(hda_source_path, hda_target_path)

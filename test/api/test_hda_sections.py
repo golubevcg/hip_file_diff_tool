@@ -7,11 +7,11 @@ from api.hda_data import HdaData, HdaDefintion
 class TestHdaSections(unittest.TestCase):
     def setUp(self):
         hda_source_path = Path(
-            Path(__file__).parent.parent, "test_scenes/BoxHDA_source.hda"
+            Path(__file__).parent.parent, "fixtures/BoxHDA_source.hda"
         ).as_posix()
 
         hda_target_path = Path(
-            Path(__file__).parent.parent, "test_scenes/BoxHDA_edited.hda"
+            Path(__file__).parent.parent, "fixtures/BoxHDA_edited.hda"
         ).as_posix()
 
         self.hda_source = HdaData(hda_source_path).latest_definition()

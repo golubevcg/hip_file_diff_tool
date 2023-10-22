@@ -3,20 +3,20 @@ from unittest.mock import patch, Mock
 
 from api.hip_file_comparator import HdaFileComparator, HipFileComparator, COLORS
 from api.node_data import NodeState, NodeData
-from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
+from api.param_data import ParamData
 import hou
 
 
 class TestHipFileComparator(unittest.TestCase):
-    SOURCE_HIP_FILE = "test/test_scenes/billowy_smoke_source.hipnc"
-    TARGET_HIP_FILE = "test/test_scenes/billowy_smoke_source_edited.hipnc"
-    SOURCE_HDA_FILE = "test/test_scenes/BoxHDA_source.hda"
-    TARGET_HDA_FILE = "test/test_scenes/BoxHDA_edited.hda"
+    SOURCE_HIP_FILE = "test/fixtures/billowy_smoke_source.hipnc"
+    TARGET_HIP_FILE = "test/fixtures/billowy_smoke_source_edited.hipnc"
+    SOURCE_HDA_FILE = "test/fixtures/BoxHDA_source.hda"
+    TARGET_HDA_FILE = "test/fixtures/BoxHDA_edited.hda"
 
     def setUp(self):
         # Create some dummy paths
-        self.invalid_ext_path = "test/test_scenes/invalid_ext_file.txt"
-        self.nonexistent_path = "test/test_scenes/nonexistent/file.hip"
+        self.invalid_ext_path = "test/fixtures/invalid_ext_file.txt"
+        self.nonexistent_path = "test/fixtures/nonexistent/file.hip"
         self.hip_comparator = HipFileComparator(
             self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
         )
@@ -281,16 +281,18 @@ class TestHipFileComparator(unittest.TestCase):
         )
         self.assertEqual(comparator.target_nodes[dummy_path].alpha, 100)
         
-    @patch("api.utilities.get_ordered_dict_key_index", return_value=1)
-    @patch("api.utilities.ordered_dict_insert")
-    def test_mark_node_as_created(self, mock_ordered_dict_insert, mock_get_ordered_dict_key_index):
+    def test_mark_node_as_created(self):
+        hip_comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
+        )
+
         target_node = NodeData("")
         target_node.parent_path = 'parent/path'
 
         node_path = 'dummy_path'
-        self.hip_comparator.target_nodes[node_path] = target_node
+        hip_comparator.target_nodes[node_path] = target_node
 
-        self.hip_comparator._mark_node_as_created(node_path)
+        hip_comparator._mark_node_as_created(node_path)
 
         # Assert that a NodeData object is created with an empty string
         new_data = NodeData("")
@@ -302,12 +304,74 @@ class TestHipFileComparator(unittest.TestCase):
         # Assert that the state, color, and alpha properties of the NodeData 
         # object in self.target_nodes are updated correctly
         self.assertEqual(
-            self.hip_comparator.target_nodes[node_path].state, NodeState.CREATED
+            hip_comparator.target_nodes[node_path].state, NodeState.CREATED
         )
         self.assertEqual(
-            self.hip_comparator.target_nodes[node_path].color, COLORS["green"]
+            hip_comparator.target_nodes[node_path].color, COLORS["green"]
         )
-        self.assertEqual(self.hip_comparator.target_nodes[node_path].alpha, 100)
+        self.assertEqual(hip_comparator.target_nodes[node_path].alpha, 100)
 
     def test_mark_node_as_deleted(self):
-        pass
+        hip_comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
+        )
+
+        source_node_data = NodeData("")
+        source_node_data.parent_path = 'parent/path'
+        
+        node_path = 'dummy_path'
+        hip_comparator.source_nodes[node_path] = source_node_data
+
+        hip_comparator._mark_node_as_deleted(node_path, source_node_data)
+
+        # Assert that the state, color, 
+        # and alpha properties of the source_node_data 
+        # are updated correctly
+        self.assertEqual(
+            source_node_data.state, NodeState.DELETED
+        )
+        self.assertEqual(
+            source_node_data.color, COLORS["red"]
+        )
+        self.assertEqual(source_node_data.alpha, 100)
+
+    def test_handle_created_params(self):
+        hip_comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
+        )
+
+        # Creating mock nodes and params
+        source_node = NodeData("")
+        target_node = NodeData("")
+        target_param = ParamData("new_param", "", "value")
+        target_node.add_parm("new_param", target_param)
+
+        # Adding the mock nodes to the comparator's internal dictionaries
+        hip_comparator.source_nodes['/path'] = source_node
+        hip_comparator.target_nodes['/path'] = target_node
+
+        hip_comparator._handle_created_params()
+
+        # Assert that the state, color, and alpha properties of the target param are updated
+        self.assertEqual(target_param.state, NodeState.CREATED)
+        self.assertEqual(target_param.color, COLORS["green"])
+        self.assertEqual(target_param.alpha, 55)
+
+        # Assert that the state, color, and alpha properties of the target node are updated
+        self.assertEqual(target_node.state, NodeState.EDITED)
+        self.assertEqual(target_node.color, COLORS["green"])
+        self.assertEqual(target_node.alpha, 100)
+
+        # Assert that the source node has the new param with the expected properties
+        created_param = source_node.get_parm_by_name("new_param")
+        self.assertIsNotNone(created_param)
+        self.assertEqual(created_param.state, "created")
+        self.assertEqual(created_param.alpha, 55)
+        self.assertTrue(created_param.is_hatched)
+        self.assertFalse(created_param.is_active)
+
+        # Assert that the state and alpha properties of the source node are updated
+        self.assertEqual(source_node.state, NodeState.EDITED)
+        self.assertEqual(source_node.alpha, 100)
+
+    def test_compare(self):
