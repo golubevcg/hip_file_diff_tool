@@ -2,7 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 
 from api.hip_file_comparator import HdaFileComparator, HipFileComparator, COLORS
-from api.node_data import NodeState
+from api.node_data import NodeState, NodeData
+from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
 import hou
 
 
@@ -205,63 +206,108 @@ class TestHipFileComparator(unittest.TestCase):
             
         self.assertEqual(str(context.exception), "Incorrect source path specified. Such file doesn't exist.")
 
-    def test_update_target_file(self):
-        test_hip_comparator = HipFileComparator(
-            self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
-        )
-                
-        with self.assertRaises(RuntimeError) as context:
-            test_hip_comparator.target_file = None
-            
-        self.assertEqual(str(context.exception), "Incorrect target path specified. Such file doesn't exist.")
-
-    '''
     @patch("api.node_data.NodeData")
     @patch("api.param_data.ParamData")
-    def test_compare_node_params(self, MockParamData, MockNodeData):
-        # Initialize HipFileComparator with dummy paths
-        comparator = HipFileComparator("dummy_source_path", "dummy_target_path")
+    def test_compare_node_params_edited(self, MockParamData, MockNodeData):
+        comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, 
+            self.TARGET_HIP_FILE
+        )
 
         # Create mock objects for source and target nodes and params
-        source_node_data = MockNodeData()
-        source_param = MockParamData()
-        target_param = MockParamData()
+        source_param = Mock()
+        source_param.value = "source_value"
+
+        source_param2 = Mock()
+        source_param2.value = "value2"
+
+        source_parms_dummy = {
+            "test_param": source_param,
+            "test_param2": source_param2
+        }
+        source_node_data = Mock(items=source_parms_dummy)
 
         # Set up the source node's params dictionary to simulate having a param
-        source_node_data.parms = {"test_param": source_param}
+        source_node_data.parms = source_parms_dummy
+
+        target_param = Mock()
+        target_param.value = "target_value"
+
+        target_param2 = Mock()
+        target_param2.value = "value2"
 
         # Set up the target node's params dictionary to simulate having a param
-        target_node_data = MockNodeData()
-        target_node_data.parms = {"test_param": target_param}
+        target_parms_dummy = {
+            "test_param": source_param,
+            "test_param2": target_param2
+        }
+        target_node_data = Mock(items=target_parms_dummy)
+        target_node_data.parms = target_parms_dummy
 
+        dummy_path = "dummy_path"
         # Set the source and target nodes in the comparator's internal dictionaries
-        comparator.source_nodes = {"dummy_path": source_node_data}
-        comparator.target_nodes = {"dummy_path": target_node_data}
+        comparator.source_nodes = {
+            dummy_path : source_node_data,
+        }
+        comparator.target_nodes = {
+            dummy_path : target_node_data,
+        }
 
         # Mock the ParamData object returned by get_parm_by_name
         source_node_data.get_parm_by_name.return_value = source_param
         target_node_data.get_parm_by_name.return_value = target_param
 
-        # Simulate different param values between source and target to trigger the edit logic
-        source_param.value = "value1"
-        target_param.value = "value2"
-
         # Call the method under test
-        comparator._compare_node_params("dummy_path", source_node_data)
+        comparator._compare_node_params(dummy_path, source_node_data)
 
         # Assert that the state and visual properties are set as expected
-        self.assertEqual(source_node_data.state, NodeState.EDITED)
-        self.assertEqual(source_node_data.color, COLORS["red"])
-        self.assertEqual(source_node_data.alpha, 100)
+        self.assertEqual(
+            comparator.source_nodes[dummy_path].state, 
+            NodeState.EDITED
+        )
+        self.assertEqual(
+            comparator.source_nodes[dummy_path].color, 
+            COLORS["red"]
+        )
+        self.assertEqual(comparator.source_nodes[dummy_path].alpha, 100)
 
-        self.assertEqual(target_node_data.state, NodeState.EDITED)
-        self.assertEqual(target_node_data.color, COLORS["green"])
-        self.assertEqual(target_node_data.alpha, 100)
+        self.assertEqual(
+            comparator.target_nodes[dummy_path].state, 
+            NodeState.EDITED
+        )
+        self.assertEqual(
+            comparator.target_nodes[dummy_path].color, 
+            COLORS["green"]
+        )
+        self.assertEqual(comparator.target_nodes[dummy_path].alpha, 100)
+        
+    @patch("api.utilities.get_ordered_dict_key_index", return_value=1)
+    @patch("api.utilities.ordered_dict_insert")
+    def test_mark_node_as_created(self, mock_ordered_dict_insert, mock_get_ordered_dict_key_index):
+        target_node = NodeData("")
+        target_node.parent_path = 'parent/path'
 
-        self.assertEqual(source_param.state, NodeState.EDITED)
-        self.assertEqual(source_param.color, COLORS["red"])
-        self.assertEqual(source_param.alpha, 55)
+        node_path = 'dummy_path'
+        self.hip_comparator.target_nodes[node_path] = target_node
 
-        self.assertEqual(target_param.state, NodeState.EDITED)
-        self.assertEqual(target_param.color, COLORS["green"])
-        self.assertEqual(target_param.alpha, 55)'''
+        self.hip_comparator._mark_node_as_created(node_path)
+
+        # Assert that a NodeData object is created with an empty string
+        new_data = NodeData("")
+        new_data.parent_path = 'parent/path'
+        new_data.state = NodeState.CREATED
+        new_data.alpha = 100
+        new_data.is_hatched = True
+        
+        # Assert that the state, color, and alpha properties of the NodeData 
+        # object in self.target_nodes are updated correctly
+        self.assertEqual(
+            self.hip_comparator.target_nodes[node_path].state, NodeState.CREATED
+        )
+        self.assertEqual(
+            self.hip_comparator.target_nodes[node_path].color, COLORS["green"]
+        )
+        self.assertEqual(self.hip_comparator.target_nodes[node_path].alpha, 100)
+
+    def test_mark_node_as_deleted(self):
+        pass

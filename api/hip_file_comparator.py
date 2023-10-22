@@ -28,10 +28,6 @@ class HoudiniComparator(ABC):
         :param source_file: Path to the source file.
         :param target_file: Path to the target file.
         """
-
-        # self._check_file_path(source_file, "source")
-        # self._check_file_path(target_file, "target")
-
         self.source_file = source_file
         self.target_file = target_file
 
@@ -107,9 +103,7 @@ class HoudiniComparator(ABC):
         :param source_node_data: The data associated with the source node.
         """
 
-        for parm_name in list(
-            source_node_data.parms
-        ):  # Avoids copying the entire dictionary
+        for parm_name in list(source_node_data.parms):
             source_parm = source_node_data.get_parm_by_name(parm_name)
 
             # deleted param
@@ -119,7 +113,9 @@ class HoudiniComparator(ABC):
                 self.source_nodes[path].color = COLORS["red"]
                 self.source_nodes[path].alpha = 100
 
-                source_parm = self.source_nodes[path].get_parm_by_name(parm_name)
+                source_parm = self.source_nodes[path].get_parm_by_name(
+                    parm_name
+                )
                 source_parm.state = NodeState.EDITED
                 source_parm.color = "red"
                 source_parm.alpha = 55
@@ -256,7 +252,9 @@ class HoudiniComparator(ABC):
         Abstract method for comparing the source and target data structures.
         To be implemented by the child classes.
         """
-        raise NotImplementedError("The compare method is an abstract one and should be implemented.")
+        raise NotImplementedError(
+            "The compare method is an abstract one and should be implemented."
+        )
 
 
 class HipFileComparator(HoudiniComparator):
