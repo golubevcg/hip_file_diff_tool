@@ -29,8 +29,8 @@ class HoudiniComparator(ABC):
         :param target_file: Path to the target file.
         """
 
-        self._check_file_path(source_file, "source")
-        self._check_file_path(target_file, "target")
+        # self._check_file_path(source_file, "source")
+        # self._check_file_path(target_file, "target")
 
         self.source_file = source_file
         self.target_file = target_file
@@ -41,19 +41,37 @@ class HoudiniComparator(ABC):
 
         self.is_compared = False
 
+    @property
+    def source_file(self):
+        return self._source_file
+
+    @source_file.setter
+    def source_file(self, value):
+        self._check_file_path(value, "source")
+        self._source_file = value
+
+    @property
+    def target_file(self):
+        return self._target_file
+
+    @target_file.setter
+    def target_file(self, value):
+        self._check_file_path(value, "target")
+        self._target_file = value
+
     def _check_file_path(self, path: str, file_type: str) -> None:
         """Check if the provided path is valid and of a supported format."""
-        if not os.path.exists(path):
+        if not path or not os.path.exists(path):
             raise RuntimeError(
-                f"Incorrect {file_type} \
-                path specified. Such file doesn't exist."
+                f"Incorrect {file_type} path specified. "
+                "Such file doesn't exist."
             )
 
         _, extension = os.path.splitext(path)
-        if extension[1:] not in HIP_FILE_FORMATS:
+        if not extension or extension[1:] not in HIP_FILE_FORMATS:
             raise RuntimeError(
-                f"Incorrect {file_type} file format. \
-                Supported formats are: {', '.join(HIP_FILE_FORMATS)}."
+                f"Incorrect {file_type} file format. "
+                "Supported formats are: {', '.join(HIP_FILE_FORMATS)}."
             )
 
     def _extract_node_data(self, node: hou.Node) -> NodeData:
@@ -238,26 +256,11 @@ class HoudiniComparator(ABC):
         Abstract method for comparing the source and target data structures.
         To be implemented by the child classes.
         """
-        pass
+        raise NotImplementedError("The compare method is an abstract one and should be implemented.")
 
 
 class HipFileComparator(HoudiniComparator):
     """Comparator class for comparing two Houdini HIP files."""
-
-    def _check_file_path(self, path: str, file_type: str) -> None:
-        """Check if the provided path is valid and of a supported format."""
-        if not os.path.exists(path):
-            raise RuntimeError(
-                f"Incorrect {file_type} \
-                path specified. Such file doesn't exist."
-            )
-
-        _, extension = os.path.splitext(path)
-        if extension[1:] not in HIP_FILE_FORMATS:
-            raise RuntimeError(
-                f"Incorrect {file_type} file format. \
-                Supported formats are: {', '.join(HIP_FILE_FORMATS)}."
-            )
 
     def get_hip_data(self, hip_path: str) -> dict:
         """
@@ -307,17 +310,17 @@ class HdaFileComparator(HoudiniComparator):
 
     def _check_file_path(self, path: str, file_type: str) -> None:
         """Check if the provided path is valid and of a supported format."""
-        if not os.path.exists(path):
+        if not path or not os.path.exists(path):
             raise RuntimeError(
-                f"Incorrect {file_type} \
-                path specified. Such file doesn't exist."
+                f"Incorrect {file_type} path specified. "
+                "Such file doesn't exist."
             )
 
         _, extension = os.path.splitext(path)
-        if extension[1:] not in HDA_FILE_FORMATS:
+        if not extension or extension[1:] not in HDA_FILE_FORMATS:
             raise RuntimeError(
-                f"Incorrect {file_type} file format. \
-                Supported formats are: {', '.join(HDA_FILE_FORMATS)}."
+                f"Incorrect {file_type} file format. "
+                f"Supported formats are: {', '.join(HDA_FILE_FORMATS)}."
             )
 
     def compare(self):

@@ -2,6 +2,7 @@ from collections import OrderedDict
 from enum import auto, Enum
 from typing import Any, Optional
 
+
 class NodeState(Enum):
     """
     An enum representing the diff state of a node.

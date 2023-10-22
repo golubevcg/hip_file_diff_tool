@@ -1,8 +1,9 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from api.hip_file_comparator import HdaFileComparator, HipFileComparator
-# from api.hip_file_comparator import HipFileComparator
+from api.hip_file_comparator import HdaFileComparator, HipFileComparator, COLORS
+from api.node_data import NodeState
+import hou
 
 
 class TestHipFileComparator(unittest.TestCase):
@@ -170,3 +171,97 @@ class TestHipFileComparator(unittest.TestCase):
     def test_get_parent_path_with_empty_path(self):
         # This test assumes that passing an empty path will raise a ValueError.
         self.hip_comparator._get_parent_path("")
+    
+    def test_extract_node_data_from_hip(self):
+        self.hip_comparator._load_hip_file(self.SOURCE_HIP_FILE)
+        node = hou.node('/obj/billowy_smoke')
+        node_data = self.hip_comparator._extract_node_data(node)
+
+        self.assertEqual(node_data.name, node.name())
+        self.assertEqual(node_data.path, node.path())
+        self.assertEqual(node_data.type, node.type())
+        self.assertEqual(node_data.icon, node.type().icon())
+        self.assertEqual(node_data.parent_path, self.hip_comparator._get_parent_path(node))
+
+        for parm in node.parms():
+            param_data = node_data.get_parm_by_name(parm.name())
+            self.assertIsNotNone(param_data)
+            self.assertEqual(param_data.name, parm.name())
+            self.assertEqual(param_data.value, parm.eval())
+
+    def test_validate_file_paths_both_set(self):
+        try:
+            self.hip_comparator._validate_file_paths()
+        except ValueError as e:
+            self.fail(f"_validate_file_paths raised ValueError unexpectedly: {e}")
+
+    def test_update_source_file(self):
+        test_hip_comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
+        )
+                
+        with self.assertRaises(RuntimeError) as context:
+            test_hip_comparator.source_file = None
+            
+        self.assertEqual(str(context.exception), "Incorrect source path specified. Such file doesn't exist.")
+
+    def test_update_target_file(self):
+        test_hip_comparator = HipFileComparator(
+            self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
+        )
+                
+        with self.assertRaises(RuntimeError) as context:
+            test_hip_comparator.target_file = None
+            
+        self.assertEqual(str(context.exception), "Incorrect target path specified. Such file doesn't exist.")
+
+    '''
+    @patch("api.node_data.NodeData")
+    @patch("api.param_data.ParamData")
+    def test_compare_node_params(self, MockParamData, MockNodeData):
+        # Initialize HipFileComparator with dummy paths
+        comparator = HipFileComparator("dummy_source_path", "dummy_target_path")
+
+        # Create mock objects for source and target nodes and params
+        source_node_data = MockNodeData()
+        source_param = MockParamData()
+        target_param = MockParamData()
+
+        # Set up the source node's params dictionary to simulate having a param
+        source_node_data.parms = {"test_param": source_param}
+
+        # Set up the target node's params dictionary to simulate having a param
+        target_node_data = MockNodeData()
+        target_node_data.parms = {"test_param": target_param}
+
+        # Set the source and target nodes in the comparator's internal dictionaries
+        comparator.source_nodes = {"dummy_path": source_node_data}
+        comparator.target_nodes = {"dummy_path": target_node_data}
+
+        # Mock the ParamData object returned by get_parm_by_name
+        source_node_data.get_parm_by_name.return_value = source_param
+        target_node_data.get_parm_by_name.return_value = target_param
+
+        # Simulate different param values between source and target to trigger the edit logic
+        source_param.value = "value1"
+        target_param.value = "value2"
+
+        # Call the method under test
+        comparator._compare_node_params("dummy_path", source_node_data)
+
+        # Assert that the state and visual properties are set as expected
+        self.assertEqual(source_node_data.state, NodeState.EDITED)
+        self.assertEqual(source_node_data.color, COLORS["red"])
+        self.assertEqual(source_node_data.alpha, 100)
+
+        self.assertEqual(target_node_data.state, NodeState.EDITED)
+        self.assertEqual(target_node_data.color, COLORS["green"])
+        self.assertEqual(target_node_data.alpha, 100)
+
+        self.assertEqual(source_param.state, NodeState.EDITED)
+        self.assertEqual(source_param.color, COLORS["red"])
+        self.assertEqual(source_param.alpha, 55)
+
+        self.assertEqual(target_param.state, NodeState.EDITED)
+        self.assertEqual(target_param.color, COLORS["green"])
+        self.assertEqual(target_param.alpha, 55)'''
