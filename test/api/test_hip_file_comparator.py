@@ -365,7 +365,7 @@ class TestHipFileComparator(unittest.TestCase):
         # Assert that the source node has the new param with the expected properties
         created_param = source_node.get_parm_by_name("new_param")
         self.assertIsNotNone(created_param)
-        self.assertEqual(created_param.state, "created")
+        self.assertEqual(created_param.state, NodeState.CREATED)
         self.assertEqual(created_param.alpha, 55)
         self.assertTrue(created_param.is_hatched)
         self.assertFalse(created_param.is_active)
@@ -380,7 +380,7 @@ class TestHipFileComparator(unittest.TestCase):
 
         edited_node_path = "/obj/billowy_smoke/smoke_base"
         edted_param_name = "radx"
-        source_parm_val = "1.0"
+        source_parm_val = 1.0
 
         edited_source_node = self.hip_comparator.source_nodes[
             edited_node_path
@@ -390,7 +390,7 @@ class TestHipFileComparator(unittest.TestCase):
             edted_param_name
         )
 
-        target_parm_val = "2.0"
+        target_parm_val = 2.0
         edited_target_node = self.hip_comparator.target_nodes[
             edited_node_path
         ]
@@ -400,12 +400,50 @@ class TestHipFileComparator(unittest.TestCase):
 
         self.assertEqual(edited_source_node.state, NodeState.EDITED)
         self.assertEqual(edited_source_node.color, COLORS["red"])
+
         self.assertEqual(edited_target_node.state, NodeState.EDITED)
         self.assertEqual(edited_target_node.color, COLORS["green"])
 
-        #compare params color
-        #value
-        #state
+        self.assertEqual(edited_source_parm.value, source_parm_val)
+        self.assertEqual(edited_target_parm.value, target_parm_val)
 
-        # assert empty item by path on created node in source
-        # assert empty item by path on deleted node in target
+        self.assertEqual(edited_source_parm.state, NodeState.EDITED)
+        self.assertEqual(edited_target_parm.state, NodeState.EDITED)
+
+        self.assertEqual(edited_source_parm.color, COLORS["red"])
+        self.assertEqual(edited_source_parm.alpha, 55)
+
+        self.assertEqual(edited_target_parm.color, COLORS["green"])
+        self.assertEqual(edited_target_parm.alpha, 55)
+
+        created_node_path = "/obj/billowy_smoke/null1"
+        create_node_parm = "copyinput"
+        created_source_node = self.hip_comparator.source_nodes[
+            created_node_path
+        ]
+        created_source_parm = created_source_node.get_parm_by_name(
+            create_node_parm
+        )
+
+        self.assertEqual(created_source_node.name, "")
+        self.assertEqual(created_source_node.state, NodeState.EDITED)
+        self.assertEqual(created_source_node.is_hatched, True)
+
+        self.assertEqual(created_source_parm.value, "")
+        self.assertEqual(created_source_parm.state, NodeState.CREATED)
+        self.assertEqual(created_source_parm.is_hatched, True)
+      
+        created_target_node = self.hip_comparator.target_nodes[
+            created_node_path
+        ]
+        created_target_parm = created_target_node.get_parm_by_name(
+            create_node_parm
+        )
+
+        self.assertEqual(created_target_node.name, "null1")
+        self.assertEqual(created_target_node.state, NodeState.EDITED)
+        self.assertEqual(created_target_parm.is_hatched, False)
+
+        self.assertEqual(created_target_parm.value, 1)
+        self.assertEqual(created_target_parm.state, NodeState.CREATED)
+        self.assertEqual(created_target_parm.is_hatched, False)

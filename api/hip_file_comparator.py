@@ -124,7 +124,7 @@ class HoudiniComparator(ABC):
                 self.target_nodes[path].color = COLORS["red"]
                 self.target_nodes[path].alpha = 100
 
-                parm = ParamData(parm_name, "", "deleted")
+                parm = ParamData(parm_name, "", NodeState.DELETED)
                 parm.alpha = 55
                 parm.is_active = False
                 parm.is_hatched = True
@@ -219,7 +219,7 @@ class HoudiniComparator(ABC):
                 target_data.color = COLORS["green"]
                 target_data.alpha = 100
 
-                parm = ParamData(parm_name, "", "created")
+                parm = ParamData(parm_name, "", NodeState.CREATED)
                 parm.alpha = 55
                 parm.is_hatched = True
                 parm.is_active = False
@@ -234,9 +234,8 @@ class HoudiniComparator(ABC):
         source_paths = set(self.source_nodes.keys())
         target_paths = set(self.target_nodes.keys())
 
-        for path in (
-            target_paths - source_paths
-        ):  # Faster set difference operation
+        # Faster set difference operation
+        for path in (target_paths - source_paths):  
             self._mark_node_as_created(path)
 
     def _get_parent_path(self, node) -> str:
@@ -296,7 +295,7 @@ class HipFileComparator(HoudiniComparator):
         self._handle_deleted_and_edited_nodes()
         self._handle_created_nodes()
         self._handle_created_params()
-        
+
         self.is_compared = True
 
 class HdaFileComparator(HoudiniComparator):
