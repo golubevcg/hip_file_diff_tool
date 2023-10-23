@@ -375,3 +375,31 @@ class TestHipFileComparator(unittest.TestCase):
         self.assertEqual(source_node.alpha, 100)
 
     def test_compare(self):
+        
+        self.hip_comparator.compare()
+
+        edited_node_path = "/obj/billowy_smoke/smoke_base"
+        edted_param_path = "radx"
+        source_parm_val = "1.0"
+
+        edited_source_node = self.hip_comparator.source_data[
+            edited_node_path
+        ]
+
+        target_parm_val = "2.0"
+        edited_target_node = self.hip_comparator.target_data[
+            edited_node_path
+        ]
+        print(edited_source_node)
+        print(edited_target_node)
+
+        # self.assertEqual(edited_source_node.state, NodeState.EDITED)
+        self.assertEqual(edited_source_node.color, COLORS["red"])
+        # self.assertEqual(edited_target_node.state, NodeState.EDITED)
+        self.assertEqual(edited_target_node.color, COLORS["green"])
+
+
+        # assert node red
+        # assert node status
+        # assert empty item by path on created node in source
+        # assert empty item by path on deleted node in target

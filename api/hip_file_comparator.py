@@ -289,8 +289,11 @@ class HipFileComparator(HoudiniComparator):
     def compare(self) -> None:
         """Compare the source and target HIP files to identify differences."""
         self._validate_file_paths()
+        print("compared", self.source_file, self.target_file)
         self.source_data = self.get_hip_data(self.source_file)
+        print(self.source_data)
         self.target_data = self.get_hip_data(self.target_file)
+        print(self.target_data)
         self._handle_deleted_and_edited_nodes()
         self._handle_created_nodes()
         self._handle_created_params()
@@ -428,37 +431,3 @@ class HdaFileComparator(HoudiniComparator):
         
         hda_node.allowEditingOfContents()
         return hda_node
-
-
-if __name__ == "__main__":
-    hda_source_path = Path(
-        Path(__file__).parent.parent, "test/fixtures/BoxHDA_source.hda"
-    ).as_posix()
-
-    hda_target_path = Path(
-        Path(__file__).parent.parent, "test/fixtures/BoxHDA_edited.hda"
-    ).as_posix()
-
-    hda_comparator = HdaFileComparator(hda_source_path, hda_target_path)
-    hda_comparator.compare()
-
-    print("-------")
-    print("Edited")
-    for name, diff in hda_comparator.diff_sections.items():
-        print(name, diff)
-
-    print("-------")
-    print("Source")
-    for source_section in hda_comparator.source_sections.values():
-        if source_section.state == HdaSectionState.DELETED:
-            print(f"Deleted: {source_section.name}")
-        elif source_section.state == HdaSectionState.CREATED:
-            print(f"Created: {source_section.name}")
-
-    print("-------")
-    print("Target")
-    for target_section in hda_comparator.target_sections.values():
-        if target_section.state == HdaSectionState.DELETED:
-            print(f"Deleted: {target_section.name}")
-        elif target_section.state == HdaSectionState.CREATED:
-            print(f"Created: {target_section.name}")
