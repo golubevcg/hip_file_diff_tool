@@ -258,7 +258,6 @@ class HipFileDiffWindow(QMainWindow):
                 border-image: url("ui/icons/empty.svg")  center center no-repeat;
             }
             QTreeView::item {
-                height: 1.1em;
                 font-size: 0.4em;
                 padding: 0.11em;
             }

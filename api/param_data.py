@@ -1,5 +1,5 @@
 from enum import auto, Enum
-
+from collections import OrderedDict
 
 class ParamState(Enum):
     """
@@ -57,11 +57,23 @@ class ParamData:
         """
         self.name = name
         self.value = value
+
         self.state = state
         self.is_active = True
         self.color = color
         self.alpha = alpha
         self.is_hatched = is_hatched
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        if value and type(value) in (dict, OrderedDict):
+            self._value = "\n".join(f"{key}: {value}" for key, value in value.items())
+        else:
+            self._value = value
 
     def __repr__(self):
         return f"ParamData(\

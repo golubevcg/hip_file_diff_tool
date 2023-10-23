@@ -59,6 +59,7 @@ class NodeData:
         self.color: Optional[str] = None
         self.alpha: int = 255
         self.is_hatched: bool = False
+        self.user_data = OrderedDict()
 
     def add_parm(self, name: str, param: Any) -> None:
         """

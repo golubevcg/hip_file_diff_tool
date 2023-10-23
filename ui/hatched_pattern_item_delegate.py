@@ -1,6 +1,6 @@
-from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter
-from hutil.Qt.QtWidgets import QStyledItemDelegate
-from hutil.Qt.QtCore import Qt
+from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QFontMetrics
+from hutil.Qt.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem
+from hutil.Qt.QtCore import Qt, QSize
 from ui.constants import DATA_ROLE
 
 
@@ -8,7 +8,6 @@ class HatchedItemDelegate(QStyledItemDelegate):
     """
     Custom item delegate class that supports hatched patterns as backgrounds.
     """
-
     def paint(self, painter: QPainter, option, index) -> None:
         """
         Custom paint method to render items with a hatched pattern.
@@ -21,8 +20,16 @@ class HatchedItemDelegate(QStyledItemDelegate):
         if is_hatched:
             self._paint_hatched_pattern(painter, option)
 
+        option.displayAlignment = Qt.AlignTop
+
         # Let the default delegate handle the rest (e.g., text rendering)
         super().paint(painter, option, index)
+
+    def sizeHint(self, option, index):
+        text = index.data(Qt.DisplayRole)
+        if "\n" in text:
+            return QSize(option.rect.width(), 150)
+        return super().sizeHint(option, index)
 
     def _paint_hatched_pattern(self, painter: QPainter, option) -> None:
         """

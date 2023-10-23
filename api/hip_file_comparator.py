@@ -82,6 +82,13 @@ class HoudiniComparator(ABC):
         node_data.type = node.type()
         node_data.icon = node.type().icon()
         node_data.parent_path = self._get_parent_path(node)
+
+        user_data = node.userDataDict()
+        param_user_data = ParamData("userData", None, None)
+        if user_data:
+            param_user_data.value = user_data
+        node_data.user_data = param_user_data
+
         for parm in node.parms():
             node_data.add_parm(
                 parm.name(), ParamData(parm.name(), parm.eval(), None)
@@ -95,14 +102,63 @@ class HoudiniComparator(ABC):
         if not self.target_file:
             raise ValueError("Error, no target file specified!")
 
-    def _compare_node_params(self, path: str, source_node_data):
+    def _mark_node_as_created(self, path: str):
+        """
+        Mark a node as created and update source data accordingly.
+
+        :param path: The path of the node.
+        """
+        new_data = NodeData("")
+        new_data.parent_path = self.target_nodes[path].parent_path
+        new_data.state = NodeState.CREATED
+        index = get_ordered_dict_key_index(self.target_nodes, path)
+
+        self.source_nodes = ordered_dict_insert(
+            self.source_nodes, index, path, new_data
+        )
+        self.source_nodes[path].alpha = 55
+        self.source_nodes[path].is_hatched = True
+
+        self.target_nodes[path].state = NodeState.CREATED
+        self.target_nodes[path].color = COLORS["green"]
+        self.target_nodes[path].alpha = 55
+
+    def _mark_node_as_deleted(self, path: str, source_node_data):
+        """
+        Mark a node as deleted and update target data accordingly.
+
+        :param path: The path of the node.
+        :param source_node_data: The data associated with the source node.
+        """
+        new_data = NodeData("")
+        new_data.parent_path = source_node_data.parent_path
+        new_data.state = NodeState.DELETED
+        new_data.is_hatched = True
+        index = get_ordered_dict_key_index(self.source_nodes, path)
+        self.target_nodes = ordered_dict_insert(
+            self.target_nodes, index, path, new_data
+        )
+
+        source_node_data.state = NodeState.DELETED
+        source_node_data.color = COLORS["red"]
+        source_node_data.alpha = 100
+
+    def _handle_deleted_and_edited_nodes(self):
+        """Handle nodes that are deleted or have edited parameters."""
+        for path, source_node_data in self.source_nodes.items():
+            if path not in self.target_nodes:
+                self._mark_node_as_deleted(path, source_node_data)
+            else:
+                self._compare_node_user_data(path, source_node_data)
+                self._compare_node_params(path, source_node_data)
+
+    def _compare_node_params(self, path: str, source_node_data: NodeData):
         """
         Compare parameters of nodes between source and target data.
 
         :param path: The path of the node.
         :param source_node_data: The data associated with the source node.
         """
-
         for parm_name in list(source_node_data.parms):
             source_parm = source_node_data.get_parm_by_name(parm_name)
 
@@ -153,54 +209,30 @@ class HoudiniComparator(ABC):
             self.target_nodes[path].color = COLORS["green"]
             self.target_nodes[path].alpha = 100
 
-    def _mark_node_as_created(self, path: str):
+    def _compare_node_user_data(self, path: str, source_node_data: NodeData):
         """
-        Mark a node as created and update source data accordingly.
-
-        :param path: The path of the node.
-        """
-        new_data = NodeData("")
-        new_data.parent_path = self.target_nodes[path].parent_path
-        new_data.state = NodeState.CREATED
-        index = get_ordered_dict_key_index(self.target_nodes, path)
-
-        self.source_nodes = ordered_dict_insert(
-            self.source_nodes, index, path, new_data
-        )
-        self.source_nodes[path].alpha = 100
-        self.source_nodes[path].is_hatched = True
-
-        self.target_nodes[path].state = NodeState.CREATED
-        self.target_nodes[path].color = COLORS["green"]
-        self.target_nodes[path].alpha = 100
-
-    def _mark_node_as_deleted(self, path: str, source_node_data):
-        """
-        Mark a node as deleted and update target data accordingly.
+        Compare userData dict of nodes between source and target data.
 
         :param path: The path of the node.
         :param source_node_data: The data associated with the source node.
         """
-        new_data = NodeData("")
-        new_data.parent_path = source_node_data.parent_path
-        new_data.state = NodeState.DELETED
-        new_data.is_hatched = True
-        index = get_ordered_dict_key_index(self.source_nodes, path)
-        self.target_nodes = ordered_dict_insert(
-            self.target_nodes, index, path, new_data
-        )
+        source_user_data_parm = source_node_data.user_data
 
-        source_node_data.state = NodeState.DELETED
-        source_node_data.color = COLORS["red"]
-        source_node_data.alpha = 100
+        node_from_target_scene = self.target_nodes[path]
+        target_user_data_parm = node_from_target_scene.user_data
 
-    def _handle_deleted_and_edited_nodes(self):
-        """Handle nodes that are deleted or have edited parameters."""
-        for path, source_node_data in self.source_nodes.items():
-            if path not in self.target_nodes:
-                self._mark_node_as_deleted(path, source_node_data)
-            else:
-                self._compare_node_params(path, source_node_data)
+        if source_user_data_parm.value == target_user_data_parm.value:
+            return
+
+        source_user_data_parm.state = NodeState.EDITED
+        source_user_data_parm.alpha = 55
+        source_user_data_parm.color = COLORS["red"]
+        self.source_nodes[path].user_data = source_user_data_parm
+
+        target_user_data_parm.state = NodeState.EDITED
+        target_user_data_parm.alpha = 55
+        target_user_data_parm.color = COLORS["green"]
+        self.target_nodes[path].user_data = target_user_data_parm
 
     def _handle_created_params(self):
         """Handle items for node params that are newly created."""
