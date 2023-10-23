@@ -289,14 +289,14 @@ class HipFileComparator(HoudiniComparator):
     def compare(self) -> None:
         """Compare the source and target HIP files to identify differences."""
         self._validate_file_paths()
-        print("compared", self.source_file, self.target_file)
-        self.source_data = self.get_hip_data(self.source_file)
-        print(self.source_data)
-        self.target_data = self.get_hip_data(self.target_file)
-        print(self.target_data)
+
+        self.source_nodes = self.get_hip_data(self.source_file)
+        self.target_nodes = self.get_hip_data(self.target_file)
+
         self._handle_deleted_and_edited_nodes()
         self._handle_created_nodes()
         self._handle_created_params()
+        
         self.is_compared = True
 
 class HdaFileComparator(HoudiniComparator):

@@ -379,27 +379,33 @@ class TestHipFileComparator(unittest.TestCase):
         self.hip_comparator.compare()
 
         edited_node_path = "/obj/billowy_smoke/smoke_base"
-        edted_param_path = "radx"
+        edted_param_name = "radx"
         source_parm_val = "1.0"
 
-        edited_source_node = self.hip_comparator.source_data[
+        edited_source_node = self.hip_comparator.source_nodes[
             edited_node_path
         ]
+
+        edited_source_parm = edited_source_node.get_parm_by_name(
+            edted_param_name
+        )
 
         target_parm_val = "2.0"
-        edited_target_node = self.hip_comparator.target_data[
+        edited_target_node = self.hip_comparator.target_nodes[
             edited_node_path
         ]
-        print(edited_source_node)
-        print(edited_target_node)
+        edited_target_parm = edited_target_node.get_parm_by_name(
+            edted_param_name
+        )
 
-        # self.assertEqual(edited_source_node.state, NodeState.EDITED)
+        self.assertEqual(edited_source_node.state, NodeState.EDITED)
         self.assertEqual(edited_source_node.color, COLORS["red"])
-        # self.assertEqual(edited_target_node.state, NodeState.EDITED)
+        self.assertEqual(edited_target_node.state, NodeState.EDITED)
         self.assertEqual(edited_target_node.color, COLORS["green"])
 
+        #compare params color
+        #value
+        #state
 
-        # assert node red
-        # assert node status
         # assert empty item by path on created node in source
         # assert empty item by path on deleted node in target
