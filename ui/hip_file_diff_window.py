@@ -51,6 +51,11 @@ class HipFileDiffWindow(QMainWindow):
         self.setup_signals_and_slots()
         self.apply_stylesheet()
 
+        # TODO: TEMP CODE REMOVE BEFORE MERGE
+        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
+        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
+        self.handle_compare_button_click()
+
     def set_window_properties(self) -> None:
         """Set main window properties."""
         self.setWindowTitle(".hip files diff tool")
@@ -190,13 +195,32 @@ class HipFileDiffWindow(QMainWindow):
     def setup_signals_and_slots(self) -> None:
         """Connect signals to their respective slots."""
         self.load_button.clicked.connect(self.handle_compare_button_click)
+
         self.connect_tree_view_expansion(self.source_treeview)
         self.connect_tree_view_expansion(self.target_treeview)
+
+        self.connect_tree_view_hover(self.source_treeview)
+        self.connect_tree_view_hover(self.target_treeview)
+
         self.target_treeview.verticalScrollBar().valueChanged.connect(
             self.sync_scroll
         )
         self.source_treeview.verticalScrollBar().valueChanged.connect(
             self.sync_scroll
+        )
+
+    def connect_tree_view_hover(self, tree_view: CustomQTreeView) -> None:
+        """
+        Connect hover signals for a QTreeView.
+
+        Args:
+        - tree_view (CustomQTreeView): The QTreeView instance.
+        """
+        tree_view.entered.connect(
+            lambda index: self.sync_hover(index)
+        )
+        tree_view.entered.connect(
+            lambda index: self.sync_hover(index)
         )
 
     def connect_tree_view_expansion(self, tree_view: CustomQTreeView) -> None:
@@ -212,6 +236,9 @@ class HipFileDiffWindow(QMainWindow):
         tree_view.collapsed.connect(
             lambda index: self.sync_expand(index, expand=False)
         )
+
+    def sync_hover(index):
+        pass
 
     def apply_stylesheet(self) -> None:
         """Apply a custom stylesheet to the main window."""
@@ -258,15 +285,9 @@ class HipFileDiffWindow(QMainWindow):
                 border-image: url("ui/icons/empty.svg")  center center no-repeat;
             }
             QTreeView::item {
+                height: 1.1em;
                 font-size: 0.4em;
-                padding: 0.11em;
-            }
-            QTreeView::item:hover {
-                background: rgb(71, 71, 71);
-            }
-            QTreeView::item:selected {
-                border: 1px solid rgb(185, 134, 32);
-                background: rgb(96, 81, 50);
+                padding: 0.12em;
             }
             QScrollBar:vertical {
                 border: none;

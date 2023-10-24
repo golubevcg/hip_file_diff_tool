@@ -1,5 +1,5 @@
-from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QFontMetrics
-from hutil.Qt.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem
+from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QLinearGradient
+from hutil.Qt.QtWidgets import QStyledItemDelegate, QStyle
 from hutil.Qt.QtCore import Qt, QSize
 from ui.constants import DATA_ROLE
 
@@ -22,13 +22,35 @@ class HatchedItemDelegate(QStyledItemDelegate):
 
         option.displayAlignment = Qt.AlignTop
 
-        # Let the default delegate handle the rest (e.g., text rendering)
+        if index.data(Qt.DisplayRole).count("\n") >= 3:
+            # Create the gradient overlay effect for darkening
+            gradient = QLinearGradient(
+                option.rect.topLeft(), 
+                option.rect.bottomLeft()
+            )
+            gradient.setColorAt(0.4, Qt.transparent)     
+            gradient.setColorAt(1, QColor(51, 51, 51, 255))
+
+            painter.fillRect(option.rect, gradient)
+
+        borderColor = QColor(Qt.transparent)
+        is_hovered = option.state & QStyle.State_MouseOver
+        if is_hovered:
+            borderColor = QColor(185, 134, 32)
+            
+        painter.setPen(borderColor)
+        painter.drawLine(option.rect.topLeft(), option.rect.topRight())
+        painter.drawLine(option.rect.bottomLeft(), option.rect.bottomRight())
+        painter.drawLine(option.rect.topLeft(), option.rect.bottomLeft())
+        painter.drawLine(option.rect.topRight(), option.rect.bottomRight())
+
         super().paint(painter, option, index)
 
     def sizeHint(self, option, index):
         text = index.data(Qt.DisplayRole)
         if "\n" in text:
-            return QSize(option.rect.width(), 150)
+            return QSize(option.rect.width(), 100)
+        
         return super().sizeHint(option, index)
 
     def _paint_hatched_pattern(self, painter: QPainter, option) -> None:

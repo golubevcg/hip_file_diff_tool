@@ -105,6 +105,7 @@ class CustomStandardItemModel(QStandardItemModel):
         self.item_dictionary[parm_path] = parm_item
 
         value = str(parm.value) if parm.is_active else ""
+
         value_path = f"{parm_path}/value"
         value_item = QStandardItem(value)
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
