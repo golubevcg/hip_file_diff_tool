@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from hutil.Qt.QtWidgets import (
+    QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -10,9 +11,10 @@ from hutil.Qt.QtWidgets import (
     QSplitter,
     QMessageBox,
     QAbstractItemView,
-    QCheckBox,
+    QCheckBox
 )
-from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
+from hutil.Qt.QtCore import Qt, QSortFilterProxyModel, QEvent
+from hutil.Qt.QtGui import QHoverEvent
 
 from api.hip_file_comparator import (
     HDA_FILE_FORMATS,
@@ -26,6 +28,7 @@ from ui.custom_standart_item_model import CustomStandardItemModel
 from ui.hatched_pattern_item_delegate import HatchedItemDelegate
 from ui.file_selector import FileSelector
 from ui.search_line_edit import QTreeViewSearch
+from ui.large_string_diff_dialog import LargeStringDiffDialog
 
 
 class HipFileDiffWindow(QMainWindow):
@@ -181,6 +184,7 @@ class HipFileDiffWindow(QMainWindow):
         """
         tree_view = CustomQTreeView(self)
         tree_view.setItemDelegate(HatchedItemDelegate(tree_view))
+        tree_view.doubleClicked.connect(self.on_item_double_clicked)
 
         tree_view.setObjectName(obj_name)
         tree_view.header().hide()
@@ -216,11 +220,10 @@ class HipFileDiffWindow(QMainWindow):
         Args:
         - tree_view (CustomQTreeView): The QTreeView instance.
         """
+
+        tree_view.setMouseTracking(True)
         tree_view.entered.connect(
-            lambda index: self.sync_hover(index)
-        )
-        tree_view.entered.connect(
-            lambda index: self.sync_hover(index)
+            lambda index: self.sync_hover_state(index, hover=True)
         )
 
     def connect_tree_view_expansion(self, tree_view: CustomQTreeView) -> None:
@@ -237,8 +240,50 @@ class HipFileDiffWindow(QMainWindow):
             lambda index: self.sync_expand(index, expand=False)
         )
 
-    def sync_hover(index):
-        pass
+    def sync_hover_state(self, index, hover: bool = True) -> None:
+        """
+        Synchronize hover/unhover state between tree views.
+
+        Args:
+        - index: QModelIndex of the item being hovered/unhovered.
+        - hover (bool): If True, item is hovered. If False, it's unhovered.
+        """
+        event_proxy_model = index.model()
+
+        if isinstance(event_proxy_model, QSortFilterProxyModel):
+            event_source_model = event_proxy_model.sourceModel()
+        else:
+            event_source_model = event_proxy_model
+
+        if event_source_model == self.source_model:
+            other_view = self.target_treeview
+        else:
+            other_view = self.source_treeview
+
+        event_item = event_source_model.itemFromIndex(
+            event_proxy_model.mapToSource(index)
+        )
+        event_item_path = event_item.data(event_source_model.path_role)
+
+        item_in_other_source_model = (
+            other_view.model().sourceModel().get_item_by_path(event_item_path)
+        )
+
+        index_in_other_proxy = other_view.model().mapFromSource(
+            other_view.model().sourceModel().indexFromItem(item_in_other_source_model)
+        )
+
+        # Create a QHoverEvent and post it to the other tree view
+        pos_in_other_view = other_view.visualRect(index_in_other_proxy).center()
+        global_pos = other_view.mapToGlobal(pos_in_other_view)
+
+        if hover:
+            hover_event_type = QEvent.HoverEnter
+        else:
+            hover_event_type = QEvent.HoverLeave
+
+        hover_event = QHoverEvent(hover_event_type, pos_in_other_view, global_pos)
+        QApplication.postEvent(other_view.viewport(), hover_event)
 
     def apply_stylesheet(self) -> None:
         """Apply a custom stylesheet to the main window."""
@@ -469,3 +514,9 @@ class HipFileDiffWindow(QMainWindow):
 
         # Update the target's scrollbar position to match the source's
         target_scrollbar.setValue(value)
+
+    def on_item_double_clicked(self, index):
+        index_displ_role_text = index.data(Qt.DisplayRole)
+        if index_displ_role_text.count("\n") >= 3 :
+            dialog = LargeStringDiffDialog(index_displ_role_text, self)
+            dialog.exec_()

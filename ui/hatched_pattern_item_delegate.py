@@ -1,6 +1,6 @@
 from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QLinearGradient
 from hutil.Qt.QtWidgets import QStyledItemDelegate, QStyle
-from hutil.Qt.QtCore import Qt, QSize
+from hutil.Qt.QtCore import Qt, QSize, QEvent
 from ui.constants import DATA_ROLE
 
 
@@ -52,6 +52,18 @@ class HatchedItemDelegate(QStyledItemDelegate):
             return QSize(option.rect.width(), 100)
         
         return super().sizeHint(option, index)
+    
+    def helpEvent(self, event, view, option, index):
+        if event.type() == QEvent.ToolTip:
+            if index.data(Qt.DisplayRole).count("\n") >= 3 :
+                view.setToolTip(
+                    "String diff available for this item,"
+                    "double click on item to open.")
+            else:
+                view.setToolTip("")  # Clear the tooltip for other items
+        return super(HatchedItemDelegate, self)\
+                .helpEvent(event, view, option, index)
+
 
     def _paint_hatched_pattern(self, painter: QPainter, option) -> None:
         """

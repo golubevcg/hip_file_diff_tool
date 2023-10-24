@@ -1,7 +1,7 @@
-from hou.Qt.QtWidgets import QDialog, QTextEdit, QVBoxLayout
+from hutil.Qt.QtWidgets import QDialog, QTextEdit, QVBoxLayout
 
 
-class LargeTextDialog(QDialog):
+class LargeStringDiffDialog(QDialog):
     def __init__(self, text, parent=None):
         super().__init__(parent)
         self.text_edit = QTextEdit(self)
