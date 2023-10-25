@@ -28,7 +28,7 @@ from ui.custom_standart_item_model import CustomStandardItemModel
 from ui.hatched_pattern_item_delegate import HatchedItemDelegate
 from ui.file_selector import FileSelector
 from ui.search_line_edit import QTreeViewSearch
-from ui.large_string_diff_dialog import LargeStringDiffDialog
+from ui.string_diff_dialog import StringDiffDialog
 
 
 class HipFileDiffWindow(QMainWindow):
@@ -518,5 +518,6 @@ class HipFileDiffWindow(QMainWindow):
     def on_item_double_clicked(self, index):
         index_displ_role_text = index.data(Qt.DisplayRole)
         if index_displ_role_text.count("\n") >= 3 :
-            dialog = LargeStringDiffDialog(index_displ_role_text, self)
-            dialog.exec_()
+            string_diff_dialog = StringDiffDialog(index_displ_role_text, parent=self)
+            self.installEventFilter(string_diff_dialog)
+            string_diff_dialog.show()
