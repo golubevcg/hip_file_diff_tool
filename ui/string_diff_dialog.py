@@ -31,6 +31,8 @@ class StringDiffDialog(QDialog):
     def __init__(self, index, other_index, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle("String diff tool for item")
+
         self.parent_application = parent
 
         source_text = index.data(Qt.DisplayRole)

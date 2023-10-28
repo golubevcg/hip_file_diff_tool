@@ -31,6 +31,7 @@ class CustomStandardItemModel(QStandardItemModel):
         self.data_role = DATA_ROLE
         self.view = None
         self.show_only_edited = False
+        self.proxy_model = None
 
     def set_view(self, tree_view) -> None:
         """Associate the model with a tree view widget."""

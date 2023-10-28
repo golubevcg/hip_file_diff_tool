@@ -26,6 +26,7 @@ class QTreeViewSearch(QLineEdit):
         self.target_model = target_model
         self.proxy_model = RecursiveFilterProxyModel(self.treeview)
         self.proxy_model.setSourceModel(self.target_model)
+        self.target_model.proxy_model = self.proxy_model
         self.treeview.setModel(self.proxy_model)
 
         self.expanded_state = {}

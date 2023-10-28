@@ -64,11 +64,12 @@ class HipFileDiffWindow(QMainWindow):
         if args.target_file_path:
             self.target_file_line_edit.setText(args.target_file_path)
 
-        if self.source_file_line_edit.text() and self.target_file_line_edit.text():
+        if args.source_file_path and args.target_file_path:
             self.handle_compare_button_click()
 
         if args.item_path:
             item = self.source_model.get_item_by_path(args.item_path)
+            self.source_treeview.expand_to_index(item, self.source_treeview)
             self.on_item_double_clicked(item.index())
 
         # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
@@ -146,7 +147,7 @@ class HipFileDiffWindow(QMainWindow):
         self.target_layout.addWidget(self.target_treeview)
 
         self.source_search_qline_edit = QTreeViewSearch(
-            self.source_treeview, self.source_model, self.target_treeview
+            self.source_treeview, self.source_model
         )
         self.source_search_qline_edit.setPlaceholderText("Search in source")
         self.source_layout.addWidget(self.source_search_qline_edit)
@@ -490,14 +491,12 @@ class HipFileDiffWindow(QMainWindow):
 
     def get_index_in_other_model(self, index):
         event_proxy_model = index.model()
-
         if isinstance(event_proxy_model, QSortFilterProxyModel):
             event_source_model = event_proxy_model.sourceModel()
         else:
             event_source_model = event_proxy_model
-            event_proxy_model = event_proxy_model.parent()
-
-
+            event_proxy_model = event_proxy_model.proxy_model
+            index = event_proxy_model.mapFromSource(index)
 
         if event_source_model == self.source_model:
             other_view = self.target_treeview
