@@ -50,7 +50,7 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
             
         # make sure that value is shown if parent fits condition
         state_value = self.sourceModel().data(source_index, self.data_role).state
-        if source_parent.isValid() and state_value == ParamState.VALUE:
+        if state_value == ParamState.VALUE and source_parent.isValid():
             if self.filter_accepts_row_itself(source_parent.row(), source_parent.parent()):
                 return True
 

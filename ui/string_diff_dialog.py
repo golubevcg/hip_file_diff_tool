@@ -58,16 +58,19 @@ class StringDiffDialog(QDialog):
         self.top_buttons_widget = QWidget()
         self.top_buttons_widget.setStyleSheet(
             """
-                background-color: #333333;
+                background-color: #404040;
                 border: 1px solid #4d4d4d;
-                border-radius: 10px;
+                border-top-right-radius: 15px;
+                border-bottom-right-radius: 15px;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
             """
         )
         self.top_buttons_widget.setFixedHeight(40)
-        self.top_buttons_widget.setContentsMargins(0, 0, 0, 0)
+        self.top_buttons_widget.setContentsMargins(5, 0, 0, 0)
 
         self.top_buttons_hbox_layout = QHBoxLayout(self.top_buttons_widget)
-        self.top_buttons_hbox_layout.setContentsMargins(5, 5, 5, 5)
+        self.top_buttons_hbox_layout.setContentsMargins(0, 0, 0, 0)
 
         self.copy_link_button = QPushButton("copy link", self)
         self.copy_link_button.setObjectName("copyLink")
@@ -100,7 +103,6 @@ class StringDiffDialog(QDialog):
                 font: 10pt "Arial";
                 color: #919191;
                 border:none;
-                border-right: 1px solid #4d4d4d;
                 border-radius:0px;
             }
             QPushButton#copyLink:hover {
@@ -121,6 +123,9 @@ class StringDiffDialog(QDialog):
 
         path_to_node = index.data(PATH_ROLE)
         self.node_path_line_edit = QLineEdit(path_to_node)
+        self.node_path_line_edit.setContentsMargins(0, 0, 5, 0)
+
+        self.node_path_line_edit.setFixedHeight(35)
         self.node_path_line_edit.setReadOnly(True)
         self.node_path_line_edit.setStyleSheet(
             """
@@ -128,15 +133,15 @@ class StringDiffDialog(QDialog):
             color: #919191;
             background-color: #333333;
             border:none;
+            border-radius: 15px;
+            padding-left:15px;
+            padding-bottom:3px;
             """
         )
 
         self.top_buttons_hbox_layout.addWidget(self.copy_link_button)
         self.top_buttons_hbox_layout.addWidget(self.copy_path_button)
         self.top_buttons_hbox_layout.addWidget(self.node_path_line_edit)
-
-        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.top_buttons_hbox_layout.addSpacerItem(spacer)
 
         # Split texts into lines for difflib processing
         old_lines = source_text.splitlines()
