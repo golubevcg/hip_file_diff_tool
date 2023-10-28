@@ -39,13 +39,13 @@ class HipFileDiffWindow(QMainWindow):
         hip_comparator (HipFileComparator): Instance to compare two hip files.
     """
 
-    def __init__(self):
+    def __init__(self, args):
         super(HipFileDiffWindow, self).__init__()
-
         self.houdini_comparator: HoudiniComparator = None
-        self.init_ui()
+        self.args = args
+        self.init_ui(args)
 
-    def init_ui(self) -> None:
+    def init_ui(self, args) -> None:
         """Initialize UI components."""
         self.set_window_properties()
         self.setup_layouts()
@@ -54,10 +54,27 @@ class HipFileDiffWindow(QMainWindow):
         self.setup_signals_and_slots()
         self.apply_stylesheet()
 
+        self.clipboard = QApplication.clipboard()
+        self.main_path = args.main_path
+
         # TODO: TEMP CODE REMOVE BEFORE MERGE
-        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
-        self.handle_compare_button_click()
+        if args.source_file_path:
+            self.source_file_line_edit.setText(args.source_file_path)
+
+        if args.target_file_path:
+            self.target_file_line_edit.setText(args.target_file_path)
+
+        if self.source_file_line_edit.text() and self.target_file_line_edit.text():
+            self.handle_compare_button_click()
+
+        if args.item_path:
+            item = self.source_model.get_item_by_path(args.item_path)
+            self.on_item_double_clicked(item.index())
+
+        # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
+        # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
+        # self.handle_compare_button_click()
+
 
     def set_window_properties(self) -> None:
         """Set main window properties."""
@@ -468,12 +485,19 @@ class HipFileDiffWindow(QMainWindow):
         - index: QModelIndex of the item being expanded or collapsed.
         - expand (bool): If True, item is expanded. If False, it's collapsed.
         """
+        other_view, index_in_other_proxy = self.get_index_in_other_model(index)
+        other_view.setExpanded(index_in_other_proxy, expand)
+
+    def get_index_in_other_model(self, index):
         event_proxy_model = index.model()
 
         if isinstance(event_proxy_model, QSortFilterProxyModel):
             event_source_model = event_proxy_model.sourceModel()
         else:
             event_source_model = event_proxy_model
+            event_proxy_model = event_proxy_model.parent()
+
+
 
         if event_source_model == self.source_model:
             other_view = self.target_treeview
@@ -494,7 +518,7 @@ class HipFileDiffWindow(QMainWindow):
             .sourceModel()
             .indexFromItem(item_in_other_source_model)
         )
-        other_view.setExpanded(index_in_other_proxy, expand)
+        return other_view, index_in_other_proxy
 
     def sync_scroll(self, value: int) -> None:
         """
@@ -518,6 +542,11 @@ class HipFileDiffWindow(QMainWindow):
     def on_item_double_clicked(self, index):
         index_displ_role_text = index.data(Qt.DisplayRole)
         if index_displ_role_text.count("\n") >= 3 :
-            string_diff_dialog = StringDiffDialog(index_displ_role_text, parent=self)
+            _, index_in_other_proxy = self.get_index_in_other_model(index)
+            string_diff_dialog = StringDiffDialog(
+                index, 
+                index_in_other_proxy, 
+                parent=self
+            )
             self.installEventFilter(string_diff_dialog)
             string_diff_dialog.show()
