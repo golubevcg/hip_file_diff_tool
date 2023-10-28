@@ -29,7 +29,7 @@ class HatchedItemDelegate(QStyledItemDelegate):
                 option.rect.bottomLeft()
             )
             gradient.setColorAt(0.25, Qt.transparent)     
-            gradient.setColorAt(1, QColor("#151515"))
+            gradient.setColorAt(1, QColor("#202020"))
 
             painter.fillRect(option.rect, gradient)
 

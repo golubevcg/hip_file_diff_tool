@@ -69,8 +69,13 @@ class HipFileDiffWindow(QMainWindow):
 
         if args.item_path:
             item = self.source_model.get_item_by_path(args.item_path)
-            self.source_treeview.expand_to_index(item, self.source_treeview)
-            self.on_item_double_clicked(item.index())
+            if not item:
+                QMessageBox.critical(
+                    None, "Error", "Specified item on this path was not found!"
+                )
+            else:
+                self.source_treeview.expand_to_index(item, self.source_treeview)
+                self.on_item_double_clicked(item.index())
 
         # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
         # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
