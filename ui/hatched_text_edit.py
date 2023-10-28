@@ -1,8 +1,18 @@
-import sys
-from hutil.Qt.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QHBoxLayout
-from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QPalette, QTextCursor, QTextBlockFormat, QPixmap, QPainter, QPen, QColor, QBrush, QTextDocument, QTextImageFormat
-from hutil.Qt.QtWidgets import QDialog, QWidget, QTextEdit, QVBoxLayout, QSplitter, QPushButton, QGraphicsDropShadowEffect
-from hutil.Qt.QtCore import Qt, QTimer, QEvent, QUrl, QRect
+from hutil.Qt.QtWidgets import QTextEdit
+from hutil.Qt.QtGui import (
+    QPixmap, 
+    QColor, 
+    QBrush, 
+    QPen, 
+    QPainter, 
+    QPixmap, 
+    QPainter, 
+    QPen, 
+    QColor, 
+    QBrush
+)
+from hutil.Qt.QtWidgets import QTextEdit
+from hutil.Qt.QtCore import Qt, QRect
 
 class HatchedTextEdit(QTextEdit):
     def __init__(self, *args, **kwargs):

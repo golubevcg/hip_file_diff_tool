@@ -1,6 +1,7 @@
 from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QLinearGradient
 from hutil.Qt.QtWidgets import QStyledItemDelegate, QStyle
 from hutil.Qt.QtCore import Qt, QSize, QEvent
+
 from ui.constants import DATA_ROLE
 
 
@@ -54,7 +55,7 @@ class HatchedItemDelegate(QStyledItemDelegate):
         return super().sizeHint(option, index)
     
     def helpEvent(self, event, view, option, index):
-        if event.type() == QEvent.ToolTip:
+        if event.type() == QEvent.ToolTip and index.data(Qt.DisplayRole):
             if index.data(Qt.DisplayRole).count("\n") >= 3 :
                 view.setToolTip(
                     "String diff available for this item,"

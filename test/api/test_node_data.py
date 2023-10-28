@@ -1,6 +1,6 @@
 import unittest
 from collections import OrderedDict
-from api.node_data import NodeData, NodeState
+from api.data.node_data import NodeData, NodeState
 
 
 class TestNodeData(unittest.TestCase):

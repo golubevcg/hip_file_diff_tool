@@ -4,8 +4,8 @@ from hutil.Qt.QtCore import QSortFilterProxyModel, QModelIndex
 from hutil.Qt.QtGui import QStandardItem
 
 from ui.constants import DATA_ROLE, PATH_ROLE
-from api.node_data import NodeState
-from api.param_data import ParamState
+from api.data.node_data import NodeState
+from api.data.param_data import ParamState
 
 
 class RecursiveFilterProxyModel(QSortFilterProxyModel):

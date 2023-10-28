@@ -207,17 +207,3 @@ class HdaData:
         # TODO: is `definition.isCurrent()` ever better? if yes add this info
         # to HdaDefinition
         return self.definitions[-1]
-
-
-if __name__ == "__main__":
-    hda_source_path = Path(
-        Path(__file__).parent.parent, "test/fixtures/BoxHDA_source.hda"
-    ).as_posix()
-
-    hda_target_path = Path(
-        Path(__file__).parent.parent, "test/fixtures/BoxHDA_edited.hda"
-    ).as_posix()
-
-    hda_source = HdaData(hda_source_path).latest_definition()
-    hda_target = HdaData(hda_target_path).latest_definition()
-    print(HdaDefintion.diff_definition_sections(hda_source, hda_target))

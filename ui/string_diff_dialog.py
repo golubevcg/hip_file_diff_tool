@@ -3,14 +3,21 @@ import sys
 import difflib
 
 from hutil.Qt.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QHBoxLayout
-from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QPalette, QTextCursor, QTextBlockFormat, QPixmap, QPainter, QPen, QColor, QBrush, QTextDocument, QTextImageFormat
-from hutil.Qt.QtWidgets import QApplication, QDialog, QWidget, QTextEdit, QVBoxLayout, QSplitter, QPushButton,  QSpacerItem, QSizePolicy, QLineEdit
-from hutil.Qt.QtCore import Qt, QTimer, QEvent, QUrl
-from ui.constants import DATA_ROLE
+from hutil.Qt.QtGui import QColor, QPalette, QColor
+from hutil.Qt.QtWidgets import (
+    QDialog, 
+    QWidget, 
+    QTextEdit, 
+    QVBoxLayout, 
+    QSplitter, 
+    QPushButton,  
+    QLineEdit
+)
+from hutil.Qt.QtCore import Qt, QTimer, QEvent
+from ui.constants import PATH_ROLE
 from ui.hatched_text_edit import HatchedTextEdit
  
-from api.hip_file_comparator import COLORS
-from ui.constants import PATH_ROLE, DATA_ROLE
+from api.comparators.houdini_base_comparator import COLORS
 
 
 class Overlay(QWidget):

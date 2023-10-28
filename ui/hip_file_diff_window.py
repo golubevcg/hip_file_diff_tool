@@ -16,13 +16,10 @@ from hutil.Qt.QtWidgets import (
 from hutil.Qt.QtCore import Qt, QSortFilterProxyModel, QEvent
 from hutil.Qt.QtGui import QHoverEvent
 
-from api.hip_file_comparator import (
-    HDA_FILE_FORMATS,
-    HIP_FILE_FORMATS,
-    HoudiniComparator,
-    HipFileComparator,
-    HdaFileComparator
-)
+from api.comparators.houdini_base_comparator import HoudiniComparator, HIP_FILE_FORMATS
+from api.comparators.hip_comparator import HipFileComparator
+from api.comparators.hda_comparator import HdaFileComparator, HDA_FILE_FORMATS
+
 from ui.custom_qtree_view import CustomQTreeView
 from ui.custom_standart_item_model import CustomStandardItemModel
 from ui.hatched_pattern_item_delegate import HatchedItemDelegate

@@ -1,7 +1,7 @@
 from pathlib import Path
 import unittest
 
-from api.hda_data import HdaData, HdaDefintion
+from api.data.hda_data import HdaData, HdaDefintion
 
 
 class TestHdaSections(unittest.TestCase):
