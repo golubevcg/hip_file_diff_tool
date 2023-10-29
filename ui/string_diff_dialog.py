@@ -67,14 +67,11 @@ class StringDiffDialog(QDialog):
             """
                 background-color: #404040;
                 border: 1px solid #4d4d4d;
-                border-top-right-radius: 15px;
-                border-bottom-right-radius: 15px;
-                border-top-left-radius: 10px;
-                border-bottom-left-radius: 10px;
+                border-radius: 15px;
             """
         )
         self.top_buttons_widget.setFixedHeight(40)
-        self.top_buttons_widget.setContentsMargins(5, 0, 0, 0)
+        self.top_buttons_widget.setContentsMargins(5, 1, 0, 0)
 
         self.top_buttons_hbox_layout = QHBoxLayout(self.top_buttons_widget)
         self.top_buttons_hbox_layout.setContentsMargins(0, 0, 0, 0)
@@ -130,7 +127,7 @@ class StringDiffDialog(QDialog):
 
         path_to_node = index.data(PATH_ROLE)
         self.node_path_line_edit = QLineEdit(path_to_node)
-        self.node_path_line_edit.setContentsMargins(0, 0, 5, 0)
+        self.node_path_line_edit.setContentsMargins(0, 0, 3, 0)
 
         self.node_path_line_edit.setFixedHeight(35)
         self.node_path_line_edit.setReadOnly(True)
@@ -162,10 +159,7 @@ class StringDiffDialog(QDialog):
         self.new_text_hashed_line_numbers = []
         self.old_text_hashed_line_numbers = []
         # Process the diffs and get formatted strings for both QTextEdits
-        old_html, old_html_hatched_line_nums, new_html, new_html_hatched_line_nums = self.process_diffs(diffs)
-
-        print("old_html_hatched_line_nums:", old_html_hatched_line_nums)
-        print("new_html_hatched_line_nums:", new_html_hatched_line_nums)
+        old_html, new_html = self.process_diffs(diffs)
 
         # Create text edits and set their content
         self.line_nums_qtedit = QTextEdit(self)
@@ -243,8 +237,7 @@ class StringDiffDialog(QDialog):
             """
         )
         self.old_text_edit.setHtml(''.join(old_html))
-        if old_html_hatched_line_nums:
-            self.old_text_edit.fill_hatched_lanes(old_html_hatched_line_nums)
+        self.old_text_edit.text_lines = old_html
 
         widget = QWidget()
         hlayout = QHBoxLayout(widget)
@@ -257,6 +250,7 @@ class StringDiffDialog(QDialog):
         self.new_text_edit.setReadOnly(True)
         self.new_text_edit.setLineWrapMode(QTextEdit.NoWrap)
         self.new_text_edit.setHtml(''.join(new_html))
+        self.new_text_edit.text_lines = new_html
         self.new_text_edit.setStyleSheet(
             """
             QTextEdit {
@@ -307,9 +301,6 @@ class StringDiffDialog(QDialog):
             }
             """
         )
-        
-        if new_html_hatched_line_nums:
-            self.new_text_edit.fill_hatched_lanes(new_html_hatched_line_nums)
 
         # Create a splitter and add text edits to it
         self.splitter = QSplitter(Qt.Horizontal, self)
@@ -322,7 +313,6 @@ class StringDiffDialog(QDialog):
                 background-color: #4d4d4d;
             }
         """)
-
 
         # Layouts and widgets setup
         layout = QVBoxLayout(self)
@@ -379,13 +369,9 @@ class StringDiffDialog(QDialog):
         old_html = []
         new_html = []
 
-        old_html_hatched_lines = []
-        new_html_hatched_lines = []
-
         green_with_50_alpha = "#%s" + COLORS["green"][1:]
         red_with_50_alpha = "#%s" + COLORS["red"][1:]
 
-        line_enum = 0
         for diff in diffs:
             opcode = diff[0]
             text = diff[2:]
@@ -396,15 +382,12 @@ class StringDiffDialog(QDialog):
                 new_html.append(f'<div>{text_display}</div>')
             elif opcode == '-':
                 old_html.append(f'<div style="background-color: {red_with_50_alpha % 40};">{text_display}</div>')
-                new_html.append(f'<div>&nbsp;</div>')
-                new_html_hatched_lines.append(line_enum)
+                new_html.append(f'<div data_hashed_line=True>&nbsp;</div>')
             elif opcode == '+':
-                old_html.append(f'<div>&nbsp;</div>')
-                old_html_hatched_lines.append(line_enum)
+                old_html.append(f'<div data_hashed_line=True>&nbsp;</div>')
                 new_html.append(f'<div style="background-color: {green_with_50_alpha % 40};">{text_display}</div>')
-            line_enum += 1
 
-        return old_html, old_html_hatched_lines, new_html, new_html_hatched_lines
+        return old_html, new_html
     
     def sync_scroll(self, value: int) -> None:
         """
