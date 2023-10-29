@@ -42,4 +42,7 @@ class HipFileComparator(HoudiniComparator):
         self._handle_created_nodes()
         self._handle_created_params()
 
+        self.source_data = self.source_nodes
+        self.target_data = self.target_nodes
+
         self.is_compared = True

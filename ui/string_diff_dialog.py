@@ -38,7 +38,7 @@ class StringDiffDialog(QDialog):
     def __init__(self, index, other_index, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("String diff tool for item")
+        self.setWindowTitle("String diff tool")
 
         self.parent_application = parent
 
@@ -158,14 +158,19 @@ class StringDiffDialog(QDialog):
         diff = difflib.Differ()
         diffs = list(diff.compare(old_lines, new_lines))
 
+
+        self.new_text_hashed_line_numbers = []
+        self.old_text_hashed_line_numbers = []
         # Process the diffs and get formatted strings for both QTextEdits
-        line_nums, old_html, new_html = self.process_diffs(diffs)
+        old_html, old_html_hatched_line_nums, new_html, new_html_hatched_line_nums = self.process_diffs(diffs)
+
+        print("old_html_hatched_line_nums:", old_html_hatched_line_nums)
+        print("new_html_hatched_line_nums:", new_html_hatched_line_nums)
 
         # Create text edits and set their content
         self.line_nums_qtedit = QTextEdit(self)
         self.line_nums_qtedit.setReadOnly(True)
         self.line_nums_qtedit.setLineWrapMode(QTextEdit.NoWrap)
-        self.line_nums_qtedit.setHtml(line_nums)
         self.line_nums_qtedit.setFixedWidth(60)
         self.line_nums_qtedit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.line_nums_qtedit.setStyleSheet(
@@ -177,11 +182,15 @@ class StringDiffDialog(QDialog):
             """
         )
 
+        line_nums = []
+        for lin_num in range(0, len(old_html)):
+            line_nums.append(f'<div style="text-align: right;">{str(lin_num)}</div>')
+        self.line_nums_qtedit.setHtml(''.join(line_nums))
+
         # Create text edits and set their content
         self.old_text_edit = HatchedTextEdit(self)
         self.old_text_edit.setReadOnly(True)
         self.old_text_edit.setLineWrapMode(QTextEdit.NoWrap)
-        self.old_text_edit.setHtml(old_html)
         self.old_text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.old_text_edit.setStyleSheet(
             """
@@ -233,6 +242,9 @@ class StringDiffDialog(QDialog):
             }
             """
         )
+        self.old_text_edit.setHtml(''.join(old_html))
+        if old_html_hatched_line_nums:
+            self.old_text_edit.fill_hatched_lanes(old_html_hatched_line_nums)
 
         widget = QWidget()
         hlayout = QHBoxLayout(widget)
@@ -244,7 +256,7 @@ class StringDiffDialog(QDialog):
         self.new_text_edit = HatchedTextEdit(self)
         self.new_text_edit.setReadOnly(True)
         self.new_text_edit.setLineWrapMode(QTextEdit.NoWrap)
-        self.new_text_edit.setHtml(new_html)
+        self.new_text_edit.setHtml(''.join(new_html))
         self.new_text_edit.setStyleSheet(
             """
             QTextEdit {
@@ -295,6 +307,9 @@ class StringDiffDialog(QDialog):
             }
             """
         )
+        
+        if new_html_hatched_line_nums:
+            self.new_text_edit.fill_hatched_lanes(new_html_hatched_line_nums)
 
         # Create a splitter and add text edits to it
         self.splitter = QSplitter(Qt.Horizontal, self)
@@ -361,34 +376,35 @@ class StringDiffDialog(QDialog):
         return super().eventFilter(obj, event)
 
     def process_diffs(self, diffs):
-        line_nums = []
         old_html = []
         new_html = []
+
+        old_html_hatched_lines = []
+        new_html_hatched_lines = []
 
         green_with_50_alpha = "#%s" + COLORS["green"][1:]
         red_with_50_alpha = "#%s" + COLORS["red"][1:]
 
-        line_enumerator = 0
+        line_enum = 0
         for diff in diffs:
-            line_nums.append(f'<div style="text-align: right;">{str(line_enumerator)}</div>')
-            line_enumerator+=1
-
             opcode = diff[0]
             text = diff[2:]
 
             text_display = text if text.strip() != "" else "&nbsp;"
-
             if opcode == ' ':
                 old_html.append(f'<div>{text_display}</div>')
                 new_html.append(f'<div>{text_display}</div>')
             elif opcode == '-':
                 old_html.append(f'<div style="background-color: {red_with_50_alpha % 40};">{text_display}</div>')
-                new_html.append(f'<div style="background-color: {green_with_50_alpha % 40};">&nbsp;</div>')
+                new_html.append(f'<div>&nbsp;</div>')
+                new_html_hatched_lines.append(line_enum)
             elif opcode == '+':
-                old_html.append(f'<div style="background-color: {red_with_50_alpha % 40};">&nbsp;</div>')
+                old_html.append(f'<div>&nbsp;</div>')
+                old_html_hatched_lines.append(line_enum)
                 new_html.append(f'<div style="background-color: {green_with_50_alpha % 40};">{text_display}</div>')
+            line_enum += 1
 
-        return ''.join(line_nums), ''.join(old_html), ''.join(new_html)
+        return old_html, old_html_hatched_lines, new_html, new_html_hatched_lines
     
     def sync_scroll(self, value: int) -> None:
         """

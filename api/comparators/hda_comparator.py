@@ -6,7 +6,7 @@ from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
 import hou
 import toolutils # $HFS/houdini/python3.9libs/toolutils.py
 
-from api.comparators.houdini_base_comparator import HoudiniComparator
+from api.comparators.houdini_base_comparator import HoudiniComparator, COLORS
 
 
 HDA_FILE_FORMATS = {"hda", "hdanc", "hdanc"}
@@ -41,7 +41,6 @@ class HdaFileComparator(HoudiniComparator):
         """
         Compare both HDAs
         """
-
         self._validate_file_paths()
 
         self.source_nodes, self.source_sections = self.get_hda_data(self.source_file)
@@ -53,11 +52,15 @@ class HdaFileComparator(HoudiniComparator):
         self._handle_created_nodes()
 
         self._handle_created_params()
-        self.is_compared = True
 
-    def get_hda_sections(self, hda_path: str) -> dict:
-        if not hda_path:
-            raise ValueError("No hda file specified!")
+        self.source_data = OrderedDict(
+            OrderedDict(list(self.source_sections.items()) + list(self.source_nodes.items()))
+        )
+        self.target_data = OrderedDict(
+            OrderedDict(list(self.target_sections.items()) + list(self.target_nodes.items()))
+        )
+        
+        self.is_compared = True
 
     def _handle_sections(self):
         for source_section, target_section in zip(
@@ -65,11 +68,11 @@ class HdaFileComparator(HoudiniComparator):
         ):
             # deleted
             if source_section.name not in self.target_sections:
-                self._mark_section_as_deleted(source_section.name, source_section)
+                self._mark_section_as_deleted(source_section)
 
             # created
             elif target_section.name not in self.source_sections:
-                self._mark_section_as_created(target_section.name)
+                self._mark_section_as_created(target_section)
 
             # potentially edited
             else:
@@ -79,9 +82,15 @@ class HdaFileComparator(HoudiniComparator):
         diff = HdaSection.diff_sections(source_section, target_section)
 
         if diff:
-            self.source_sections[source_section.name].state = HdaSectionState.EDITED
-            self.target_sections[target_section.name].state = HdaSectionState.EDITED
-            self.diff_sections[source_section.name] = diff
+            self.source_sections[source_section.section_path].state = HdaSectionState.EDITED
+            self.source_sections[source_section.section_path].alpha = 100
+            self.source_sections[source_section.section_path].color = COLORS["red"]
+
+            self.target_sections[target_section.section_path].state = HdaSectionState.EDITED
+            self.target_sections[target_section.section_path].alpha = 100
+            self.target_sections[target_section.section_path].color = COLORS["green"]
+
+            self.diff_sections[source_section.section_path] = diff
 
     def get_hda_data(self, hda_path: str) -> (dict, dict):
         """
@@ -106,28 +115,43 @@ class HdaFileComparator(HoudiniComparator):
         hda_data = HdaData(hda_path)
         latest_definition = hda_data.latest_definition()
         for section in latest_definition.sections:
-            sections_dict[section.name] = section
+            section.section_path = f'HDA_Sections/{section.name}'
+            sections_dict[section.section_path] = section
 
         return node_dict, sections_dict
 
-    def _mark_section_as_created(self, name: str):
-        new_section = HdaSection("")
-        new_section.name = self.target_sections[name].name
-        new_section.state = HdaSectionState.CREATED
-        index = get_ordered_dict_key_index(self.target_sections, name)
+    def _mark_section_as_created(self, target_section):
+        target_section.state = HdaSectionState.CREATED
+        target_section.color = COLORS["green"]
+        target_section.alpha = 100
 
+        new_section = HdaSection("")
+        new_section.name = self.target_sections[target_section.section_path].name
+        new_section.state = HdaSectionState.CREATED
+        new_section.color = COLORS["red"]
+        new_section.alpha = 100
+
+        index = get_ordered_dict_key_index(self.target_sections, target_section.section_path)
         self.source_sections = ordered_dict_insert(
-            self.source_sections, index, name, new_section
+            self.source_sections, index, target_section.section_path, new_section
         )
 
-    def _mark_section_as_deleted(self, name: str, source_section):
+    def _mark_section_as_deleted(self, source_section):
+        source_section.state = HdaSectionState.DELETED
+        source_section.color = COLORS["green"]
+        source_section.alpha = 100
+
         new_section = HdaSection("")
         new_section.name = source_section.name
+        new_section.section_path = source_section.section_path
         new_section.state = HdaSectionState.DELETED
+        new_section.color = COLORS["red"]
+        new_section.alpha = 100
 
-        index = get_ordered_dict_key_index(self.source_sections, name)
+        print("source_sections:", self.source_sections)
+        index = get_ordered_dict_key_index(self.source_sections, source_section.section_path)
         self.source_sections = ordered_dict_insert(
-            self.target_sections, index, name, new_section
+            self.target_sections, index, source_section.section_path, new_section
         )
 
     def _load_hda_file(self, hda_path: str) -> hou.Node:

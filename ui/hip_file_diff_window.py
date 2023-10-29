@@ -54,7 +54,6 @@ class HipFileDiffWindow(QMainWindow):
         self.clipboard = QApplication.clipboard()
         self.main_path = args.main_path
 
-        # TODO: TEMP CODE REMOVE BEFORE MERGE
         if args.source_file_path:
             self.source_file_line_edit.setText(args.source_file_path)
 
@@ -74,9 +73,11 @@ class HipFileDiffWindow(QMainWindow):
                 self.source_treeview.expand_to_index(item, self.source_treeview)
                 self.on_item_double_clicked(item.index())
 
-        # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
-        # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
-        # self.handle_compare_button_click()
+        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
+        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
+        # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/BoxHDA_source.hda")
+        # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/BoxHDA_edited.hda")
+        self.handle_compare_button_click()
 
 
     def set_window_properties(self) -> None:
@@ -445,10 +446,10 @@ class HipFileDiffWindow(QMainWindow):
         # Assuming 'comparison_result' contains the differences,
         # we can now update our tree views based on the results.
         self.source_model.populate_with_data(
-            self.houdini_comparator.source_nodes, self.source_treeview.objectName()
+            self.houdini_comparator.source_data, self.source_treeview.objectName()
         )
         self.target_model.populate_with_data(
-            self.houdini_comparator.target_nodes, self.target_treeview.objectName()
+            self.houdini_comparator.target_data, self.target_treeview.objectName()
         )
 
         self.source_treeview.model().invalidateFilter()

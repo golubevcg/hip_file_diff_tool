@@ -112,7 +112,6 @@ class HdaDefintion:
                 if is_python:
                     content_type = HdaSectionContentType.PYTHON
                 else:
-                    # FIXME: no idea if this is actually true ¯\_( ͡° ͜ʖ ͡°)_/¯
                     content_type = HdaSectionContentType.HSCRIPT
             else:
                 content_type = HdaSectionContentType.PLAIN_TEXT

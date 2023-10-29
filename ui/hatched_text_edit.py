@@ -17,26 +17,30 @@ from hutil.Qt.QtCore import Qt, QRect
 class HatchedTextEdit(QTextEdit):
     def __init__(self, *args, **kwargs):
         super(HatchedTextEdit, self).__init__(*args, **kwargs)
-        self.hatched_line = None
+        self.hatched_lines = set()
 
-    def setHatchedPatternForLine(self, line_number):
-        self.hatched_line = line_number
+    def fill_hatched_lanes(self, line_nums):
+        self.hatched_lines = line_nums
+        self.viewport().update()
+
+    def clearHatchedPatternForLine(self, line_number):
+        if line_number in self.hatched_lines:
+            self.hatched_lines.remove(line_number)
         self.viewport().update()
 
     def paintEvent(self, event):
         # Let the QTextEdit handle its regular painting
         super(HatchedTextEdit, self).paintEvent(event)
 
-        # If there's a line to hatch, draw the pattern on it
-        if self.hatched_line is not None:
-            painter = QPainter(self.viewport())
-            block = self.document().findBlockByLineNumber(self.hatched_line - 1)
+        painter = QPainter(self.viewport())
+        for line_number in self.hatched_lines:
+            block = self.document().findBlockByLineNumber(line_number)
             layout = block.layout()
-            position = layout.position()
-            rect = QRect(0, position.y(), self.viewport().width(), layout.boundingRect().height())
-
-            self._paint_hatched_pattern(painter, rect)
-            painter.end()
+            if layout is not None:
+                position = layout.position()
+                rect = QRect(0, position.y(), self.viewport().width(), layout.boundingRect().height())
+                self._paint_hatched_pattern(painter, rect)
+        painter.end()
 
     def _paint_hatched_pattern(self, painter, rect):
         hatch_width = 1000

@@ -33,6 +33,9 @@ class HoudiniComparator(ABC):
         self.target_nodes = OrderedDict()
         self.diff_nodes = OrderedDict()
 
+        self.source_data = OrderedDict()
+        self.target_data = OrderedDict()
+
         self.is_compared = False
 
     @property
@@ -227,24 +230,11 @@ class HoudiniComparator(ABC):
         source_user_data_parm.color = COLORS["red"]
         self.source_nodes[path].user_data = source_user_data_parm
 
-        # self.source_nodes[path].parms = ordered_dict_insert(
-        #     self.source_nodes[path].parms, 
-        #     0, 
-        #     parm_name, 
-        #     source_user_data_parm
-        # )
-
         target_user_data_parm.state = NodeState.EDITED
         target_user_data_parm.alpha = 55
-        target_user_data_parm.color = COLORS["red"]
+        target_user_data_parm.color = COLORS["green"]
         self.target_nodes[path].user_data = target_user_data_parm
-        
-        # self.target_nodes[path].parms = ordered_dict_insert(
-        #     self.target_nodes[path].parms, 
-        #     0, 
-        #     parm_name, 
-        #     target_user_data_parm
-        # )
+
 
     def _handle_created_params(self):
         """Handle items for node params that are newly created."""
