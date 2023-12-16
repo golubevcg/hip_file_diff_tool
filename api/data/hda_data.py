@@ -9,6 +9,9 @@ from api import utilities
 import hou
 
 
+HDA_SECTIONS_PARENT_NAME = "HDA_Sections"
+
+
 class HdaSectionState(Enum):
     """
     An enum representing the diff state of a node.
@@ -194,6 +197,7 @@ class HdaData:
     """
     def __init__(self, hda_path: str) -> None:
         self.path = hda_path
+        self.parent_path: str = ""
         self.definitions: List[HdaDefintion] = self._get_definitions()
 
     def _get_definitions(self) -> List[HdaDefintion]:

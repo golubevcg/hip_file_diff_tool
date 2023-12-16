@@ -181,78 +181,7 @@ class StringDiffDialog(QDialog):
             line_nums.append(f'<div style="text-align: right;">{str(lin_num)}</div>')
         self.line_nums_qtedit.setHtml(''.join(line_nums))
 
-        # Create text edits and set their content
-        self.old_text_edit = HatchedTextEdit(self)
-        self.old_text_edit.setReadOnly(True)
-        self.old_text_edit.setLineWrapMode(QTextEdit.NoWrap)
-        self.old_text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.old_text_edit.setStyleSheet(
-            """
-            QTextEdit {
-                font: 10pt "DS Houdini";
-                color: #dfdfdf;
-                background-color: #333333;
-                border-right: 1px solid #4d4d4d;
-            }
-            QScrollBar:vertical {
-                border: none;
-                background: #333333;
-                width: 15px;
-                border: 1px solid #3c3c3c;
-            }
-            QScrollBar::handle:vertical {
-                background: #464646;
-                min-width: 15px;
-            }
-            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
-                border: none;
-                background: none;
-                height: 0;
-                subcontrol-position: top;
-                subcontrol-origin: margin;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-            QScrollBar:horizontal {
-                border: none;
-                background: #333333;
-                height: 15px;
-                border: 1px solid #3c3c3c;
-            }
-            QScrollBar::handle:horizontal {
-                background: #464646;
-                min-height: 15px;
-            }
-            QScrollBar::sub-line:horizontal, QScrollBar::add-line:horizontal {
-                border: none;
-                background: none;
-                width: 0;
-                subcontrol-position: top;
-                subcontrol-origin: margin;
-            }
-            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
-                background: none;
-            }
-            """
-        )
-        self.old_text_edit.setHtml(''.join(old_html))
-        self.old_text_edit.text_lines = old_html
-
-        widget = QWidget()
-        hlayout = QHBoxLayout(widget)
-        hlayout.setSpacing(0)
-        hlayout.setContentsMargins(0, 0, 0, 0)
-        hlayout.addWidget(self.line_nums_qtedit)
-        hlayout.addWidget(self.old_text_edit)
-
-        self.new_text_edit = HatchedTextEdit(self)
-        self.new_text_edit.setReadOnly(True)
-        self.new_text_edit.setLineWrapMode(QTextEdit.NoWrap)
-        self.new_text_edit.setHtml(''.join(new_html))
-        self.new_text_edit.text_lines = new_html
-        self.new_text_edit.setStyleSheet(
-            """
+        text_edit_stylesheet = """
             QTextEdit {
                 font: 10pt "DS Houdini";
                 color: #dfdfdf;
@@ -300,7 +229,29 @@ class StringDiffDialog(QDialog):
                 background: none;
             }
             """
-        )
+
+        # Create text edits and set their content
+        self.old_text_edit = HatchedTextEdit(self)
+        self.old_text_edit.setReadOnly(True)
+        self.old_text_edit.setLineWrapMode(QTextEdit.NoWrap)
+        self.old_text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.old_text_edit.setStyleSheet(text_edit_stylesheet)
+        self.old_text_edit.setHtml(''.join(old_html))
+        self.old_text_edit.text_lines = old_html
+
+        widget = QWidget()
+        hlayout = QHBoxLayout(widget)
+        hlayout.setSpacing(0)
+        hlayout.setContentsMargins(0, 0, 0, 0)
+        hlayout.addWidget(self.line_nums_qtedit)
+        hlayout.addWidget(self.old_text_edit)
+
+        self.new_text_edit = HatchedTextEdit(self)
+        self.new_text_edit.setReadOnly(True)
+        self.new_text_edit.setLineWrapMode(QTextEdit.NoWrap)
+        self.new_text_edit.setHtml(''.join(new_html))
+        self.new_text_edit.text_lines = new_html
+        self.new_text_edit.setStyleSheet(text_edit_stylesheet)
 
         # Create a splitter and add text edits to it
         self.splitter = QSplitter(Qt.Horizontal, self)

@@ -235,7 +235,6 @@ class HoudiniComparator(ABC):
         target_user_data_parm.color = COLORS["green"]
         self.target_nodes[path].user_data = target_user_data_parm
 
-
     def _handle_created_params(self):
         """Handle items for node params that are newly created."""
         for path, target_data in self.target_nodes.items():

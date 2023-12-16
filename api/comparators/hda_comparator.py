@@ -1,6 +1,6 @@
 import os
 from collections import OrderedDict
-from api.data.hda_data import HdaData, HdaSection, HdaSectionState
+from api.data.hda_data import HdaData, HdaSection, HdaSectionState, HDA_SECTIONS_PARENT_NAME
 from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
 
 import hou
@@ -54,29 +54,33 @@ class HdaFileComparator(HoudiniComparator):
         self._handle_created_params()
 
         self.source_data = OrderedDict(
-            OrderedDict(list(self.source_sections.items()) + list(self.source_nodes.items()))
+            OrderedDict(list(self.source_nodes.items()) + list(self.source_sections.items()))
         )
         self.target_data = OrderedDict(
-            OrderedDict(list(self.target_sections.items()) + list(self.target_nodes.items()))
+            OrderedDict(list(self.target_nodes.items()) + list(self.target_sections.items()))
         )
-        
+
         self.is_compared = True
+        
 
     def _handle_sections(self):
-        for source_section, target_section in zip(
-            self.source_sections.values(), self.target_sections.values()
-        ):
-            # deleted
+        source_parent_section = self.create_parent_section(self.source_nodes[0])
+        target_parent_section = self.create_parent_section(self.target_nodes[0])
+
+        # deleted
+        for source_section in self.source_sections.values:
             if source_section.name not in self.target_sections:
                 self._mark_section_as_deleted(source_section)
 
-            # created
-            elif target_section.name not in self.source_sections:
+        # created
+        for target_section in self.target_sections.values():
+            if target_section.name not in self.source_sections:
                 self._mark_section_as_created(target_section)
 
-            # potentially edited
-            else:
-                self._compare_sections(source_section, target_section)
+        for source_section, target_section in zip(
+            self.source_sections.values(), self.target_sections.values()
+        ):
+            self._compare_sections(source_section, target_section)
 
     def _compare_sections(self, source_section, target_section):
         diff = HdaSection.diff_sections(source_section, target_section)
@@ -114,8 +118,10 @@ class HdaFileComparator(HoudiniComparator):
 
         hda_data = HdaData(hda_path)
         latest_definition = hda_data.latest_definition()
+        
         for section in latest_definition.sections:
-            section.section_path = f'HDA_Sections/{section.name}'
+            section.paernt_path = HDA_SECTIONS_PARENT_NAME
+            section.section_path = f'{HDA_SECTIONS_PARENT_NAME}/{section.name}'
             sections_dict[section.section_path] = section
 
         return node_dict, sections_dict
@@ -148,7 +154,6 @@ class HdaFileComparator(HoudiniComparator):
         new_section.color = COLORS["red"]
         new_section.alpha = 100
 
-        print("source_sections:", self.source_sections)
         index = get_ordered_dict_key_index(self.source_sections, source_section.section_path)
         self.source_sections = ordered_dict_insert(
             self.target_sections, index, source_section.section_path, new_section
@@ -168,3 +173,11 @@ class HdaFileComparator(HoudiniComparator):
         
         hda_node.allowEditingOfContents()
         return hda_node
+
+    def create_parent_section(self, parent_node):
+        hda_source_root_node = parent_node
+        source_sections_parent = HdaData(HDA_SECTIONS_PARENT_NAME)
+        source_sections_parent.path = f'{hda_source_root_node}/{HDA_SECTIONS_PARENT_NAME}'
+        source_sections_parent.type = None
+        source_sections_parent.icon = None
+        source_sections_parent.parent_path = hda_source_root_node.path
