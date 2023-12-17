@@ -1,6 +1,7 @@
 import unittest
 from collections import OrderedDict
-from api.data.node_data import NodeData, NodeState
+from api.data.item_data import ItemState
+from api.data.node_data import NodeData
 
 
 class TestNodeData(unittest.TestCase):
@@ -12,7 +13,7 @@ class TestNodeData(unittest.TestCase):
         self.assertIsNone(self.node.path)
         self.assertEqual(self.node.type, "")
         self.assertEqual(self.node.icon, "")
-        self.assertEqual(self.node.state, NodeState.UNCHANGED)
+        self.assertEqual(self.node.state, ItemState.UNCHANGED)
         self.assertEqual(self.node.parent_path, "")
         self.assertEqual(self.node.parms, OrderedDict())
         self.assertIsNone(self.node.color)

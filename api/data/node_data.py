@@ -1,46 +1,12 @@
-from collections import OrderedDict
-from enum import auto, Enum
-from typing import Any, Optional
+from dataclasses import dataclass, field
+from typing import Any
+from api.data.item_data import ItemData
 
 
-class NodeState(Enum):
-    """
-    An enum representing the diff state of a node.
-    """
-    UNCHANGED = None
-    EDITED = auto()
-    DELETED = auto()
-    CREATED = auto()
-
-    def __str__(self):
-        return f"{self.name.lower()}"
-
-    def __format__(self, spec):
-        return f"{self.name.lower()}"
-
-
-class NodeData:
+@dataclass
+class NodeData(ItemData):
     """
     A class to represent some of the Houdini node data.
-
-    Attributes:
-        name (str): Name of the node.
-        path (str): Path to the node, usually represented as a unique string.
-                    None by default.
-        type (str): Type of the node, represented as a string.
-                    Empty string by default.
-        icon (str): Path to the icon representing the node.
-                    Empty string by default.
-        state (NodeState): The state of the node.
-        parent_path (str): Path to the parent of this node.
-                           Empty string by default.
-        parms (OrderedDict): An ordered dictionary containing node parameters.
-        color (Optional[str]): The color associated with the node.
-                               None by default.
-        alpha (int): The opacity value (0-255) for the node visualization.
-                     255 by default.
-        is_hatched (bool): Indicates whether the node has a hatched pattern.
-                           False by default.
     """
 
     def __init__(self, name: str):
@@ -49,17 +15,7 @@ class NodeData:
 
         :param name: The name of the node.
         """
-        self.name: str = name
-        self.path: str = None
-        self.type: str = ""
-        self.icon: str = ""
-        self.state: str = NodeState.UNCHANGED
-        self.parent_path: str = ""
-        self.parms: OrderedDict[str, Any] = OrderedDict()
-        self.color: Optional[str] = None
-        self.alpha: int = 255
-        self.is_hatched: bool = False
-        self.user_data = OrderedDict()
+        super().__init__(name)
 
     def add_parm(self, name: str, param: Any) -> None:
         """

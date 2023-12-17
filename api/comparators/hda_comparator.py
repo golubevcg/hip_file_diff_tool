@@ -64,9 +64,12 @@ class HdaFileComparator(HoudiniComparator):
         
 
     def _handle_sections(self):
-        source_parent_section = self.create_parent_section(self.source_nodes[0])
-        target_parent_section = self.create_parent_section(self.target_nodes[0])
+        source_parent_section = self.create_parent_section(self.source_nodes[list(self.source_nodes.keys())[0]])
+        target_parent_section = self.create_parent_section(self.target_nodes[list(self.target_nodes.keys())[0]])
 
+        if source_parent_section or not target_parent_section:
+            return
+        
         # deleted
         for source_section in self.source_sections.values:
             if source_section.name not in self.target_sections:
@@ -133,6 +136,7 @@ class HdaFileComparator(HoudiniComparator):
 
         new_section = HdaSection("")
         new_section.name = self.target_sections[target_section.section_path].name
+        new_section.parent_path = HDA_SECTIONS_PARENT_NAME
         new_section.state = HdaSectionState.CREATED
         new_section.color = COLORS["red"]
         new_section.alpha = 100
@@ -149,6 +153,7 @@ class HdaFileComparator(HoudiniComparator):
 
         new_section = HdaSection("")
         new_section.name = source_section.name
+        new_section.parent_path = HDA_SECTIONS_PARENT_NAME
         new_section.section_path = source_section.section_path
         new_section.state = HdaSectionState.DELETED
         new_section.color = COLORS["red"]
@@ -176,7 +181,7 @@ class HdaFileComparator(HoudiniComparator):
 
     def create_parent_section(self, parent_node):
         hda_source_root_node = parent_node
-        source_sections_parent = HdaData(HDA_SECTIONS_PARENT_NAME)
+        source_sections_parent = HdaData(HDA_SECTIONS_PARENT_NAME, update_definitions=False)
         source_sections_parent.path = f'{hda_source_root_node}/{HDA_SECTIONS_PARENT_NAME}'
         source_sections_parent.type = None
         source_sections_parent.icon = None

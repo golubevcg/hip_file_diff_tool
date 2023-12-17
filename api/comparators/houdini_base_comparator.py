@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 import os
 
-from api.data.node_data import NodeData, NodeState
+from api.data.item_data import ItemState
+from api.data.node_data import NodeData
 from api.data.param_data import ParamData
 from api.utilities import ordered_dict_insert, get_ordered_dict_key_index
 
@@ -111,7 +112,7 @@ class HoudiniComparator(ABC):
         """
         new_data = NodeData("")
         new_data.parent_path = self.target_nodes[path].parent_path
-        new_data.state = NodeState.CREATED
+        new_data.state = ItemState.CREATED
         index = get_ordered_dict_key_index(self.target_nodes, path)
 
         self.source_nodes = ordered_dict_insert(
@@ -120,7 +121,7 @@ class HoudiniComparator(ABC):
         self.source_nodes[path].alpha = 55
         self.source_nodes[path].is_hatched = True
 
-        self.target_nodes[path].state = NodeState.CREATED
+        self.target_nodes[path].state = ItemState.CREATED
         self.target_nodes[path].color = COLORS["green"]
         self.target_nodes[path].alpha = 55
 
@@ -133,14 +134,14 @@ class HoudiniComparator(ABC):
         """
         new_data = NodeData("")
         new_data.parent_path = source_node_data.parent_path
-        new_data.state = NodeState.DELETED
+        new_data.state = ItemState.DELETED
         new_data.is_hatched = True
         index = get_ordered_dict_key_index(self.source_nodes, path)
         self.target_nodes = ordered_dict_insert(
             self.target_nodes, index, path, new_data
         )
 
-        source_node_data.state = NodeState.DELETED
+        source_node_data.state = ItemState.DELETED
         source_node_data.color = COLORS["red"]
         source_node_data.alpha = 100
 
@@ -166,22 +167,22 @@ class HoudiniComparator(ABC):
             # deleted param
             if parm_name not in self.target_nodes[path].parms:
                 # add empty parm to target data
-                self.source_nodes[path].state = NodeState.EDITED
+                self.source_nodes[path].state = ItemState.EDITED
                 self.source_nodes[path].color = COLORS["red"]
                 self.source_nodes[path].alpha = 100
 
                 source_parm = self.source_nodes[path].get_parm_by_name(
                     parm_name
                 )
-                source_parm.state = NodeState.EDITED
+                source_parm.state = ItemState.EDITED
                 source_parm.color = "red"
                 source_parm.alpha = 55
 
-                self.source_nodes[path].state = NodeState.EDITED
+                self.source_nodes[path].state = ItemState.EDITED
                 self.target_nodes[path].color = COLORS["red"]
                 self.target_nodes[path].alpha = 100
 
-                parm = ParamData(parm_name, "", NodeState.DELETED)
+                parm = ParamData(parm_name, "", ItemState.DELETED)
                 parm.alpha = 55
                 parm.is_active = False
                 parm.is_hatched = True
@@ -194,19 +195,19 @@ class HoudiniComparator(ABC):
             if str(source_parm.value) == str(target_parm.value):
                 continue
 
-            source_parm.state = NodeState.EDITED
+            source_parm.state = ItemState.EDITED
             source_parm.color = COLORS["red"]
             source_parm.alpha = 55
 
-            source_node_data.state = NodeState.EDITED
+            source_node_data.state = ItemState.EDITED
             source_node_data.color = COLORS["red"]
             source_node_data.alpha = 100
 
-            target_parm.state = NodeState.EDITED
+            target_parm.state = ItemState.EDITED
             target_parm.color = COLORS["green"]
             target_parm.alpha = 55
 
-            self.target_nodes[path].state = NodeState.EDITED
+            self.target_nodes[path].state = ItemState.EDITED
             self.target_nodes[path].color = COLORS["green"]
             self.target_nodes[path].alpha = 100
 
@@ -225,12 +226,12 @@ class HoudiniComparator(ABC):
         if source_user_data_parm.value == target_user_data_parm.value:
             return
 
-        source_user_data_parm.state = NodeState.EDITED
+        source_user_data_parm.state = ItemState.EDITED
         source_user_data_parm.alpha = 100
         source_user_data_parm.color = COLORS["red"]
         self.source_nodes[path].user_data = source_user_data_parm
 
-        target_user_data_parm.state = NodeState.EDITED
+        target_user_data_parm.state = ItemState.EDITED
         target_user_data_parm.alpha = 55
         target_user_data_parm.color = COLORS["green"]
         self.target_nodes[path].user_data = target_user_data_parm
@@ -244,22 +245,22 @@ class HoudiniComparator(ABC):
 
                 # created param
                 target_parm = target_data.get_parm_by_name(parm_name)
-                target_parm.state = NodeState.CREATED
+                target_parm.state = ItemState.CREATED
                 target_parm.color = COLORS["green"]
                 target_parm.alpha = 55
 
-                target_data.state = NodeState.EDITED
+                target_data.state = ItemState.EDITED
                 target_data.color = COLORS["green"]
                 target_data.alpha = 100
 
-                parm = ParamData(parm_name, "", NodeState.CREATED)
+                parm = ParamData(parm_name, "", ItemState.CREATED)
                 parm.alpha = 55
                 parm.is_hatched = True
                 parm.is_active = False
 
                 self.source_nodes[path].add_parm(parm_name, parm)
 
-                self.source_nodes[path].state = NodeState.EDITED
+                self.source_nodes[path].state = ItemState.EDITED
                 self.source_nodes[path].alpha = 100
 
     def _handle_created_nodes(self):

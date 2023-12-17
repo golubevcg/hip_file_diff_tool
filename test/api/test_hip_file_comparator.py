@@ -4,7 +4,8 @@ from unittest.mock import patch, Mock
 from api.comparators.hda_comparator import HdaFileComparator
 from api.comparators.hip_comparator import HipFileComparator
 from api.utilities import COLORS
-from api.data.node_data import NodeState, NodeData
+from api.data.item_data import ItemState
+from api.data.node_data import NodeData
 from api.data.param_data import ParamData
 import hou
 
@@ -265,7 +266,7 @@ class TestHipFileComparator(unittest.TestCase):
         # Assert that the state and visual properties are set as expected
         self.assertEqual(
             comparator.source_nodes[dummy_path].state, 
-            NodeState.EDITED
+            ItemState.EDITED
         )
         self.assertEqual(
             comparator.source_nodes[dummy_path].color, 
@@ -275,7 +276,7 @@ class TestHipFileComparator(unittest.TestCase):
 
         self.assertEqual(
             comparator.target_nodes[dummy_path].state, 
-            NodeState.EDITED
+            ItemState.EDITED
         )
         self.assertEqual(
             comparator.target_nodes[dummy_path].color, 
@@ -299,14 +300,14 @@ class TestHipFileComparator(unittest.TestCase):
         # Assert that a NodeData object is created with an empty string
         new_data = NodeData("")
         new_data.parent_path = 'parent/path'
-        new_data.state = NodeState.CREATED
+        new_data.state = ItemState.CREATED
         new_data.alpha = 100
         new_data.is_hatched = True
         
         # Assert that the state, color, and alpha properties of the NodeData 
         # object in self.target_nodes are updated correctly
         self.assertEqual(
-            hip_comparator.target_nodes[node_path].state, NodeState.CREATED
+            hip_comparator.target_nodes[node_path].state, ItemState.CREATED
         )
         self.assertEqual(
             hip_comparator.target_nodes[node_path].color, COLORS["green"]
@@ -330,7 +331,7 @@ class TestHipFileComparator(unittest.TestCase):
         # and alpha properties of the source_node_data 
         # are updated correctly
         self.assertEqual(
-            source_node_data.state, NodeState.DELETED
+            source_node_data.state, ItemState.DELETED
         )
         self.assertEqual(
             source_node_data.color, COLORS["red"]
@@ -355,25 +356,25 @@ class TestHipFileComparator(unittest.TestCase):
         hip_comparator._handle_created_params()
 
         # Assert that the state, color, and alpha properties of the target param are updated
-        self.assertEqual(target_param.state, NodeState.CREATED)
+        self.assertEqual(target_param.state, ItemState.CREATED)
         self.assertEqual(target_param.color, COLORS["green"])
         self.assertEqual(target_param.alpha, 55)
 
         # Assert that the state, color, and alpha properties of the target node are updated
-        self.assertEqual(target_node.state, NodeState.EDITED)
+        self.assertEqual(target_node.state, ItemState.EDITED)
         self.assertEqual(target_node.color, COLORS["green"])
         self.assertEqual(target_node.alpha, 100)
 
         # Assert that the source node has the new param with the expected properties
         created_param = source_node.get_parm_by_name("new_param")
         self.assertIsNotNone(created_param)
-        self.assertEqual(created_param.state, NodeState.CREATED)
+        self.assertEqual(created_param.state, ItemState.CREATED)
         self.assertEqual(created_param.alpha, 55)
         self.assertTrue(created_param.is_hatched)
         self.assertFalse(created_param.is_active)
 
         # Assert that the state and alpha properties of the source node are updated
-        self.assertEqual(source_node.state, NodeState.EDITED)
+        self.assertEqual(source_node.state, ItemState.EDITED)
         self.assertEqual(source_node.alpha, 100)
 
     def test_compare(self):
@@ -400,17 +401,17 @@ class TestHipFileComparator(unittest.TestCase):
             edted_param_name
         )
 
-        self.assertEqual(edited_source_node.state, NodeState.EDITED)
+        self.assertEqual(edited_source_node.state, ItemState.EDITED)
         self.assertEqual(edited_source_node.color, COLORS["red"])
 
-        self.assertEqual(edited_target_node.state, NodeState.EDITED)
+        self.assertEqual(edited_target_node.state, ItemState.EDITED)
         self.assertEqual(edited_target_node.color, COLORS["green"])
 
         self.assertEqual(edited_source_parm.value, source_parm_val)
         self.assertEqual(edited_target_parm.value, target_parm_val)
 
-        self.assertEqual(edited_source_parm.state, NodeState.EDITED)
-        self.assertEqual(edited_target_parm.state, NodeState.EDITED)
+        self.assertEqual(edited_source_parm.state, ItemState.EDITED)
+        self.assertEqual(edited_target_parm.state, ItemState.EDITED)
 
         self.assertEqual(edited_source_parm.color, COLORS["red"])
         self.assertEqual(edited_source_parm.alpha, 55)
@@ -428,11 +429,11 @@ class TestHipFileComparator(unittest.TestCase):
         )
 
         self.assertEqual(created_source_node.name, "")
-        self.assertEqual(created_source_node.state, NodeState.EDITED)
+        self.assertEqual(created_source_node.state, ItemState.EDITED)
         self.assertEqual(created_source_node.is_hatched, True)
 
         self.assertEqual(created_source_parm.value, "")
-        self.assertEqual(created_source_parm.state, NodeState.CREATED)
+        self.assertEqual(created_source_parm.state, ItemState.CREATED)
         self.assertEqual(created_source_parm.is_hatched, True)
       
         created_target_node = self.hip_comparator.target_nodes[
@@ -443,9 +444,9 @@ class TestHipFileComparator(unittest.TestCase):
         )
 
         self.assertEqual(created_target_node.name, "null1")
-        self.assertEqual(created_target_node.state, NodeState.EDITED)
+        self.assertEqual(created_target_node.state, ItemState.EDITED)
         self.assertEqual(created_target_parm.is_hatched, False)
 
         self.assertEqual(created_target_parm.value, 1)
-        self.assertEqual(created_target_parm.state, NodeState.CREATED)
+        self.assertEqual(created_target_parm.state, ItemState.CREATED)
         self.assertEqual(created_target_parm.is_hatched, False)

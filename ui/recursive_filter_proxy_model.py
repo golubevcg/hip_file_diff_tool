@@ -4,7 +4,7 @@ from hutil.Qt.QtCore import QSortFilterProxyModel, QModelIndex
 from hutil.Qt.QtGui import QStandardItem
 
 from ui.constants import DATA_ROLE, PATH_ROLE
-from api.data.node_data import NodeState
+from api.data.item_data import ItemState
 from api.data.param_data import ParamState
 
 
@@ -64,7 +64,7 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         :return: True if the item matches the condition, False otherwise.
         """
         state_value = self.sourceModel().data(index, self.data_role).state
-        if state_value not in [NodeState.UNCHANGED, ParamState.UNCHANGED]:
+        if state_value not in [ItemState.UNCHANGED, ParamState.UNCHANGED]:
             return True
 
         for i in range(self.sourceModel().rowCount(index)):

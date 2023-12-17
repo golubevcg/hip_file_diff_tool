@@ -5,6 +5,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Dict, List
 from api import utilities
+from api.data.item_data import ItemData
 
 import hou
 
@@ -40,16 +41,21 @@ class HdaSectionContentType(Enum):
 
 
 @dataclass
-class HdaSection:
+class HdaSection(ItemData):
     """
     Extra files contained within an HDA that can be diffed appropriately
     depending on their content.
     """
-    name: str
-    type: HdaSectionType = HdaSectionType.UNDEFINED
-    content: str = ""
     content_type: HdaSectionContentType = HdaSectionContentType.PLAIN_TEXT
     state: HdaSectionState = HdaSectionState.UNCHANGED
+
+    def __init__(self, name: str):
+        """
+        Initialize a new instance of the NodeData class.
+
+        :param name: The name of the node.
+        """
+        super().__init__(name)
 
     def __repr__(self):
         return f"{self.name}"
@@ -119,12 +125,10 @@ class HdaDefintion:
             else:
                 content_type = HdaSectionContentType.PLAIN_TEXT
 
-            hda_script = HdaSection(
-                name=extra_file_name,
-                type=filetype,
-                content=content,
-                content_type=content_type,
-                )
+            hda_script = HdaSection(extra_file_name)
+            hda_script.type = filetype
+            hda_script.content = content
+            hda_script.content_type = content_type
 
             hda_extra_files.append(hda_script)
 
@@ -137,12 +141,11 @@ class HdaDefintion:
         """
         hda_sections = hou_hda_definition.sections()
         tools_shelf_xml_content = hda_sections.get("Tools.shelf").contents()
-        tools_shelf_file = HdaSection(
-            name="Tools.shelf",
-            type=HdaSectionType.TOOLS_SHELF,
-            content=tools_shelf_xml_content,
-            content_type=HdaSectionContentType.XML,
-        )
+        tools_shelf_file = HdaSection("Tools.shelf")
+        tools_shelf_file.type = HdaSectionType.TOOLS_SHELF
+        tools_shelf_file.content = tools_shelf_xml_content
+        tools_shelf_file.content_type = HdaSectionContentType.XML
+
         return tools_shelf_file
 
     def _get_help_file(hou_hda_definition: hou.HDADefinition) -> HdaSection:
@@ -151,12 +154,12 @@ class HdaDefintion:
         """
         hda_sections = hou_hda_definition.sections()
         help_string = hda_sections.get("Help").contents()
-        help_file = HdaSection(
-            name="Help",
-            type=HdaSectionType.HELP,
-            content=help_string,
-            content_type=HdaSectionContentType.WIKI_MARKUP,
-        )
+
+        help_file = HdaSection("Help")
+        help_file.type = HdaSectionType.HELP
+        help_file.content = help_string
+        help_file.content_type = HdaSectionContentType.WIKI_MARKUP
+
         return help_file
 
     @staticmethod
@@ -195,10 +198,11 @@ class HdaData:
     A class to represent a Houdini HDA containing one or multiple HDA 
     definitions.
     """
-    def __init__(self, hda_path: str) -> None:
+    def __init__(self, hda_path: str, update_definitions=True) -> None:
         self.path = hda_path
         self.parent_path: str = ""
-        self.definitions: List[HdaDefintion] = self._get_definitions()
+        if update_definitions:
+            self.definitions: List[HdaDefintion] = self._get_definitions()
 
     def _get_definitions(self) -> List[HdaDefintion]:
         return [
