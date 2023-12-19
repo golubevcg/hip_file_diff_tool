@@ -77,10 +77,6 @@ class HipFileDiffWindow(QMainWindow):
                 self.source_treeview.expand_to_index(item, self.source_treeview)
                 self.on_item_double_clicked(item.index())
 
-        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
-        self.handle_compare_button_click()
-
         self.show_only_edited_checkbox.setChecked(True)
 
 
