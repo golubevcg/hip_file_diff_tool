@@ -1,6 +1,7 @@
-from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter
-from hutil.Qt.QtWidgets import QStyledItemDelegate
-from hutil.Qt.QtCore import Qt
+from hutil.Qt.QtGui import QPixmap, QColor, QBrush, QPen, QPainter, QLinearGradient
+from hutil.Qt.QtWidgets import QStyledItemDelegate, QStyle
+from hutil.Qt.QtCore import Qt, QSize, QEvent
+
 from ui.constants import DATA_ROLE
 
 
@@ -8,7 +9,6 @@ class HatchedItemDelegate(QStyledItemDelegate):
     """
     Custom item delegate class that supports hatched patterns as backgrounds.
     """
-
     def paint(self, painter: QPainter, option, index) -> None:
         """
         Custom paint method to render items with a hatched pattern.
@@ -21,8 +21,50 @@ class HatchedItemDelegate(QStyledItemDelegate):
         if is_hatched:
             self._paint_hatched_pattern(painter, option)
 
-        # Let the default delegate handle the rest (e.g., text rendering)
+        option.displayAlignment = Qt.AlignTop
+
+        if index.data(Qt.DisplayRole).count("\n") >= 3:
+            # Create the gradient overlay effect for darkening
+            gradient = QLinearGradient(
+                option.rect.topLeft(), 
+                option.rect.bottomLeft()
+            )
+            gradient.setColorAt(0.25, Qt.transparent)     
+            gradient.setColorAt(1, QColor("#202020"))
+
+            painter.fillRect(option.rect, gradient)
+
+        borderColor = QColor(Qt.transparent)
+        is_hovered = option.state & QStyle.State_MouseOver
+        if is_hovered:
+            borderColor = QColor(185, 134, 32)
+            
+        painter.setPen(borderColor)
+        painter.drawLine(option.rect.topLeft(), option.rect.topRight())
+        painter.drawLine(option.rect.bottomLeft(), option.rect.bottomRight())
+        painter.drawLine(option.rect.topLeft(), option.rect.bottomLeft())
+        painter.drawLine(option.rect.topRight(), option.rect.bottomRight())
+
         super().paint(painter, option, index)
+
+    def sizeHint(self, option, index):
+        text = index.data(Qt.DisplayRole)
+        if "\n" in text:
+            return QSize(option.rect.width(), 100)
+        
+        return super().sizeHint(option, index)
+    
+    def helpEvent(self, event, view, option, index):
+        if event.type() == QEvent.ToolTip and index.data(Qt.DisplayRole):
+            if index.data(Qt.DisplayRole).count("\n") >= 3 :
+                view.setToolTip(
+                    "String diff available for this item,"
+                    "double click on item to open.")
+            else:
+                view.setToolTip("")  # Clear the tooltip for other items
+        return super(HatchedItemDelegate, self)\
+                .helpEvent(event, view, option, index)
+
 
     def _paint_hatched_pattern(self, painter: QPainter, option) -> None:
         """

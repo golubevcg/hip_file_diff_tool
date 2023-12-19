@@ -1,8 +1,11 @@
+import os
 from typing import List
 
-from hutil.Qt.QtWidgets import QTreeView
+from hutil.Qt.QtWidgets import QTreeView, QMenu, QAction
 from hutil.Qt.QtCore import Qt, QModelIndex
-from hutil.Qt.QtGui import QMouseEvent, QPainter
+from hutil.Qt.QtGui import QMouseEvent, QPainter, QPixmap, QIcon, QColor
+from ui.constants import ICONS_PATH
+from ui.ui_utils import generate_link_to_clipboard
 
 
 class CustomQTreeView(QTreeView):
@@ -10,6 +13,10 @@ class CustomQTreeView(QTreeView):
     A custom QTreeView that provides additional functionalities such as
     recursive expanding/collapsing of items and enhanced mouse click handling.
     """
+
+    def __init__(self, parent=None):
+        super(CustomQTreeView, self).__init__(parent)
+        self.parent_application = parent
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """
@@ -85,3 +92,47 @@ class CustomQTreeView(QTreeView):
         painter = QPainter(self.viewport())
         painter.setRenderHint(QPainter.Antialiasing, True)
         super().paintEvent(event)
+
+    def contextMenuEvent(self, event):
+        index = self.indexAt(event.pos())
+        if not index.isValid():
+            return
+        
+        item_path = index.data(index.model().path_role)
+
+        copy_path_action = QAction("Copy node path", self)
+        copy_path_action.triggered.connect(
+            lambda checked=False, path=item_path: self._copy_path_to_clipboard(path)
+        )
+
+        copy_link_action = QAction("Copy link", self)
+        copy_link_action.triggered.connect(
+            lambda checked=False, path=item_path: self._copy_link_to_clipboard(path)
+        )
+
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: #505050;
+                font: 10pt "DS Houdini";
+                color: #dfdfdf;
+                border-radius: 5px;
+            }
+            QMenu::item {
+                padding: 10px 20px 10px 40px;
+            }
+            QMenu::item:selected {
+                background-color: #606060;
+            }
+        """)
+        menu.addAction(copy_path_action)
+        menu.addAction(copy_link_action)
+        menu.exec_(event.globalPos())
+
+
+    def _copy_path_to_clipboard(self, item_path):
+        print("ITEM_PATH_INSIDE_FUNC:", item_path)
+        self.parent_application.clipboard.setText(item_path)
+
+    def _copy_link_to_clipboard(self, item_path):
+        generate_link_to_clipboard(self.parent_application, item_path)

@@ -1,7 +1,7 @@
 import copy
 import zipfile
 from typing import Optional
-from api.param_data import ParamState
+from api.data.item_data import ItemState
 
 from hutil.Qt.QtGui import (
     QPixmap,
@@ -31,6 +31,7 @@ class CustomStandardItemModel(QStandardItemModel):
         self.data_role = DATA_ROLE
         self.view = None
         self.show_only_edited = False
+        self.proxy_model = None
 
     def set_view(self, tree_view) -> None:
         """Associate the model with a tree view widget."""
@@ -40,6 +41,9 @@ class CustomStandardItemModel(QStandardItemModel):
         self, item: QStandardItem, icon_name: str, icons_zip: zipfile.ZipFile
     ) -> None:
         """Extract and set icon to item from given zip file."""
+        if not icon_name:
+            return
+
         try:
             with icons_zip.open(icon_name) as file:
                 icon_data = file.read()
@@ -71,9 +75,49 @@ class CustomStandardItemModel(QStandardItemModel):
         (parent.appendRow if parent else self.appendRow)(item)
 
         self.item_dictionary[path] = item
+        if data.user_data:
+            self._add_user_data_item(item, data.user_data)
 
         for parm_name in data.parms:
             self._add_parm_items(item, data, parm_name, icons_zip)
+
+    def _add_user_data_item(
+        self,
+        item: QStandardItem,
+        user_data,
+    ) -> None:
+        """Add parameters as child items to given item."""
+        parm_name = "{} userData"
+        parm = user_data
+
+        if not parm.state:
+            return
+
+        updated_parm_name = parm_name if parm.is_active else ""
+
+        path = item.data(self.path_role)
+        parm_path = f"{path}/{parm_name}"
+        parm_item = QStandardItem(updated_parm_name)
+        parm_item.setData(parm, self.data_role)
+        parm_item.setData(parm_path, self.path_role)
+        parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
+
+        item.appendRow(parm_item)
+        self.item_dictionary[parm_path] = parm_item
+
+        value = str(parm.value) if parm.is_active else ""
+
+        value_path = f"{parm_path}/value"
+        value_item = QStandardItem(value)
+        value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
+        value_data = copy.copy(parm)
+        value_data.state = ItemState.VALUE
+        value_item.setData(value_data, self.data_role)
+        value_item.setData(value_path, self.path_role)
+
+        parm_item.appendRow(value_item)
+        self.item_dictionary[value_path] = value_item
+
 
     def _add_parm_items(
         self,
@@ -97,7 +141,7 @@ class CustomStandardItemModel(QStandardItemModel):
         parm_item.setData(parm_path, self.path_role)
         parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
 
-        if parm.is_active:
+        if parm.is_active and parm.icon:
             self._set_icon_from_zip(parm_item, "VOP/parameter.svg", icons_zip)
 
         item.appendRow(parm_item)
@@ -108,7 +152,7 @@ class CustomStandardItemModel(QStandardItemModel):
         value_item = QStandardItem(value)
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         value_data = copy.copy(parm)
-        value_data.state = ParamState.VALUE
+        value_data.state = ItemState.VALUE
         value_item.setData(value_data, self.data_role)
         value_item.setData(value_path, self.path_role)
 
@@ -152,5 +196,5 @@ class CustomStandardItemModel(QStandardItemModel):
             qcolor = QColor(color)
             qcolor.setAlpha(item_data.alpha)
             item.setBackground(QBrush(qcolor))
-        if item_data.state and item_data.state != ParamState.VALUE:
+        if item_data.state and item_data.state != ItemState.VALUE:
             self.view.expand_to_index(item, self.view)
