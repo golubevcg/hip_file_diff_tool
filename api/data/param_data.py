@@ -30,6 +30,7 @@ class ParamData:
         color: str = None,
         alpha: int = 255,
         is_hatched: bool = False,
+        icon: bool = True,
     ):
         """
         Initialize a new instance of the ParamData class.
@@ -52,6 +53,7 @@ class ParamData:
         self.color = color
         self.alpha = alpha
         self.is_hatched = is_hatched
+        self.icon = icon
 
     @property
     def value(self):

@@ -87,7 +87,7 @@ class CustomStandardItemModel(QStandardItemModel):
         user_data,
     ) -> None:
         """Add parameters as child items to given item."""
-        parm_name = "userData"
+        parm_name = "{} userData"
         parm = user_data
 
         if not parm.state:
@@ -141,7 +141,7 @@ class CustomStandardItemModel(QStandardItemModel):
         parm_item.setData(parm_path, self.path_role)
         parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
 
-        if parm.is_active:
+        if parm.is_active and parm.icon:
             self._set_icon_from_zip(parm_item, "VOP/parameter.svg", icons_zip)
 
         item.appendRow(parm_item)

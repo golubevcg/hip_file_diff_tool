@@ -85,6 +85,19 @@ class HoudiniComparator(ABC):
         node_data.icon = node.type().icon()
         node_data.parent_path = self._get_parent_path(node)
 
+        input_connections = [inp_node.name() for inp_node in node.inputs() if inp_node]
+        if input_connections:
+            inp_conn_param = ParamData(
+                "-> input connections", 
+                ", ".join(input_connections), 
+                None
+            )
+            inp_conn_param.icon = False
+            node_data.add_parm(
+                "-> input connections", 
+                inp_conn_param
+            )
+
         user_data = node.userDataDict()
         param_user_data = ParamData("userData", None, None)
         if user_data:
@@ -95,6 +108,7 @@ class HoudiniComparator(ABC):
             node_data.add_parm(
                 parm.name(), ParamData(parm.name(), parm.eval(), None)
             )
+
         return node_data
 
     def _validate_file_paths(self) -> None:
