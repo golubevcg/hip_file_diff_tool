@@ -13,7 +13,12 @@ from hutil.Qt.QtWidgets import (
     QAbstractItemView,
     QCheckBox
 )
-from hutil.Qt.QtCore import Qt, QSortFilterProxyModel, QEvent
+from hutil.Qt.QtCore import (
+    Qt, 
+    QSortFilterProxyModel, 
+    QEvent, 
+    QItemSelectionModel
+)
 from hutil.Qt.QtGui import QHoverEvent
 
 from api.comparators.houdini_base_comparator import HoudiniComparator, HIP_FILE_FORMATS
@@ -72,9 +77,9 @@ class HipFileDiffWindow(QMainWindow):
                 self.source_treeview.expand_to_index(item, self.source_treeview)
                 self.on_item_double_clicked(item.index())
 
-        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
-        self.handle_compare_button_click()
+        # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
+        # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
+        # self.handle_compare_button_click()
 
 
     def set_window_properties(self) -> None:
@@ -267,7 +272,6 @@ class HipFileDiffWindow(QMainWindow):
         - hover (bool): If True, item is hovered. If False, it's unhovered.
         """
         event_proxy_model = index.model()
-
         if isinstance(event_proxy_model, QSortFilterProxyModel):
             event_source_model = event_proxy_model.sourceModel()
         else:
@@ -537,6 +541,12 @@ class HipFileDiffWindow(QMainWindow):
         target_scrollbar.setValue(value)
 
     def on_item_double_clicked(self, index):
+        selection_model = self.source_treeview.selectionModel()
+        selection_model.select(
+            index, 
+            QItemSelectionModel.Select | QItemSelectionModel.Rows
+        )
+    
         index_displ_role_text = index.data(Qt.DisplayRole)
         if index_displ_role_text.count("\n") >= 3 :
             _, index_in_other_proxy = self.get_index_in_other_model(index)

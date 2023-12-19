@@ -16,6 +16,7 @@ from hutil.Qt.QtWidgets import (
 from hutil.Qt.QtCore import Qt, QTimer, QEvent
 from ui.constants import PATH_ROLE
 from ui.hatched_text_edit import HatchedTextEdit
+from ui.ui_utils import generate_link_to_clipboard
  
 from api.comparators.houdini_base_comparator import COLORS
 
@@ -365,34 +366,16 @@ class StringDiffDialog(QDialog):
         target_scrollbar.setValue(value)
 
     def _handle_copy_link(self) -> None:
-        self.copy_link_button.setText("link copied")
-
-        hython_executable_path = os.environ.get('HOUDINI_HYTHON')
-        if not hython_executable_path:
-            hython_executable_path = sys.executable
-
-        diff_tool_path = os.environ.get('HOUDINI_AGOL_DIFF_TOOL')
-        if not diff_tool_path:
-            diff_tool_path = self.parent_application.main_path
-        
-        source_file_path = self.parent_application.source_file_line_edit.text()
-        target_file_path = self.parent_application.target_file_line_edit.text()
-
-        link = (
-            f'& "{hython_executable_path}" '
-            f'{diff_tool_path} '
-            f'--source={source_file_path} '
-            f'--target={target_file_path} '
-            f'--item-path={self.node_path_line_edit.text()}'
+        generate_link_to_clipboard(
+            self.parent_application,
+            self.node_path_line_edit.text()
         )
-        self.parent_application.clipboard.setText(link)
-
+        self.copy_link_button.setText("link copied")
         self._copy_link_timer.start(2500)
 
     def _handle_copy_path(self) -> None:
         self.copy_path_button.setText("path copied")
         self.parent_application.clipboard.setText(self.node_path_line_edit.text())
-
         self._copy_path_timer.start(2500)
 
     def reset_link_button_text(self) -> None:
