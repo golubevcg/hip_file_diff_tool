@@ -1,7 +1,7 @@
 import copy
 import zipfile
 from typing import Optional
-from api.data.param_data import ParamState
+from api.data.item_data import ItemState
 
 from hutil.Qt.QtGui import (
     QPixmap,
@@ -111,7 +111,7 @@ class CustomStandardItemModel(QStandardItemModel):
         value_item = QStandardItem(value)
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         value_data = copy.copy(parm)
-        value_data.state = ParamState.VALUE
+        value_data.state = ItemState.VALUE
         value_item.setData(value_data, self.data_role)
         value_item.setData(value_path, self.path_role)
 
@@ -152,7 +152,7 @@ class CustomStandardItemModel(QStandardItemModel):
         value_item = QStandardItem(value)
         value_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
         value_data = copy.copy(parm)
-        value_data.state = ParamState.VALUE
+        value_data.state = ItemState.VALUE
         value_item.setData(value_data, self.data_role)
         value_item.setData(value_path, self.path_role)
 
@@ -196,5 +196,5 @@ class CustomStandardItemModel(QStandardItemModel):
             qcolor = QColor(color)
             qcolor.setAlpha(item_data.alpha)
             item.setBackground(QBrush(qcolor))
-        if item_data.state and item_data.state != ParamState.VALUE:
+        if item_data.state and item_data.state != ItemState.VALUE:
             self.view.expand_to_index(item, self.view)

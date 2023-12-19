@@ -18,7 +18,6 @@ from hutil.Qt.QtGui import QHoverEvent
 
 from api.comparators.houdini_base_comparator import HoudiniComparator, HIP_FILE_FORMATS
 from api.comparators.hip_comparator import HipFileComparator
-from api.comparators.hda_comparator import HdaFileComparator, HDA_FILE_FORMATS
 
 from ui.custom_qtree_view import CustomQTreeView
 from ui.custom_standart_item_model import CustomStandardItemModel
@@ -73,10 +72,8 @@ class HipFileDiffWindow(QMainWindow):
                 self.source_treeview.expand_to_index(item, self.source_treeview)
                 self.on_item_double_clicked(item.index())
 
-        # self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
-        # self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
-        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/BoxHDA_source.hda")
-        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/BoxHDA_edited.hda")
+        self.source_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source.hipnc")
+        self.target_file_line_edit.setText("C:/Users/golub/Documents/hip_file_diff_tool/test/fixtures/billowy_smoke_source_edited.hipnc")
         self.handle_compare_button_click()
 
 
@@ -438,8 +435,6 @@ class HipFileDiffWindow(QMainWindow):
 
         if Path(source_path).suffix[1:] in HIP_FILE_FORMATS:
             self.houdini_comparator = HipFileComparator(source_path, target_path)
-        elif Path(source_path).suffix[1:] in HDA_FILE_FORMATS:
-            self.houdini_comparator = HdaFileComparator(source_path, target_path)
 
         self.houdini_comparator.compare()
 

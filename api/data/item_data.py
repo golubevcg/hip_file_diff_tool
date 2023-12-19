@@ -12,6 +12,7 @@ class ItemState(Enum):
     EDITED = auto()
     DELETED = auto()
     CREATED = auto()
+    VALUE = auto()
 
     def __str__(self):
         return f"{self.name.lower()}"

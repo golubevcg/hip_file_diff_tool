@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from api.comparators.hda_comparator import HdaFileComparator
 from api.comparators.hip_comparator import HipFileComparator
 from api.utilities import COLORS
 from api.data.item_data import ItemState
@@ -13,8 +12,6 @@ import hou
 class TestHipFileComparator(unittest.TestCase):
     SOURCE_HIP_FILE = "test/fixtures/billowy_smoke_source.hipnc"
     TARGET_HIP_FILE = "test/fixtures/billowy_smoke_source_edited.hipnc"
-    SOURCE_HDA_FILE = "test/fixtures/BoxHDA_source.hda"
-    TARGET_HDA_FILE = "test/fixtures/BoxHDA_edited.hda"
 
     def setUp(self):
         # Create some dummy paths
@@ -22,9 +19,6 @@ class TestHipFileComparator(unittest.TestCase):
         self.nonexistent_path = "test/fixtures/nonexistent/file.hip"
         self.hip_comparator = HipFileComparator(
             self.SOURCE_HIP_FILE, self.TARGET_HIP_FILE
-        )
-        self.hda_comparator = HdaFileComparator(
-            self.SOURCE_HDA_FILE, self.TARGET_HDA_FILE
         )
 
     @patch("api.hip_file_comparator.hou")
@@ -49,18 +43,6 @@ class TestHipFileComparator(unittest.TestCase):
             comparator._check_file_path(self.SOURCE_HDA_FILE, "source")
 
     @patch("api.hip_file_comparator.hou")
-    def test_check_hda_file_path_invalid_extension(self, mock_hou):
-        """
-        Test HdaFileComparator._check_file_path with an invalid file extension.
-        """
-        comparator = HdaFileComparator(
-            self.SOURCE_HDA_FILE, self.TARGET_HDA_FILE
-        )
-        with self.assertRaises(RuntimeError):
-            comparator._check_file_path(self.invalid_ext_path, "source")
-            comparator._check_file_path(self.SOURCE_HIP_FILE, "source")
-
-    @patch("api.hip_file_comparator.hou")
     def test_check_file_path_nonexistent_file(self, mock_hou):
         """Test _check_file_path with a nonexistent file."""
         comparator = HipFileComparator(
@@ -74,12 +56,6 @@ class TestHipFileComparator(unittest.TestCase):
         """Test get_hip_data with an empty path."""
         with self.assertRaises(ValueError):
             self.hip_comparator.get_hip_data("")
-
-    @patch("api.hip_file_comparator.hou")
-    def test_get_hda_data_empty_path(self, mock_hou):
-        """Test get_hda_data with an empty path."""
-        with self.assertRaises(ValueError):
-            self.hda_comparator.get_hda_data("")
 
     @patch("api.hip_file_comparator.hou")
     def test_get_hip_data_valid(self, mock_hou):
@@ -104,21 +80,6 @@ class TestHipFileComparator(unittest.TestCase):
 
         result = self.hip_comparator.get_hip_data(self.SOURCE_HIP_FILE)
         self.assertIn("/mock_path", result)
-
-    @patch("api.hip_file_comparator.hou")
-    def test_get_hip_data_locked_hda(self, mock_hou):
-        """Test get_hip_data with a node inside a locked HDA."""
-
-        # Mocking the behavior of hou.node("/").allNodes()
-        # with a node that is inside a locked HDA
-        mock_node = Mock()
-        mock_node.isInsideLockedHDA.return_value = True
-        mock_hou.node.return_value.allNodes.return_value = [mock_node]
-
-        result = self.hip_comparator.get_hip_data(self.SOURCE_HIP_FILE)
-        self.assertEqual(
-            result, {}
-        )  # No data should be retrieved for locked HDA nodes
 
     @patch("api.hip_file_comparator.hou.hipFile.clear")
     @patch("api.hip_file_comparator.hou.hipFile.load")
