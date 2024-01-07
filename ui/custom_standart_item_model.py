@@ -1,8 +1,6 @@
-import os
 import copy
 import zipfile
 from typing import Optional
-from api.data.item_data import ItemState
 
 from hutil.Qt.QtGui import (
     QPixmap,
@@ -14,10 +12,10 @@ from hutil.Qt.QtGui import (
 )
 from hutil.Qt.QtCore import Qt
 
+from api.data.item_data import ItemState
 from ui.constants import ICONS_ZIP_PATH, PATH_ROLE, DATA_ROLE, ICON_MAPPINGS
 
 
-# --- CustomStandardItemModel ---
 class CustomStandardItemModel(QStandardItemModel):
     """
     Custom implementation of QStandardItemModel with functionality
@@ -70,7 +68,7 @@ class CustomStandardItemModel(QStandardItemModel):
 
         icon_path = ICON_MAPPINGS.get(data.icon, data.icon)
         if icon_path:
-            icon_path = icon_path.replace("_", os.sep, 1) + ".svg"
+            icon_path = icon_path.replace("_", "/", 1) + ".svg"
             self._set_icon_from_zip(item, icon_path, icons_zip)
 
         (parent.appendRow if parent else self.appendRow)(item)
@@ -143,7 +141,7 @@ class CustomStandardItemModel(QStandardItemModel):
         parm_item.setFlags(parm_item.flags() & ~Qt.ItemIsEditable)
 
         if parm.is_active and parm.icon:
-            self._set_icon_from_zip(parm_item, f"VOP{os.sep}parameter.svg", icons_zip)
+            self._set_icon_from_zip(parm_item, f"VOP/parameter.svg", icons_zip)
 
         item.appendRow(parm_item)
         self.item_dictionary[parm_path] = parm_item

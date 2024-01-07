@@ -22,7 +22,7 @@ with open(ICONS_MAPPING_PATH, "r") as file:
             continue
         key, value = line.split(":=")
         ICON_MAPPINGS[key.strip()] = (
-            value.strip().rstrip(";").replace("_", os.sep, 1)
+            value.strip().rstrip(";").replace("_", "/", 1)
         )
 
 PATH_ROLE = Qt.UserRole + 1
