@@ -4,6 +4,7 @@ from hutil.Qt.QtCore import QSortFilterProxyModel, QModelIndex
 from hutil.Qt.QtGui import QStandardItem
 
 from ui.constants import DATA_ROLE, PATH_ROLE
+from api.data.item_data import ItemState
 
 
 class RecursiveFilterProxyModel(QSortFilterProxyModel):
@@ -45,6 +46,12 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         for i in range(self.sourceModel().rowCount(source_index)):
             if self.filterAcceptsRow(i, source_index):
                 return True
+            
+        # make sure that value is shown if parent fits condition
+        state_value = self.sourceModel().data(source_index, self.data_role).state
+        if state_value == ItemState.VALUE and source_parent.isValid():
+            if self.filter_accepts_row_itself(source_parent.row(), source_parent.parent()):
+                return True
 
         return False
 
@@ -55,8 +62,8 @@ class RecursiveFilterProxyModel(QSortFilterProxyModel):
         :param index: QModelIndex representing the item.
         :return: True if the item matches the condition, False otherwise.
         """
-        tag_value = self.sourceModel().data(index, self.data_role).tag
-        if tag_value:
+        state_value = self.sourceModel().data(index, self.data_role).state
+        if state_value not in [ItemState.UNCHANGED]:
             return True
 
         for i in range(self.sourceModel().rowCount(index)):

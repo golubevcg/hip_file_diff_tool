@@ -13,7 +13,7 @@ To get started:
 2. Navigate to the repository folder and initiate the tool with Houdini's hython3.9: 
 
 ```console
-& ".../Side Effects Software/Houdini 19.5.368/bin/hython3.9.exe" .../hip_file_diff_tool/main.py
+".../Side Effects Software/Houdini 19.5.368/bin/hython3.9.exe" .../hip_file_diff_tool/main.py
 ```
 
  (Ensure you replace '...' with the full path to hython and main.py)

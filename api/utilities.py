@@ -1,5 +1,7 @@
 from collections import OrderedDict
-from typing import TypeVar
+import difflib
+from typing import List, TypeVar
+
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -37,3 +39,25 @@ def get_ordered_dict_key_index(
         if key == target_key:
             return idx
     raise KeyError(f"'{target_key}' not found in the OrderedDict.")
+
+
+def file_diff(file_path_a: str, file_path_b: str) -> List[str]:
+    with open(file_path_a, "r") as file_a, open(file_path_b, "r") as file_b:
+        file_diff_list = [
+            i
+            for i in difflib.unified_diff(
+                file_a.readlines(), file_b.readlines(), lineterm=""
+            )
+        ]
+
+    return file_diff_list
+
+
+def string_diff(string_a: str, string_b: str) -> List[str]:
+    string_lines_a = string_a.splitlines()
+    string_lines_b = string_b.splitlines()
+    diff_list = [
+        i for i in difflib.unified_diff(string_lines_a, string_lines_b, lineterm="")
+    ]
+
+    return diff_list

@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 
 from hutil.Qt.QtWidgets import (
+    QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -9,16 +11,25 @@ from hutil.Qt.QtWidgets import (
     QSplitter,
     QMessageBox,
     QAbstractItemView,
-    QCheckBox,
+    QCheckBox
 )
-from hutil.Qt.QtCore import Qt, QSortFilterProxyModel
+from hutil.Qt.QtCore import (
+    Qt, 
+    QSortFilterProxyModel, 
+    QEvent, 
+    QItemSelectionModel
+)
+from hutil.Qt.QtGui import QHoverEvent
 
-from api.hip_file_comparator import HipFileComparator
+from api.comparators.houdini_base_comparator import HoudiniComparator, HIP_FILE_FORMATS
+from api.comparators.hip_comparator import HipFileComparator
+
 from ui.custom_qtree_view import CustomQTreeView
 from ui.custom_standart_item_model import CustomStandardItemModel
 from ui.hatched_pattern_item_delegate import HatchedItemDelegate
 from ui.file_selector import FileSelector
 from ui.search_line_edit import QTreeViewSearch
+from ui.string_diff_dialog import StringDiffDialog
 
 
 class HipFileDiffWindow(QMainWindow):
@@ -29,13 +40,13 @@ class HipFileDiffWindow(QMainWindow):
         hip_comparator (HipFileComparator): Instance to compare two hip files.
     """
 
-    def __init__(self):
+    def __init__(self, args):
         super(HipFileDiffWindow, self).__init__()
+        self.houdini_comparator: HoudiniComparator = None
+        self.args = args
+        self.init_ui(args)
 
-        self.hip_comparator: HipFileComparator = None
-        self.init_ui()
-
-    def init_ui(self) -> None:
+    def init_ui(self, args) -> None:
         """Initialize UI components."""
         self.set_window_properties()
         self.setup_layouts()
@@ -43,6 +54,31 @@ class HipFileDiffWindow(QMainWindow):
         self.setup_checkboxes()
         self.setup_signals_and_slots()
         self.apply_stylesheet()
+
+        self.clipboard = QApplication.clipboard()
+        self.main_path = args.main_path
+
+        if args.source_file_path:
+            self.source_file_line_edit.setText(args.source_file_path)
+
+        if args.target_file_path:
+            self.target_file_line_edit.setText(args.target_file_path)
+
+        if args.source_file_path and args.target_file_path:
+            self.handle_compare_button_click()
+
+        if args.item_path:
+            item = self.source_model.get_item_by_path(args.item_path)
+            if not item:
+                QMessageBox.critical(
+                    None, "Error", "Specified item on this path was not found!"
+                )
+            else:
+                self.source_treeview.expand_to_index(item, self.source_treeview)
+                self.on_item_double_clicked(item.index())
+
+        self.show_only_edited_checkbox.setChecked(True)
+
 
     def set_window_properties(self) -> None:
         """Set main window properties."""
@@ -114,7 +150,7 @@ class HipFileDiffWindow(QMainWindow):
         self.target_layout.addWidget(self.target_treeview)
 
         self.source_search_qline_edit = QTreeViewSearch(
-            self.source_treeview, self.source_model, self.target_treeview
+            self.source_treeview, self.source_model
         )
         self.source_search_qline_edit.setPlaceholderText("Search in source")
         self.source_layout.addWidget(self.source_search_qline_edit)
@@ -169,6 +205,7 @@ class HipFileDiffWindow(QMainWindow):
         """
         tree_view = CustomQTreeView(self)
         tree_view.setItemDelegate(HatchedItemDelegate(tree_view))
+        tree_view.doubleClicked.connect(self.on_item_double_clicked)
 
         tree_view.setObjectName(obj_name)
         tree_view.header().hide()
@@ -183,13 +220,31 @@ class HipFileDiffWindow(QMainWindow):
     def setup_signals_and_slots(self) -> None:
         """Connect signals to their respective slots."""
         self.load_button.clicked.connect(self.handle_compare_button_click)
+
         self.connect_tree_view_expansion(self.source_treeview)
         self.connect_tree_view_expansion(self.target_treeview)
+
+        self.connect_tree_view_hover(self.source_treeview)
+        self.connect_tree_view_hover(self.target_treeview)
+
         self.target_treeview.verticalScrollBar().valueChanged.connect(
             self.sync_scroll
         )
         self.source_treeview.verticalScrollBar().valueChanged.connect(
             self.sync_scroll
+        )
+
+    def connect_tree_view_hover(self, tree_view: CustomQTreeView) -> None:
+        """
+        Connect hover signals for a QTreeView.
+
+        Args:
+        - tree_view (CustomQTreeView): The QTreeView instance.
+        """
+
+        tree_view.setMouseTracking(True)
+        tree_view.entered.connect(
+            lambda index: self.sync_hover_state(index, hover=True)
         )
 
     def connect_tree_view_expansion(self, tree_view: CustomQTreeView) -> None:
@@ -206,107 +261,148 @@ class HipFileDiffWindow(QMainWindow):
             lambda index: self.sync_expand(index, expand=False)
         )
 
+    def sync_hover_state(self, index, hover: bool = True) -> None:
+        """
+        Synchronize hover/unhover state between tree views.
+
+        Args:
+        - index: QModelIndex of the item being hovered/unhovered.
+        - hover (bool): If True, item is hovered. If False, it's unhovered.
+        """
+        event_proxy_model = index.model()
+        if isinstance(event_proxy_model, QSortFilterProxyModel):
+            event_source_model = event_proxy_model.sourceModel()
+        else:
+            event_source_model = event_proxy_model
+
+        if event_source_model == self.source_model:
+            other_view = self.target_treeview
+        else:
+            other_view = self.source_treeview
+
+        event_item = event_source_model.itemFromIndex(
+            event_proxy_model.mapToSource(index)
+        )
+        event_item_path = event_item.data(event_source_model.path_role)
+
+        item_in_other_source_model = (
+            other_view.model().sourceModel().get_item_by_path(event_item_path)
+        )
+
+        index_in_other_proxy = other_view.model().mapFromSource(
+            other_view.model().sourceModel().indexFromItem(item_in_other_source_model)
+        )
+
+        # Create a QHoverEvent and post it to the other tree view
+        pos_in_other_view = other_view.visualRect(index_in_other_proxy).center()
+        global_pos = other_view.mapToGlobal(pos_in_other_view)
+
+        if hover:
+            hover_event_type = QEvent.HoverEnter
+        else:
+            hover_event_type = QEvent.HoverLeave
+
+        hover_event = QHoverEvent(hover_event_type, pos_in_other_view, global_pos)
+        QApplication.postEvent(other_view.viewport(), hover_event)
+
     def apply_stylesheet(self) -> None:
         """Apply a custom stylesheet to the main window."""
-        self.setStyleSheet(
-            """
-            QMainWindow{
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        icons_path = os.path.join(base_path, 'icons').replace(os.sep, '/')
+        
+        stylesheet = f"""
+            QMainWindow{{
                 background-color: #3c3c3c;
-            }
-            QPushButton#compareButton {
+            }}
+            QPushButton#compareButton {{
                 font: 10pt "Arial";
                 color: #818181;
                 background-color: #464646;
                 border-radius: 10px;
-            }
-            QPushButton#compareButton:hover {
+            }}
+            QPushButton#compareButton:hover {{
                 color: #919191;
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
-            }
-            CustomQTreeView {
+            }}
+            CustomQTreeView {{
                 font: 10pt "DS Houdini";
                 color: #dfdfdf;
                 background-color: #333333;
                 border-radius: 10px;
-            }
-            QTreeView::branch:has-siblings:!adjoins-item {
-                border-image: url("ui/icons/vline.svg")  center center no-repeat;
-                }
-            QTreeView::branch:has-siblings:adjoins-item {
-                border-image: url("ui/icons/more.svg")  center center no-repeat;
-            }
-            QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-                border-image: url("ui/icons/end.svg")  center center no-repeat;
-            }
+            }}
+            QTreeView::branch:has-siblings:!adjoins-item {{
+                border-image: url("{icons_path}/vline.svg")  center center no-repeat;
+            }}
+            QTreeView::branch:has-siblings:adjoins-item {{
+                border-image: url("{icons_path}/more.svg")  center center no-repeat;
+            }}
+            QTreeView::branch:!has-children:!has-siblings:adjoins-item {{
+                border-image: url("{icons_path}/end.svg")  center center no-repeat;
+            }}
             QTreeView::branch:has-children:!has-siblings:closed,
-            QTreeView::branch:closed:has-children:has-siblings {
-                border-image: url(ui/icons/closed.svg)  center center no-repeat;
-            }
+            QTreeView::branch:closed:has-children:has-siblings {{
+                border-image: url({icons_path}/closed.svg)  center center no-repeat;
+            }}
             QTreeView::branch:open:has-children:!has-siblings,
-            QTreeView::branch:open:has-children:has-siblings {
-                border-image: url("ui/icons/opened.svg")  center center no-repeat;
-            }
-            QTreeView::branch:!adjoins-item{
-                border-image: url("ui/icons/empty.svg")  center center no-repeat;
-            }
-            QTreeView::item {
+            QTreeView::branch:open:has-children:has-siblings {{
+                border-image: url("{icons_path}/opened.svg")  center center no-repeat;
+            }}
+            QTreeView::branch:!adjoins-item{{
+                border-image: url("{icons_path}/empty.svg")  center center no-repeat;
+            }}
+            QTreeView::item {{
                 height: 1.1em;
                 font-size: 0.4em;
-                padding: 0.11em;
-            }
-            QTreeView::item:hover {
-                background: rgb(71, 71, 71);
-            }
-            QTreeView::item:selected {
-                border: 1px solid rgb(185, 134, 32);
-                background: rgb(96, 81, 50);
-            }
-            QScrollBar:vertical {
+                padding: 0.12em;
+            }}
+            QScrollBar:vertical {{
                 border: none;
                 background: #333333;
                 width: 20px;
                 border: 1px solid #3c3c3c;
-            }
-            QScrollBar::handle:vertical {
+            }}
+            QScrollBar::handle:vertical {{
                 background: #464646;
                 min-width: 20px;
-            }
-            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+            }}
+            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {{
                 border: none;
                 background: none;
                 height: 0;
                 subcontrol-position: top;
                 subcontrol-origin: margin;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
                 background: none;
-            }
+            }}
 
-            QSplitter::handle {
+            QSplitter::handle {{
                 background-color: #3c3c3c;
-            }
-            QSplitter::handle:vertical {
+            }}
+            QSplitter::handle:vertical {{
                 height: 5px;
-            }
-            QCheckBox {
+            }}
+            QCheckBox {{
                 color: #818181;
                 border-radius: 4px;
-            }
-            QCheckBox::indicator:unchecked {
+            }}
+            QCheckBox::indicator:unchecked {{
                 background-color: #3c3c3c;
                 border: 1px solid #818181;
                 border-radius: 4px;
-            }
-            QCheckBox::indicator:checked {
+            }}
+            QCheckBox::indicator:checked {{
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
                 border-radius: 4px;
-            }
-            QCheckBox::indicator:hover {
+            }}
+            QCheckBox::indicator:hover {{
                 border: 1px solid rgb(185, 134, 32);
-            }
+            }}
         """
+        self.setStyleSheet(
+            str(stylesheet)
         )
 
     def setup_checkboxes(self):
@@ -343,16 +439,18 @@ class HipFileDiffWindow(QMainWindow):
         self.target_treeview.item_dictionary = {}
         self.target_treeview.model().invalidateFilter()
 
-        self.hip_comparator = HipFileComparator(source_path, target_path)
-        self.hip_comparator.compare()
+        if Path(source_path).suffix[1:] in HIP_FILE_FORMATS:
+            self.houdini_comparator = HipFileComparator(source_path, target_path)
+
+        self.houdini_comparator.compare()
 
         # Assuming 'comparison_result' contains the differences,
         # we can now update our tree views based on the results.
         self.source_model.populate_with_data(
-            self.hip_comparator.source_data, self.source_treeview.objectName()
+            self.houdini_comparator.source_data, self.source_treeview.objectName()
         )
         self.target_model.populate_with_data(
-            self.hip_comparator.target_data, self.target_treeview.objectName()
+            self.houdini_comparator.target_data, self.target_treeview.objectName()
         )
 
         self.source_treeview.model().invalidateFilter()
@@ -381,8 +479,11 @@ class HipFileDiffWindow(QMainWindow):
             self.source_treeview.model().reset_proxy_view()
             self.target_treeview.model().reset_proxy_view()
 
-            self.source_search_qline_edit.restore_tree_state()
-            self.target_search_qline_edit.restore_tree_state()
+            if self.source_search_qline_edit.expanded_state:
+                self.source_search_qline_edit.restore_tree_state()
+    
+            if self.target_search_qline_edit.expanded_state:
+                self.target_search_qline_edit.restore_tree_state()
 
     def sync_expand(self, index, expand: bool = True) -> None:
         """
@@ -392,12 +493,17 @@ class HipFileDiffWindow(QMainWindow):
         - index: QModelIndex of the item being expanded or collapsed.
         - expand (bool): If True, item is expanded. If False, it's collapsed.
         """
-        event_proxy_model = index.model()
+        other_view, index_in_other_proxy = self.get_index_in_other_model(index)
+        other_view.setExpanded(index_in_other_proxy, expand)
 
+    def get_index_in_other_model(self, index):
+        event_proxy_model = index.model()
         if isinstance(event_proxy_model, QSortFilterProxyModel):
             event_source_model = event_proxy_model.sourceModel()
         else:
             event_source_model = event_proxy_model
+            event_proxy_model = event_proxy_model.proxy_model
+            index = event_proxy_model.mapFromSource(index)
 
         if event_source_model == self.source_model:
             other_view = self.target_treeview
@@ -418,7 +524,7 @@ class HipFileDiffWindow(QMainWindow):
             .sourceModel()
             .indexFromItem(item_in_other_source_model)
         )
-        other_view.setExpanded(index_in_other_proxy, expand)
+        return other_view, index_in_other_proxy
 
     def sync_scroll(self, value: int) -> None:
         """
@@ -438,3 +544,21 @@ class HipFileDiffWindow(QMainWindow):
 
         # Update the target's scrollbar position to match the source's
         target_scrollbar.setValue(value)
+
+    def on_item_double_clicked(self, index):
+        selection_model = self.source_treeview.selectionModel()
+        selection_model.select(
+            index, 
+            QItemSelectionModel.Select | QItemSelectionModel.Rows
+        )
+    
+        index_displ_role_text = index.data(Qt.DisplayRole)
+        if index_displ_role_text.count("\n") >= 3 :
+            _, index_in_other_proxy = self.get_index_in_other_model(index)
+            string_diff_dialog = StringDiffDialog(
+                index, 
+                index_in_other_proxy, 
+                parent=self
+            )
+            self.installEventFilter(string_diff_dialog)
+            string_diff_dialog.show()
