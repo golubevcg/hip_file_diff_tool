@@ -307,98 +307,103 @@ class HipFileDiffWindow(QMainWindow):
 
     def apply_stylesheet(self) -> None:
         """Apply a custom stylesheet to the main window."""
-        self.setStyleSheet(
-            """
-            QMainWindow{
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        icons_path = os.path.join(base_path, 'icons').replace(os.sep, '/')
+        
+        stylesheet = f"""
+            QMainWindow{{
                 background-color: #3c3c3c;
-            }
-            QPushButton#compareButton {
+            }}
+            QPushButton#compareButton {{
                 font: 10pt "Arial";
                 color: #818181;
                 background-color: #464646;
                 border-radius: 10px;
-            }
-            QPushButton#compareButton:hover {
+            }}
+            QPushButton#compareButton:hover {{
                 color: #919191;
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
-            }
-            CustomQTreeView {
+            }}
+            CustomQTreeView {{
                 font: 10pt "DS Houdini";
                 color: #dfdfdf;
                 background-color: #333333;
                 border-radius: 10px;
-            }
-            QTreeView::branch:has-siblings:!adjoins-item {
-                border-image: url("ui/icons/vline.svg")  center center no-repeat;
-                }
-            QTreeView::branch:has-siblings:adjoins-item {
-                border-image: url("ui/icons/more.svg")  center center no-repeat;
-            }
-            QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-                border-image: url("ui/icons/end.svg")  center center no-repeat;
-            }
+            }}
+            QTreeView::branch:has-siblings:!adjoins-item {{
+                border-image: url("{icons_path}/vline.svg")  center center no-repeat;
+            }}
+            QTreeView::branch:has-siblings:adjoins-item {{
+                border-image: url("{icons_path}/more.svg")  center center no-repeat;
+            }}
+            QTreeView::branch:!has-children:!has-siblings:adjoins-item {{
+                border-image: url("{icons_path}/end.svg")  center center no-repeat;
+            }}
             QTreeView::branch:has-children:!has-siblings:closed,
-            QTreeView::branch:closed:has-children:has-siblings {
-                border-image: url(ui/icons/closed.svg)  center center no-repeat;
-            }
+            QTreeView::branch:closed:has-children:has-siblings {{
+                border-image: url({icons_path}/closed.svg)  center center no-repeat;
+            }}
             QTreeView::branch:open:has-children:!has-siblings,
-            QTreeView::branch:open:has-children:has-siblings {
-                border-image: url("ui/icons/opened.svg")  center center no-repeat;
-            }
-            QTreeView::branch:!adjoins-item{
-                border-image: url("ui/icons/empty.svg")  center center no-repeat;
-            }
-            QTreeView::item {
+            QTreeView::branch:open:has-children:has-siblings {{
+                border-image: url("{icons_path}/opened.svg")  center center no-repeat;
+            }}
+            QTreeView::branch:!adjoins-item{{
+                border-image: url("{icons_path}/empty.svg")  center center no-repeat;
+            }}
+            QTreeView::item {{
                 height: 1.1em;
                 font-size: 0.4em;
                 padding: 0.12em;
-            }
-            QScrollBar:vertical {
+            }}
+            QScrollBar:vertical {{
                 border: none;
                 background: #333333;
                 width: 20px;
                 border: 1px solid #3c3c3c;
-            }
-            QScrollBar::handle:vertical {
+            }}
+            QScrollBar::handle:vertical {{
                 background: #464646;
                 min-width: 20px;
-            }
-            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+            }}
+            QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {{
                 border: none;
                 background: none;
                 height: 0;
                 subcontrol-position: top;
                 subcontrol-origin: margin;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+            }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
                 background: none;
-            }
+            }}
 
-            QSplitter::handle {
+            QSplitter::handle {{
                 background-color: #3c3c3c;
-            }
-            QSplitter::handle:vertical {
+            }}
+            QSplitter::handle:vertical {{
                 height: 5px;
-            }
-            QCheckBox {
+            }}
+            QCheckBox {{
                 color: #818181;
                 border-radius: 4px;
-            }
-            QCheckBox::indicator:unchecked {
+            }}
+            QCheckBox::indicator:unchecked {{
                 background-color: #3c3c3c;
                 border: 1px solid #818181;
                 border-radius: 4px;
-            }
-            QCheckBox::indicator:checked {
+            }}
+            QCheckBox::indicator:checked {{
                 background-color: #555555;
                 border: 1px solid rgb(185, 134, 32);
                 border-radius: 4px;
-            }
-            QCheckBox::indicator:hover {
+            }}
+            QCheckBox::indicator:hover {{
                 border: 1px solid rgb(185, 134, 32);
-            }
+            }}
         """
+        print("stylesheet:", stylesheet)
+        self.setStyleSheet(
+            str(stylesheet)
         )
 
     def setup_checkboxes(self):
