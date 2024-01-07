@@ -479,8 +479,11 @@ class HipFileDiffWindow(QMainWindow):
             self.source_treeview.model().reset_proxy_view()
             self.target_treeview.model().reset_proxy_view()
 
-            self.source_search_qline_edit.restore_tree_state()
-            self.target_search_qline_edit.restore_tree_state()
+            if self.source_search_qline_edit.expanded_state:
+                self.source_search_qline_edit.restore_tree_state()
+    
+            if self.target_search_qline_edit.expanded_state:
+                self.target_search_qline_edit.restore_tree_state()
 
     def sync_expand(self, index, expand: bool = True) -> None:
         """
