@@ -87,7 +87,7 @@ class CustomStandardItemModel(QStandardItemModel):
         user_data,
     ) -> None:
         """Add parameters as child items to given item."""
-        parm_name = "{} userData"
+        parm_name = "userDataDict"
         parm = user_data
 
         if not parm.state:
