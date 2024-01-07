@@ -1,5 +1,3 @@
-import os
-import sys
 import difflib
 
 from hutil.Qt.QtWidgets import QDialog, QTextEdit, QVBoxLayout, QHBoxLayout
@@ -14,34 +12,62 @@ from hutil.Qt.QtWidgets import (
     QLineEdit
 )
 from hutil.Qt.QtCore import Qt, QTimer, QEvent
+
 from ui.constants import PATH_ROLE
 from ui.hatched_text_edit import HatchedTextEdit
 from ui.ui_utils import generate_link_to_clipboard
- 
 from api.comparators.houdini_base_comparator import COLORS
 
 
 class Overlay(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget = None):
+        """
+        A semi-transparent overlay widget that covers its parent widget.
+
+        Args:
+            parent (QWidget): The parent widget over which the overlay is placed. Defaults to None.
+        """
         super(Overlay, self).__init__(parent)
         palette = QPalette(self.palette())
         palette.setColor(palette.Background, QColor(15, 15, 15, 128))
         self.setPalette(palette)
         self.setAutoFillBackground(True)
-        
-    def resizeEvent(self, event):
-        """ Resize the overlay to cover the entire parent. """
+
+    def resizeEvent(self, event) -> None:
+        """
+        Handles the resize event to ensure the overlay covers the entire parent widget.
+
+        Args:
+            event: The resize event.
+        """
         self.resize(self.parent().size())
         super().resizeEvent(event)
 
 
 class StringDiffDialog(QDialog):
     def __init__(self, index, other_index, parent=None):
+        """
+        A dialog for displaying the differences between two strings.
+
+        Args:
+            index: The model index of the first string.
+            other_index: The model index of the second string.
+            parent (QWidget): The parent widget of the dialog. Defaults to None.
+        """
         super().__init__(parent)
-
-        self.setWindowTitle("String diff tool")
-
         self.parent_application = parent
+
+        self.setupUI(index, other_index)
+
+    def setupUI(self, index, other_index) -> None:
+        """
+        Sets up the user interface of the dialog.
+
+        Args:
+            index: The model index of the first string.
+            other_index: The model index of the second string.
+        """
+        self.setWindowTitle("String diff tool")
 
         source_text = index.data(Qt.DisplayRole)
         target_text = other_index.data(Qt.DisplayRole)
@@ -257,7 +283,6 @@ class StringDiffDialog(QDialog):
         # Create a splitter and add text edits to it
         self.splitter = QSplitter(Qt.Horizontal, self)
         self.splitter.addWidget(widget)
-        # self.splitter.addWidget(self.old_text_edit)
         self.splitter.addWidget(self.new_text_edit)
         self.splitter.setHandleWidth(1)
         self.splitter.setStyleSheet("""
@@ -274,7 +299,7 @@ class StringDiffDialog(QDialog):
         layout.addWidget(self.splitter)
         self.setLayout(layout)
 
-        self.overlay = Overlay(parent)
+        self.overlay = Overlay(self.parent_application)
         self.overlay.show()
 
         self.old_text_edit.verticalScrollBar().valueChanged.connect(
@@ -296,7 +321,10 @@ class StringDiffDialog(QDialog):
         # Point 1: Lock the child window to the center of the parent window
         self.centerOnParent()
 
-    def centerOnParent(self):
+    def centerOnParent(self) -> None:
+        """
+        Centers the dialog on its parent widget.
+        """
         if self.parent():
             parent_geometry = self.parent().geometry()
             self.setGeometry(
@@ -306,18 +334,43 @@ class StringDiffDialog(QDialog):
                 self.height()
             )
 
-    def closeEvent(self, event):
-        """ When the dialog is closed, also close the overlay. """
+    def closeEvent(self, event) -> None:
+        """
+        Handles the close event of the dialog, ensuring the overlay is also closed.
+
+        Args:
+            event: The close event.
+        """
         self.overlay.close()
         super().closeEvent(event)
 
-    def eventFilter(self, obj, event):
-        """ Listen to the parent's move events and adjust the position of the child window accordingly. """
+    def eventFilter(self, obj, event) -> bool:
+        """
+        Filters events for the dialog, specifically to handle parent movement.
+        Listen to the parent's move events and adjust the position 
+        of the child window accordingly.
+
+        Args:
+            obj: The object that received the event.
+            event: The event that occurred.
+
+        Returns:
+            bool: True if the event should be ignored; False otherwise.
+        """
         if obj == self.parent() and event.type() == QEvent.Move:
             self.centerOnParent()
         return super().eventFilter(obj, event)
 
-    def process_diffs(self, diffs):
+    def process_diffs(self, diffs) -> (list, list):
+        """
+        Processes a list of diffs to generate formatted HTML strings for display.
+
+        Args:
+            diffs (list): A list of diffs generated by difflib.
+
+        Returns:
+            tuple: A tuple containing two lists of HTML strings representing the diffs.
+        """
         old_html = []
         new_html = []
 
@@ -343,10 +396,10 @@ class StringDiffDialog(QDialog):
     
     def sync_scroll(self, value: int) -> None:
         """
-        Synchronize vertical scrolling between tree views.
+        Synchronizes the scrolling between two text edits.
 
         Args:
-        - value (int): Vertical scroll position.
+            value (int): The scroll position.
         """
         # Fetch the source of the signal
         source_scrollbar = self.sender()
@@ -366,6 +419,9 @@ class StringDiffDialog(QDialog):
         target_scrollbar.setValue(value)
 
     def _handle_copy_link(self) -> None:
+        """
+        Handles the "copy link" button click event.
+        """
         generate_link_to_clipboard(
             self.parent_application,
             self.node_path_line_edit.text()
@@ -374,12 +430,21 @@ class StringDiffDialog(QDialog):
         self._copy_link_timer.start(2500)
 
     def _handle_copy_path(self) -> None:
+        """
+        Handles the "copy path" button click event.
+        """
         self.copy_path_button.setText("path copied")
         self.parent_application.clipboard.setText(self.node_path_line_edit.text())
         self._copy_path_timer.start(2500)
 
     def reset_link_button_text(self) -> None:
+        """
+        Resets the text of the "copy link" button.
+        """
         self.copy_link_button.setText("copy link")
 
     def reset_path_button_text(self) -> None:
+        """
+        Resets the text of the "copy path" button.
+        """
         self.copy_path_button.setText("copy path")

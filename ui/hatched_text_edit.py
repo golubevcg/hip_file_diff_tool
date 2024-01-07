@@ -1,13 +1,8 @@
 from hutil.Qt.QtWidgets import QTextEdit
 from hutil.Qt.QtGui import (
     QPixmap, 
-    QColor, 
-    QBrush, 
     QPen, 
     QPainter, 
-    QPixmap, 
-    QPainter, 
-    QPen, 
     QColor, 
     QBrush
 )
@@ -16,16 +11,35 @@ from hutil.Qt.QtCore import Qt, QRect
 
 class HatchedTextEdit(QTextEdit):
     def __init__(self, *args, **kwargs):
+        """
+        A custom QTextEdit that supports displaying hatched patterns on specific lines.
+
+        Args:
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        """
         super(HatchedTextEdit, self).__init__(*args, **kwargs)
         self.hatched_lines = set()
         self.text_lines = ""
 
-    def clearHatchedPatternForLine(self, line_number):
+    def clearHatchedPatternForLine(self, line_number) -> None:
+        """
+        Clears the hatched pattern for a specified line number.
+
+        Args:
+            line_number (int): The line number for which the hatched pattern should be cleared.
+        """
         if line_number in self.hatched_lines:
             self.hatched_lines.remove(line_number)
         self.viewport().update()
 
-    def paintEvent(self, event):
+    def paintEvent(self, event) -> None:
+        """
+        Handles the paint event to draw hatched patterns on specified lines.
+
+        Args:
+            event: The paint event.
+        """
         # Let the QTextEdit handle its regular painting
         super(HatchedTextEdit, self).paintEvent(event)
 
@@ -43,7 +57,14 @@ class HatchedTextEdit(QTextEdit):
                     self._paint_hatched_pattern(painter, rect)
             painter.end()
 
-    def _paint_hatched_pattern(self, painter, rect):
+    def _paint_hatched_pattern(self, painter: QPainter, rect: QRect) -> None:
+        """
+        Paints a hatched pattern within a given rectangle.
+
+        Args:
+            painter (QPainter): The painter used for drawing.
+            rect (QRect): The rectangle area where the pattern should be painted.
+        """
         hatch_width = 1000
         pixmap = QPixmap(hatch_width, hatch_width)
         pixmap.fill(Qt.transparent)
