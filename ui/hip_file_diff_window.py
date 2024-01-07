@@ -401,7 +401,6 @@ class HipFileDiffWindow(QMainWindow):
                 border: 1px solid rgb(185, 134, 32);
             }}
         """
-        print("stylesheet:", stylesheet)
         self.setStyleSheet(
             str(stylesheet)
         )
