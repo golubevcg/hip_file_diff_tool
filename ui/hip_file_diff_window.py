@@ -439,9 +439,15 @@ class HipFileDiffWindow(QMainWindow):
         self.target_treeview.item_dictionary = {}
         self.target_treeview.model().invalidateFilter()
 
-        if Path(source_path).suffix[1:] in HIP_FILE_FORMATS:
-            self.houdini_comparator = HipFileComparator(source_path, target_path)
+        if Path(source_path).suffix[1:] not in HIP_FILE_FORMATS:
+            QMessageBox.warning(
+                self,
+                "Unsupported file",
+                f"Please select valid .hip files to compare. Supported extensions: {', '.join(HIP_FILE_FORMATS)}",
+            )
+            return
 
+        self.houdini_comparator = HipFileComparator(source_path, target_path)
         self.houdini_comparator.compare()
 
         # Assuming 'comparison_result' contains the differences,
