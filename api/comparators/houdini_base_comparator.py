@@ -15,7 +15,7 @@ COLORS = {
     "green": "#6ba100",
 }
 
-HIP_FILE_FORMATS = {"hip", "hipnc", "hiplc"}
+HIP_FILE_FORMATS = {"hip", "hipnc", "hiplc", "hdt"}
 
 
 class HoudiniComparator(ABC):
