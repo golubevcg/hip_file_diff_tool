@@ -22,7 +22,6 @@ For unit testing, execute:
 hython3.9.exe -m unittest discover -p 'test*.py'
 from the repository's root directory.
 
-
-Some additional articles about the tool's functionality can be found on my website:
-[Comparing Hipfiles in Houdini: The Diff Tool](https://golubevcg.com/post/comparing_hipfiles_in_houdini:_the_diff_tool)
-[What's New in Hipfile Diff Tool v1.1 Update](https://golubevcg.com/post/what's_new_in_my_hipfile_diff_tool_v1.1_update)
+Some additional articles about the tool's functionality can be found on my website:<br />
+[Comparing Hipfiles in Houdini: The Diff Tool](https://golubevcg.com/post/comparing_hipfiles_in_houdini:_the_diff_tool)<br />
+[What's New in Hipfile Diff Tool v1.1 Update](https://golubevcg.com/post/what's_new_in_my_hipfile_diff_tool_v1.1_update)<br />
