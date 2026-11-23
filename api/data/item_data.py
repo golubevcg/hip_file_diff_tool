@@ -8,7 +8,7 @@ class ItemState(Enum):
     """
     An enum representing the diff state of a item.
     """
-    UNCHANGED = None
+    UNCHANGED = -1
     EDITED = auto()
     DELETED = auto()
     CREATED = auto()

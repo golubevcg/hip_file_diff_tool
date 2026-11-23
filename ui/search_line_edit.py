@@ -1,7 +1,8 @@
 import os
 from typing import Set, Optional
 
-from hutil.Qt.QtWidgets import QWidget, QLineEdit, QAbstractItemView, QAction
+from hutil.Qt.QtWidgets import QWidget, QLineEdit, QAbstractItemView
+from PySide6.QtGui import QAction
 from hutil.Qt.QtCore import Qt
 from hutil.Qt.QtGui import QPixmap, QIcon
 

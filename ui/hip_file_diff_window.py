@@ -407,7 +407,7 @@ class HipFileDiffWindow(QMainWindow):
 
     def setup_checkboxes(self):
         self.show_only_edited_checkbox = QCheckBox("Show only edited nodes")
-        self.show_only_edited_checkbox.stateChanged.connect(
+        self.show_only_edited_checkbox.checkStateChanged.connect(
             self.on_checkbox_toggled
         )
 
